@@ -93,7 +93,7 @@
 #ifndef GET_GENERATE
 #define GET_GENERATE(Type, Struct) \
     template<> \
-    inline Type* FAny::GetMutable<Type>() \
+    inline Type* FAny::Get<Type>() \
     { \
         if (Struct* StructPtr = Value.GetMutablePtr<Struct>()) \
         { \
@@ -113,7 +113,7 @@
 
 #define GET_GENERATE_PTR(Type, Struct) \
     template<> \
-    inline Type** FAny::GetMutable<Type*>() \
+    inline Type** FAny::Get<Type*>() \
     { \
         if (Struct* StructPtr = Value.GetMutablePtr<Struct>()) \
         { \
@@ -133,7 +133,7 @@
 
 #define GET_GENERATE_TOBJECTPTR(Type, Struct) \
     template<> \
-    inline TObjectPtr<Type>* FAny::GetMutable<TObjectPtr<Type>>() \
+    inline TObjectPtr<Type>* FAny::Get<TObjectPtr<Type>>() \
     { \
         if (Struct* StructPtr = Value.GetMutablePtr<Struct>()) \
         { \
@@ -448,7 +448,7 @@ struct GADE7322_TD_API FAny
     bool IsValid() const { return Value.IsValid(); }
 
     template<typename T>
-    T* GetMutable()
+    T* Get()
     {
         if constexpr (TIsDerivedFrom<T, UObject>::IsDerived)
         {
