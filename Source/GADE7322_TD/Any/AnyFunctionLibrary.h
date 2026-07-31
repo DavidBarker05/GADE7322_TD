@@ -42,7 +42,7 @@ public:
 
     UFUNCTION(BlueprintCallable, CustomThunk, Category = "CustomStructs|Any|Value",
         meta = (CustomStructureParam = "Value", BlueprintInternalUseOnly = "true"))
-    static FAny SetAny(const int32& Value);
+    static FAny& SetAny(UPARAM(ref) FAny& InAny, const int32& Value);
 
     // Creates Any based on an input (wildcard)
     UFUNCTION(BlueprintPure, CustomThunk, Category = "CustomStructs|Any|Creation",

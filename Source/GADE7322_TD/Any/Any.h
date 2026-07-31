@@ -155,46 +155,52 @@
 #ifndef COPY_SET_GENERATE
 #define COPY_SET_GENERATE(Type, Struct) \
     template<> \
-    inline void FAny::Set<Type>(const Type& InValue) \
+    inline FAny& FAny::Set<Type>(const Type& InValue) \
     { \
         Value = FInstancedStruct::Make<Struct>(InValue); \
+        return *this; \
     }
 
 #define COPY_SET_GENERATE_PTR(Type, Struct) \
     template<> \
-    inline void FAny::Set<Type*>(Type* const& InValue) \
+    inline FAny& FAny::Set<Type*>(Type* const& InValue) \
     { \
         Value = FInstancedStruct::Make<Struct>(InValue); \
+        return *this; \
     }
 
 #define COPY_SET_GENERATE_TOBJECTPTR(Type, Struct) \
     template<> \
-    inline void FAny::Set<TObjectPtr<Type>>(const TObjectPtr<Type>& InValue) \
+    inline FAny& FAny::Set<TObjectPtr<Type>>(const TObjectPtr<Type>& InValue) \
     { \
         Value = FInstancedStruct::Make<Struct>(InValue); \
+        return *this; \
     }
 #endif
 
 #ifndef MOVE_SET_GENERATE
 #define MOVE_SET_GENERATE(Type, Struct) \
     template<> \
-    inline void FAny::Set<Type>(Type&& InValue) \
+    inline FAny& FAny::Set<Type>(Type&& InValue) \
     { \
         Value = FInstancedStruct::Make<Struct>(MoveTemp(InValue)); \
+        return *this; \
     }
 
 #define MOVE_SET_GENERATE_PTR(Type, Struct) \
     template<> \
-    inline void FAny::Set<Type*>(Type*&& InValue) \
+    inline FAny& FAny::Set<Type*>(Type*&& InValue) \
     { \
         Value = FInstancedStruct::Make<Struct>(MoveTemp(InValue)); \
+        return *this; \
     }
 
 #define MOVE_SET_GENERATE_TOBJECTPTR(Type, Struct) \
     template<> \
-    inline void FAny::Set<TObjectPtr<Type>>(TObjectPtr<Type>&& InValue) \
+    inline FAny& FAny::Set<TObjectPtr<Type>>(TObjectPtr<Type>&& InValue) \
     { \
         Value = FInstancedStruct::Make<Struct>(MoveTemp(InValue)); \
+        return *this; \
     }
 #endif
 
@@ -470,7 +476,7 @@ struct GADE7322_TD_API FAny
     }
 
     template<typename T>
-    void Set(const T& InValue)
+    FAny& Set(const T& InValue)
     {
         if constexpr (TIsTObjectPtr<T>::Value)
         {
@@ -487,10 +493,11 @@ struct GADE7322_TD_API FAny
             else Value = FInstancedStruct::Make(InValue); // Hopefully a struct
         }
         else Value = FInstancedStruct::Make(InValue);
+        return *this;
     }
 
     template<typename T>
-    void Set(T&& InValue)
+    FAny& Set(T&& InValue)
     {
         if constexpr (TIsTObjectPtr<T>::Value)
         {
@@ -507,6 +514,7 @@ struct GADE7322_TD_API FAny
             else Value = FInstancedStruct::Make(MoveTemp(InValue)); // Hopefully a struct
         }
         else Value = FInstancedStruct::Make(MoveTemp(InValue));
+        return *this;
     }
 };
 

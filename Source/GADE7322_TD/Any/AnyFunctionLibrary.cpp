@@ -19,10 +19,10 @@ void UAnyFunctionLibrary::Any_IsValidBranch(const FAny& Any, EIsValidOutputPins&
 
 void UAnyFunctionLibrary::AnyGet(const FAny& InAny, EIsAOutputPins& OutputPins, int32& Value) { checkNoEntry() }
 
-FAny UAnyFunctionLibrary::SetAny(const int32& Value)
+FAny& UAnyFunctionLibrary::SetAny(FAny& InAny, const int32& Value)
 {
     checkNoEntry()
-    return {};
+    return InAny;
 }
 
 FAny UAnyFunctionLibrary::ToAny(const int32& Value)
@@ -247,6 +247,7 @@ DEFINE_FUNCTION(UAnyFunctionLibrary::execAnyGet)
 
 DEFINE_FUNCTION(UAnyFunctionLibrary::execSetAny)
 {
+    P_GET_STRUCT_REF(FAny, InAny);
     Stack.MostRecentPropertyAddress = nullptr;
     Stack.MostRecentPropertyContainer = nullptr;
     Stack.StepCompiledIn<FProperty>(nullptr);
@@ -257,95 +258,58 @@ DEFINE_FUNCTION(UAnyFunctionLibrary::execSetAny)
     if (ValueProp && ValuePtr)
     {
         P_NATIVE_BEGIN;
-            FInstancedStruct Instanced;
             if (const FBoolProperty* BoolProp = CastField<FBoolProperty>(ValueProp))
             {
-                Instanced.InitializeAs<FBoolStruct>();
-                if (FBoolStruct* BoolStructPtr = Instanced.GetMutablePtr<FBoolStruct>())
-                {
-                    BoolStructPtr->Value = BoolProp->GetPropertyValue(ValuePtr);
-                    bSuccess = true;
-                }
+                InAny = BoolProp->GetPropertyValue(ValuePtr);
+                bSuccess = true;
             }
             else if (const FByteProperty* ByteProp = CastField<FByteProperty>(ValueProp))
             {
-                Instanced.InitializeAs<FUint8Struct>();
-                if (FUint8Struct* Uint8StructPtr = Instanced.GetMutablePtr<FUint8Struct>())
-                {
-                    Uint8StructPtr->Value = ByteProp->GetPropertyValue(ValuePtr);
-                    bSuccess = true;
-                }
+                InAny = ByteProp->GetPropertyValue(ValuePtr);
+                bSuccess = true;
             }
             else if (const FIntProperty* IntProp = CastField<FIntProperty>(ValueProp))
             {
-                Instanced.InitializeAs<FInt32Struct>();
-                if (FInt32Struct* Int32StructPtr = Instanced.GetMutablePtr<FInt32Struct>())
-                {
-                    Int32StructPtr->Value = IntProp->GetPropertyValue(ValuePtr);
-                    bSuccess = true;
-                }
+                InAny = IntProp->GetPropertyValue(ValuePtr);
+                bSuccess = true;
             }
             else if (const FInt64Property* Int64Prop = CastField<FInt64Property>(ValueProp))
             {
-                Instanced.InitializeAs<FInt64Struct>();
-                if (FInt64Struct* Int64StructPtr = Instanced.GetMutablePtr<FInt64Struct>())
-                {
-                    Int64StructPtr->Value = Int64Prop->GetPropertyValue(ValuePtr);
-                    bSuccess = true;
-                }
+                InAny = Int64Prop->GetPropertyValue(ValuePtr);
+                bSuccess = true;
             }
             else if (const FFloatProperty* FloatProp = CastField<FFloatProperty>(ValueProp))
             {
-                Instanced.InitializeAs<FFloatStruct>();
-                if (FFloatStruct* FloatStructPtr = Instanced.GetMutablePtr<FFloatStruct>())
-                {
-                    FloatStructPtr->Value = FloatProp->GetPropertyValue(ValuePtr);
-                    bSuccess = true;
-                }
+                InAny = FloatProp->GetPropertyValue(ValuePtr);
+                bSuccess = true;
             }
             else if (const FStrProperty* StrProp = CastField<FStrProperty>(ValueProp))
             {
-                Instanced.InitializeAs<FFStringStruct>();
-                if (FFStringStruct* StringStructPtr = Instanced.GetMutablePtr<FFStringStruct>())
-                {
-                    StringStructPtr->Value = StrProp->GetPropertyValue(ValuePtr);
-                    bSuccess = true;
-                }
+                InAny = StrProp->GetPropertyValue(ValuePtr);
+                bSuccess = true;
             }
             else if (const FNameProperty* NameProp = CastField<FNameProperty>(ValueProp))
             {
-                Instanced.InitializeAs<FFNameStruct>();
-                if (FFNameStruct* NameStructPtr = Instanced.GetMutablePtr<FFNameStruct>())
-                {
-                    NameStructPtr->Value = NameProp->GetPropertyValue(ValuePtr);
-                    bSuccess = true;
-                }
+                InAny = NameProp->GetPropertyValue(ValuePtr);
+                bSuccess = true;
             }
             else if (const FTextProperty* TextProp = CastField<FTextProperty>(ValueProp))
             {
-                Instanced.InitializeAs<FFTextStruct>();
-                if (FFTextStruct* TextStructPtr = Instanced.GetMutablePtr<FFTextStruct>())
-                {
-                    TextStructPtr->Value = *(FText*)ValuePtr;
-                    bSuccess = true;
-                }
+                InAny.Set<FText>(*(FText*)ValuePtr);
+                bSuccess = true;
             }
             else if (const FObjectProperty* ObjectProp = CastField<FObjectProperty>(ValueProp))
             {
-                Instanced.InitializeAs<FUObjectStruct>();
-                if (FUObjectStruct* ObjectStructPtr = Instanced.GetMutablePtr<FUObjectStruct>())
-                {
-                    ObjectStructPtr->Value = ObjectProp->GetPropertyValue(ValuePtr);
-                    bSuccess = true;
-                }
+                InAny = ObjectProp->GetPropertyValue(ValuePtr);
+                bSuccess = true;
             }
             else if (const FStructProperty* StructProp = CastField<FStructProperty>(ValueProp))
             {
-                Instanced.InitializeAs(StructProp->Struct);
-                StructProp->Struct->CopyScriptStruct(Instanced.GetMutableMemory(), ValuePtr);
+                InAny.Value.InitializeAs(StructProp->Struct);
+                StructProp->Struct->CopyScriptStruct(InAny.Value.GetMutableMemory(), ValuePtr);
                 bSuccess = true;
             }
-            if (bSuccess) *(FAny*)RESULT_PARAM = FAny(MoveTemp(Instanced));
+            if (bSuccess) *(FAny*)RESULT_PARAM = InAny;
         P_NATIVE_END;
     }
     if (!bSuccess)
@@ -355,7 +319,7 @@ DEFINE_FUNCTION(UAnyFunctionLibrary::execSetAny)
                                                       "Failed to resolve the Value for Set Any"));
         FBlueprintCoreDelegates::ThrowScriptException(P_THIS, Stack, ExceptionInfo);
         P_NATIVE_BEGIN;
-            *(FAny*)RESULT_PARAM = FAny();
+            *(FAny*)RESULT_PARAM = InAny;
         P_NATIVE_END;
     }
 }
