@@ -9,11 +9,23 @@ public class GADE7322_TD : ModuleRules
 		PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
 
 		PublicDependencyModuleNames.AddRange(new string[]
-			{ "Core", "CoreUObject", "Engine", "InputCore", "EnhancedInput" });
+		{
+			"Core",
+			"CoreUObject",
+			"Engine",
+			"InputCore",
+			"EnhancedInput"
+		});
 
 		PrivateDependencyModuleNames.AddRange(new string[] { });
 
-		PublicIncludePaths.AddRange(new string[] { "GADE7322_TD", "GADE7322_TD/Any", "GADE7322_TD/Events" });
+		PublicIncludePaths.AddRange(new string[]
+		{
+			"GADE7322_TD",
+			"GADE7322_TD/Any",
+			"GADE7322_TD/Events",
+			"GADE7322_TD/Pawns"
+		});
 
 		// Uncomment if you are using Slate UI
 		// PrivateDependencyModuleNames.AddRange(new string[] { "Slate", "SlateCore" });
