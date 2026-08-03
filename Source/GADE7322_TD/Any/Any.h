@@ -259,12 +259,12 @@ struct GADE7322_TD_API FAny
                 "FAny doesn't work with non-UObject derived TObjectPtrs");
             Value = FInstancedStruct::Make<FUObjectStruct>(InValue);
         }
-        else if constexpr (std::is_pointer_v<T>)
+        else if constexpr (TIsPointer<T>::Value)
         {
             using PointedType = TRemovePointer<T>::Type;
-            if constexpr (TIsDerivedFrom<PointedType, UObject>::IsDerived)
-                Value = FInstancedStruct::Make<FUObjectStruct>(MoveTemp(InValue));
-            else Value = FInstancedStruct::Make(InValue); // Hopefully a struct
+            static_assert(TIsDerivedFrom<PointedType, UObject>::IsDerived,
+                "FAny doesn't work with non-UObject derived pointers");
+            Value = FInstancedStruct::Make<FUObjectStruct>(MoveTemp(InValue));
         }
         else Value = FInstancedStruct::Make(InValue);
     }
@@ -308,12 +308,12 @@ struct GADE7322_TD_API FAny
                 "FAny doesn't work with non-UObject derived TObjectPtrs");
             Value = FInstancedStruct::Make<FUObjectStruct>(MoveTemp(InValue));
         }
-        else if constexpr (std::is_pointer_v<T>)
+        else if constexpr (TIsPointer<T>::Value)
         {
             using PointedType = TRemovePointer<T>::Type;
-            if constexpr (TIsDerivedFrom<PointedType, UObject>::IsDerived)
-                Value = FInstancedStruct::Make<FUObjectStruct>(MoveTemp(InValue));
-            else Value = FInstancedStruct::Make(MoveTemp(InValue)); // Hopefully a struct
+            static_assert(TIsDerivedFrom<PointedType, UObject>::IsDerived,
+                "FAny doesn't work with non-UObject derived pointers");
+            Value = FInstancedStruct::Make<FUObjectStruct>(MoveTemp(InValue));
         }
         else Value = FInstancedStruct::Make(MoveTemp(InValue));
     }
@@ -366,12 +366,12 @@ struct GADE7322_TD_API FAny
                 "FAny doesn't work with non-UObject derived TObjectPtrs");
             Value = FInstancedStruct::Make<FUObjectStruct>(InValue);
         }
-        else if constexpr (std::is_pointer_v<T>)
+        else if constexpr (TIsPointer<T>::Value)
         {
             using PointedType = TRemovePointer<T>::Type;
-            if constexpr (TIsDerivedFrom<PointedType, UObject>::IsDerived)
-                Value = FInstancedStruct::Make<FUObjectStruct>(MoveTemp(InValue));
-            else Value = FInstancedStruct::Make(InValue); // Hopefully a struct
+            static_assert(TIsDerivedFrom<PointedType, UObject>::IsDerived,
+                "FAny doesn't work with non-UObject derived pointers");
+            Value = FInstancedStruct::Make<FUObjectStruct>(MoveTemp(InValue));
         }
         else Value = FInstancedStruct::Make(InValue);
         return *this;
@@ -416,12 +416,12 @@ struct GADE7322_TD_API FAny
                 "FAny doesn't work with non-UObject derived TObjectPtrs");
             Value = FInstancedStruct::Make<FUObjectStruct>(MoveTemp(InValue));
         }
-        else if constexpr (std::is_pointer_v<T>)
+        else if constexpr (TIsPointer<T>::Value)
         {
             using PointedType = TRemovePointer<T>::Type;
-            if constexpr (TIsDerivedFrom<PointedType, UObject>::IsDerived)
-                Value = FInstancedStruct::Make<FUObjectStruct>(MoveTemp(InValue));
-            else Value = FInstancedStruct::Make(MoveTemp(InValue)); // Hopefully a struct
+            static_assert(TIsDerivedFrom<PointedType, UObject>::IsDerived,
+                "FAny doesn't work with non-UObject derived pointers");
+            Value = FInstancedStruct::Make<FUObjectStruct>(MoveTemp(InValue));
         }
         else Value = FInstancedStruct::Make(MoveTemp(InValue));
         return *this;
@@ -485,12 +485,12 @@ struct GADE7322_TD_API FAny
                 "FAny doesn't work with non-UObject derived TObjectPtrs");
             Value = FInstancedStruct::Make<FUObjectStruct>(InValue);
         }
-        else if constexpr (std::is_pointer_v<T>)
+        else if constexpr (TIsPointer<T>::Value)
         {
             using PointedType = TRemovePointer<T>::Type;
-            if constexpr (TIsDerivedFrom<PointedType, UObject>::IsDerived)
-                Value = FInstancedStruct::Make<FUObjectStruct>(MoveTemp(InValue));
-            else Value = FInstancedStruct::Make(InValue); // Hopefully a struct
+            static_assert(TIsDerivedFrom<PointedType, UObject>::IsDerived,
+                "FAny doesn't work with non-UObject derived pointers");
+            Value = FInstancedStruct::Make<FUObjectStruct>(MoveTemp(InValue));
         }
         else Value = FInstancedStruct::Make(InValue);
         return *this;
@@ -506,12 +506,12 @@ struct GADE7322_TD_API FAny
                 "FAny doesn't work with non-UObject derived TObjectPtrs");
             Value = FInstancedStruct::Make<FUObjectStruct>(MoveTemp(InValue));
         }
-        else if constexpr (std::is_pointer_v<T>)
+        else if constexpr (TIsPointer<T>::Value)
         {
             using PointedType = TRemovePointer<T>::Type;
-            if constexpr (TIsDerivedFrom<PointedType, UObject>::IsDerived)
-                Value = FInstancedStruct::Make<FUObjectStruct>(MoveTemp(InValue));
-            else Value = FInstancedStruct::Make(MoveTemp(InValue)); // Hopefully a struct
+            static_assert(TIsDerivedFrom<PointedType, UObject>::IsDerived,
+                "FAny doesn't work with non-UObject derived pointers");
+            Value = FInstancedStruct::Make<FUObjectStruct>(MoveTemp(InValue));
         }
         else Value = FInstancedStruct::Make(MoveTemp(InValue));
         return *this;
