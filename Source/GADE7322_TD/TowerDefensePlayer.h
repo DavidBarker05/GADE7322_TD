@@ -13,7 +13,7 @@ class UInputComponent;
 class UInputAction;
 struct FInputActionValue;
 
-UCLASS()
+UCLASS(Abstract)
 class GADE7322_TD_API ATowerDefensePlayer : public APawn, public IEventListener
 {
     GENERATED_BODY()
@@ -45,10 +45,16 @@ protected:
     UInputAction* MoveAction;
 
 private:
-    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components",
-        meta = (AllowPrivateAccess = "true"))
+    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components", meta = (AllowPrivateAccess = "true"))
     UFloatingPawnMovement* FloatingPawnMovement;
-    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components",
-        meta = (AllowPrivateAccess = "true"))
+
+    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components", meta = (AllowPrivateAccess = "true"))
     UCameraComponent* CameraComponent;
+
+    UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Currency",
+        meta = (AllowPrivateAccess = "true", ClampMin = "0", UIMin = "0"))
+    int32 StartingCurrency = 0;
+
+    UPROPERTY(BlueprintReadOnly, Category = "Currency", meta = (AllowPrivateAccess = "true"))
+    int32 CurrentCurrency = 0;
 };

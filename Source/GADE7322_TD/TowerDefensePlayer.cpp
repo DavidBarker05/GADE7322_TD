@@ -4,6 +4,10 @@
 #include "GameFramework/FloatingPawnMovement.h"
 #include "InputActionValue.h"
 #include "Camera/CameraComponent.h"
+#include "Pawns/PlayerTower.h"
+#include "Pawns/EnemyTroop.h"
+#include "CustomLog.h"
+#include "PlayerTroop.h"
 
 ATowerDefensePlayer::ATowerDefensePlayer()
 {
@@ -17,6 +21,7 @@ void ATowerDefensePlayer::BeginPlay()
 {
     Super::BeginPlay();
     SUBSCRIBE_TO_EVENTS();
+    CurrentCurrency = StartingCurrency;
 }
 
 void ATowerDefensePlayer::EndPlay(const EEndPlayReason::Type EndPlayReason)
@@ -40,11 +45,24 @@ void ATowerDefensePlayer::OnEventReceived_Implementation(FName EventName, const 
 {
     if (EVENT_MATCHES(TEXT("DeathEvent"), 1) && PARAMS_ARE_VALID && PARAMS_ARE_CORRECT_TYPES(AActor))
     {
-        if (const AActor* DeadActor = Params[0].Get<AActor>())
+        if (const ATowerDefensePawn* DeadPawn = Params[0].Get<ATowerDefensePawn>())
         {
+            if (!IsValid(DeadPawn)) return;
+            if (DeadPawn->IsA<APlayerTower>())
+            {
+                TD_LOG_INFO(TEXT("Player is dead"));
+            }
+            else if (DeadPawn->IsA<APlayerTroop>())
+            {
+                TD_LOG_INFO(TEXT("%s died"), *DeadPawn->GetPawnDisplayName().ToString());
+            }
+            else if (const AEnemyTroop* EnemyTroop = Cast<AEnemyTroop>(DeadPawn))
+            {
+                TD_LOG_INFO(TEXT("%s died. Earned %d currency"), *EnemyTroop->GetPawnDisplayName().ToString(), EnemyTroop->GetCurrencyOnDeath());
+                CurrentCurrency += EnemyTroop->GetCurrencyOnDeath();
+            }
         }
     }
-
 }
 
 void ATowerDefensePlayer::Move(const FInputActionValue& Value)
