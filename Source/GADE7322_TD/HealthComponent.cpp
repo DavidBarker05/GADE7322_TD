@@ -1,6 +1,5 @@
 #include "HealthComponent.h"
 
-#include "CustomStructs.h"
 #include "EventBus.h"
 
 UHealthComponent::UHealthComponent() { PrimaryComponentTick.bCanEverTick = false; }
@@ -13,9 +12,20 @@ void UHealthComponent::TickComponent(float DeltaTime, ELevelTick TickType,
     Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 }
 
-int UHealthComponent::GetCurrentHealth() { return CurrentHealth; }
+int UHealthComponent::GetCurrentHealth() const { return CurrentHealth; }
 
-int UHealthComponent::GetMaxHealth() { return MaxHealth; }
+void UHealthComponent::SetCurrrentHealth(int32 Health)
+{
+    CurrentHealth = FMath::Clamp(Health, 0, MaxHealth);
+}
+
+int UHealthComponent::GetMaxHealth() const { return MaxHealth; }
+
+void UHealthComponent::SetMaxHealth(int32 Health)
+{
+    MaxHealth = FMath::Max(0, Health);
+    CurrentHealth = FMath::Clamp(CurrentHealth, 0, MaxHealth);
+}
 
 void UHealthComponent::TakeDamage(int32 Damage)
 {

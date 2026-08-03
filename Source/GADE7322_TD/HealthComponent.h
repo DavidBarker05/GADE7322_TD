@@ -21,11 +21,11 @@ public:
                                FActorComponentTickFunction* ThisTickFunction) override;
 
 public:
-    UFUNCTION(BlueprintPure, Category = "Health")
-    int GetCurrentHealth();
+    int GetCurrentHealth() const;
+    void SetCurrrentHealth(int32 Health);
 
-    UFUNCTION(BlueprintPure, Category = "Health")
-    int GetMaxHealth();
+    int GetMaxHealth() const;
+    void SetMaxHealth(int32 Health);
 
     UFUNCTION(BlueprintCallable, Category = "Health")
     void TakeDamage(int32 Damage);
@@ -34,10 +34,12 @@ public:
     void ReceiveHealth(int32 Health);
 
 private:
-    UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Health",
+    UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Health",
               meta = (AllowPrivateAccess = "true", DisplayName = "Max Health", UIMin = 0, ClampMin = 0))
     int32 MaxHealth = 1;
 
 private:
+    UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Health",
+              meta = (AllowPrivateAccess = "true", DisplayName = "Max Health", UIMin = 0, ClampMin = 0))
     int32 CurrentHealth = 0;
 };
