@@ -255,9 +255,9 @@ struct GADE7322_TD_API FAny
         if constexpr (TIsTObjectPtr<T>::Value)
         {
             using ObjectType = TRemoveObjectPointer<T>::Type;
-            if constexpr (TIsDerivedFrom<ObjectType, UObject>::IsDerived)
-                Value = FInstancedStruct::Make<FUObjectStruct>(InValue);
-            else static_assert(false, "Any doesn't work with non UObject derived TObjectPtrs");
+            static_assert(TIsDerivedFrom<ObjectType, UObject>::IsDerived,
+                "FAny doesn't work with non-UObject derived TObjectPtrs");
+            Value = FInstancedStruct::Make<FUObjectStruct>(InValue);
         }
         else if constexpr (std::is_pointer_v<T>)
         {
@@ -304,9 +304,9 @@ struct GADE7322_TD_API FAny
         if constexpr (TIsTObjectPtr<T>::Value)
         {
             using ObjectType = TRemoveObjectPointer<T>::Type;
-            if constexpr (TIsDerivedFrom<ObjectType, UObject>::IsDerived)
-                Value = FInstancedStruct::Make<FUObjectStruct>(MoveTemp(InValue));
-            else static_assert(false, "Any doesn't work with non UObject derived TObjectPtrs");
+            static_assert(TIsDerivedFrom<ObjectType, UObject>::IsDerived,
+                "FAny doesn't work with non-UObject derived TObjectPtrs");
+            Value = FInstancedStruct::Make<FUObjectStruct>(MoveTemp(InValue));
         }
         else if constexpr (std::is_pointer_v<T>)
         {
@@ -362,9 +362,9 @@ struct GADE7322_TD_API FAny
         if constexpr (TIsTObjectPtr<T>::Value)
         {
             using ObjectType = TRemoveObjectPointer<T>::Type;
-            if constexpr (TIsDerivedFrom<ObjectType, UObject>::IsDerived)
-                Value = FInstancedStruct::Make<FUObjectStruct>(InValue);
-            else static_assert(false, "Any doesn't work with non UObject derived TObjectPtrs");
+            static_assert(TIsDerivedFrom<ObjectType, UObject>::IsDerived,
+                "FAny doesn't work with non-UObject derived TObjectPtrs");
+            Value = FInstancedStruct::Make<FUObjectStruct>(InValue);
         }
         else if constexpr (std::is_pointer_v<T>)
         {
@@ -412,9 +412,9 @@ struct GADE7322_TD_API FAny
         if constexpr (TIsTObjectPtr<T>::Value)
         {
             using ObjectType = TRemoveObjectPointer<T>::Type;
-            if constexpr (TIsDerivedFrom<ObjectType, UObject>::IsDerived)
-                Value = FInstancedStruct::Make<FUObjectStruct>(MoveTemp(InValue));
-            else static_assert(false, "Any doesn't work with non UObject derived TObjectPtrs");
+            static_assert(TIsDerivedFrom<ObjectType, UObject>::IsDerived,
+                "FAny doesn't work with non-UObject derived TObjectPtrs");
+            Value = FInstancedStruct::Make<FUObjectStruct>(MoveTemp(InValue));
         }
         else if constexpr (std::is_pointer_v<T>)
         {
@@ -481,9 +481,9 @@ struct GADE7322_TD_API FAny
         if constexpr (TIsTObjectPtr<T>::Value)
         {
             using ObjectType = TRemoveObjectPointer<T>::Type;
-            if constexpr (TIsDerivedFrom<ObjectType, UObject>::IsDerived)
-                Value = FInstancedStruct::Make<FUObjectStruct>(InValue);
-            else static_assert(false, "Any doesn't work with non UObject derived TObjectPtrs");
+            static_assert(TIsDerivedFrom<ObjectType, UObject>::IsDerived,
+                "FAny doesn't work with non-UObject derived TObjectPtrs");
+            Value = FInstancedStruct::Make<FUObjectStruct>(InValue);
         }
         else if constexpr (std::is_pointer_v<T>)
         {
@@ -502,9 +502,9 @@ struct GADE7322_TD_API FAny
         if constexpr (TIsTObjectPtr<T>::Value)
         {
             using ObjectType = TRemoveObjectPointer<T>::Type;
-            if constexpr (TIsDerivedFrom<ObjectType, UObject>::IsDerived)
-                Value = FInstancedStruct::Make<FUObjectStruct>(MoveTemp(InValue));
-            else static_assert(false, "Any doesn't work with non UObject derived TObjectPtrs");
+            static_assert(TIsDerivedFrom<ObjectType, UObject>::IsDerived,
+                "FAny doesn't work with non-UObject derived TObjectPtrs");
+            Value = FInstancedStruct::Make<FUObjectStruct>(MoveTemp(InValue));
         }
         else if constexpr (std::is_pointer_v<T>)
         {

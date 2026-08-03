@@ -1,9 +1,10 @@
 #include "Any/Any.h"
 
-FAny Bar = 1;
+
 
 void Foo()
 {
+    FAny Bar = 1;
     Bar = 2;
     Bar = "Hello World!";
     Bar = 3.14f;

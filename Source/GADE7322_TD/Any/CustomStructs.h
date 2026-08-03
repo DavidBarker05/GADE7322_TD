@@ -16,7 +16,7 @@
     STRUCT(Prefix)(const STRUCT(Prefix)&) = default; \
     STRUCT(Prefix)(STRUCT(Prefix)&&) noexcept = default; \
     \
-    STRUCT(Prefix)(Type&& InValue) : Value(InValue) \
+    STRUCT(Prefix)(Type&& InValue) : Value(MoveTemp(InValue)) \
     { \
     } \
     \
