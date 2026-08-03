@@ -18,6 +18,7 @@ DECLARE_LOG_CATEGORY_EXTERN(LogCustom, Log, All);
 // Log a message at the Fatal verbosity
 #define TD_LOG_FATAL(Format, ...) FCustomLog::Log(ELogVerbosity::Fatal, FString::Printf(Format __VA_OPT__(,) __VA_ARGS__))
 
+// Custom log that outputs to GEngine and UE_LOG
 struct FCustomLog
 {
     // Log a message
