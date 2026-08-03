@@ -24,7 +24,8 @@ public class GADE7322_TD : ModuleRules
 			"GADE7322_TD",
 			"GADE7322_TD/Any",
 			"GADE7322_TD/Events",
-			"GADE7322_TD/Pawns"
+			"GADE7322_TD/Pawns",
+			"GADE7322_TD/Pawns/PlayerPawns"
 		});
 
 		// Uncomment if you are using Slate UI
