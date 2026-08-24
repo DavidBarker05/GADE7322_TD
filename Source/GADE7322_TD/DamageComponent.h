@@ -8,7 +8,7 @@
 
 class UHealthComponent;
 
-UCLASS(ClassGroup=(Custom), meta=(BlueprintSpawnableComponent))
+UCLASS(ClassGroup = (Custom), meta = (BlueprintSpawnableComponent))
 class GADE7322_TD_API UDamageComponent : public UActorComponent
 {
     GENERATED_BODY()
@@ -31,6 +31,6 @@ public:
     void SetDamage(int32 InDamage);
 
 protected:
-    UPROPERTY(EditAnywhere, BlueprintReadWrite, meta=(AllowPrivateAccess=true, ClampMin = "0", UIMin = "0"))
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = true, ClampMin = "0", UIMin = "0"))
     int32 Damage = 0;
 };

@@ -2,11 +2,11 @@
 
 #include "CoreMinimal.h"
 
+#include "Any/Any.h"
 #include "Engine/GameInstance.h"
 #include "Engine/World.h"
 #include "GameFramework/Actor.h"
 #include "Subsystems/GameInstanceSubsystem.h"
-#include "Any/Any.h"
 
 #include "EventBus.generated.h"
 
@@ -27,8 +27,7 @@ namespace Internal
         }
         if (!World) return nullptr;
         if (const UGameInstance* GameInstance = World->GetGameInstance())
-            return GameInstance->GetSubsystem<
-                UEventBus>();
+            return GameInstance->GetSubsystem<UEventBus>();
         return nullptr;
     }
 } // namespace Internal

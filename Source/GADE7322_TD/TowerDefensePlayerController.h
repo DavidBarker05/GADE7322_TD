@@ -17,7 +17,6 @@ protected:
     virtual void SetupInputComponent() override;
 
 protected:
-    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Input",
-        meta = (AllowPrivateAccess = "true"))
+    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Input", meta = (AllowPrivateAccess = "true"))
     TArray<UInputMappingContext*> DefaultMappingContexts;
 };

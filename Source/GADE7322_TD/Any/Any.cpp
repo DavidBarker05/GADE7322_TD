@@ -1,7 +1,5 @@
 #include "Any/Any.h"
 
-
-
 void Foo()
 {
     FAny Bar = 1;

@@ -14,10 +14,7 @@ void UHealthComponent::TickComponent(float DeltaTime, ELevelTick TickType,
 
 int UHealthComponent::GetCurrentHealth() const { return CurrentHealth; }
 
-void UHealthComponent::SetCurrrentHealth(int32 Health)
-{
-    CurrentHealth = FMath::Clamp(Health, 0, MaxHealth);
-}
+void UHealthComponent::SetCurrentHealth(int32 Health) { CurrentHealth = FMath::Clamp(Health, 0, MaxHealth); }
 
 int UHealthComponent::GetMaxHealth() const { return MaxHealth; }
 
@@ -30,11 +27,7 @@ void UHealthComponent::SetMaxHealth(int32 Health)
 void UHealthComponent::TakeDamage(int32 Damage)
 {
     CurrentHealth = FMath::Max(0, CurrentHealth - Damage);
-    if (CurrentHealth == 0)
-        BROADCAST_EVENT(TEXT("DeathEvent"), GetOwner());
+    if (CurrentHealth == 0) BROADCAST_EVENT(TEXT("DeathEvent"), GetOwner());
 }
 
-void UHealthComponent::ReceiveHealth(int32 Health)
-{
-    CurrentHealth = FMath::Min(MaxHealth, CurrentHealth + Health);
-}
+void UHealthComponent::ReceiveHealth(int32 Health) { CurrentHealth = FMath::Min(MaxHealth, CurrentHealth + Health); }

@@ -34,7 +34,7 @@ public:
 
     const UDamageComponent* GetDamageComponent() const;
     UDamageComponent* GetDamageComponent();
-    
+
     const FName& GetPawnDisplayName() const;
 
 protected:
@@ -43,7 +43,7 @@ protected:
 
     UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components", meta = (AllowPrivateAccess = "true"))
     UDamageComponent* DamageComponent;
-    
+
     UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Name", meta = (AllowPrivateAccess = "true"))
     FName PawnDisplayName = TEXT("TowerDefensePawn");
 };

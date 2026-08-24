@@ -1,8 +1,6 @@
 #include "Any/CustomStructFunctionLibrary.h"
 
-
 #include "Templates/SubclassOf.h"
-
 
 // FBoolStruct
 FBoolStruct UCustomStructFunctionLibrary::MakeBoolStruct(bool InValue) { return FBoolStruct(InValue); }

@@ -2,15 +2,9 @@
 
 #include "HealthComponent.h"
 
-UDamageComponent::UDamageComponent()
-{
-    PrimaryComponentTick.bCanEverTick = false;
-}
+UDamageComponent::UDamageComponent() { PrimaryComponentTick.bCanEverTick = false; }
 
-void UDamageComponent::BeginPlay()
-{
-    Super::BeginPlay();
-}
+void UDamageComponent::BeginPlay() { Super::BeginPlay(); }
 
 void UDamageComponent::TickComponent(float DeltaTime, ELevelTick TickType,
                                      FActorComponentTickFunction* ThisTickFunction)

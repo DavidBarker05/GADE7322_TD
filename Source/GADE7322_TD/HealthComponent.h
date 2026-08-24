@@ -5,6 +5,7 @@
 #include "Components/ActorComponent.h"
 
 #include "HealthComponent.generated.h"
+
 UCLASS(ClassGroup = (Custom), meta = (BlueprintSpawnableComponent))
 class GADE7322_TD_API UHealthComponent : public UActorComponent
 {
@@ -22,7 +23,7 @@ public:
 
 public:
     int GetCurrentHealth() const;
-    void SetCurrrentHealth(int32 Health);
+    void SetCurrentHealth(int32 Health);
 
     int GetMaxHealth() const;
     void SetMaxHealth(int32 Health);

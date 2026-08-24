@@ -1,8 +1,5 @@
 #include "Pawns/PlayerTroop.h"
 
-APlayerTroop::APlayerTroop()
-{
-    PawnDisplayName = TEXT("PlayerTroop");
-}
+APlayerTroop::APlayerTroop() { PawnDisplayName = TEXT("PlayerTroop"); }
 
-int32 APlayerTroop::GetCost() { return Cost; }
+int32 APlayerTroop::GetCost() const { return Cost; }

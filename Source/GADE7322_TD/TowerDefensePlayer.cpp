@@ -1,12 +1,12 @@
 #include "TowerDefensePlayer.h"
 
+#include "Camera/CameraComponent.h"
+#include "CustomLog.h"
 #include "EnhancedInputComponent.h"
 #include "GameFramework/FloatingPawnMovement.h"
 #include "InputActionValue.h"
-#include "Camera/CameraComponent.h"
-#include "Pawns/PlayerTower.h"
 #include "Pawns/EnemyTroop.h"
-#include "CustomLog.h"
+#include "Pawns/PlayerTower.h"
 #include "PlayerTroop.h"
 
 ATowerDefensePlayer::ATowerDefensePlayer()
@@ -58,7 +58,8 @@ void ATowerDefensePlayer::OnEventReceived_Implementation(FName EventName, const 
             }
             else if (const AEnemyTroop* EnemyTroop = Cast<AEnemyTroop>(DeadPawn))
             {
-                TD_LOG_INFO(TEXT("%s died. Earned %d currency"), *EnemyTroop->GetPawnDisplayName().ToString(), EnemyTroop->GetCurrencyOnDeath());
+                TD_LOG_INFO(TEXT("%s died. Earned %d currency"), *EnemyTroop->GetPawnDisplayName().ToString(),
+                            EnemyTroop->GetCurrencyOnDeath());
                 CurrentCurrency += EnemyTroop->GetCurrencyOnDeath();
             }
         }

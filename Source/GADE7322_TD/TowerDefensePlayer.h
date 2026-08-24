@@ -14,7 +14,8 @@ class UInputAction;
 struct FInputActionValue;
 
 UCLASS(Abstract)
-class GADE7322_TD_API ATowerDefensePlayer : public APawn, public IEventListener
+class GADE7322_TD_API ATowerDefensePlayer : public APawn,
+                                            public IEventListener
 {
     GENERATED_BODY()
 
@@ -52,7 +53,7 @@ private:
     UCameraComponent* CameraComponent;
 
     UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Currency",
-        meta = (AllowPrivateAccess = "true", ClampMin = "0", UIMin = "0"))
+              meta = (AllowPrivateAccess = "true", ClampMin = "0", UIMin = "0"))
     int32 StartingCurrency = 0;
 
     UPROPERTY(BlueprintReadOnly, Category = "Currency", meta = (AllowPrivateAccess = "true"))

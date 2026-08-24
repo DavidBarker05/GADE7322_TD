@@ -2,8 +2,8 @@
 
 #include "CoreMinimal.h"
 
-#include "Events/EventBus.h"
 #include "Any/Any.h"
+#include "Events/EventBus.h"
 #include "UObject/Interface.h"
 
 #include "EventListener.generated.h"

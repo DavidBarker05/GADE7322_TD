@@ -1,7 +1,7 @@
 #include "Pawns/TowerDefensePawn.h"
 
-#include "HealthComponent.h"
 #include "DamageComponent.h"
+#include "HealthComponent.h"
 
 ATowerDefensePawn::ATowerDefensePawn()
 {
@@ -10,15 +10,9 @@ ATowerDefensePawn::ATowerDefensePawn()
     DamageComponent = CreateDefaultSubobject<UDamageComponent>("Damage Component");
 }
 
-void ATowerDefensePawn::BeginPlay()
-{
-    Super::BeginPlay();
-}
+void ATowerDefensePawn::BeginPlay() { Super::BeginPlay(); }
 
-void ATowerDefensePawn::Tick(float DeltaTime)
-{
-    Super::Tick(DeltaTime);
-}
+void ATowerDefensePawn::Tick(float DeltaTime) { Super::Tick(DeltaTime); }
 
 void ATowerDefensePawn::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 {

@@ -2,8 +2,8 @@
 
 #include "CoreMinimal.h"
 
-#include "StructUtils/InstancedStruct.h"
 #include "CustomStructs.h"
+#include "StructUtils/InstancedStruct.h"
 
 #include "Any.generated.h"
 
@@ -12,36 +12,24 @@
 
 #ifndef COPY_CONSTRUCTOR_GENERATE
 #define COPY_CONSTRUCTOR_GENERATE(Type, Struct) \
-    FAny(const Type& InValue) : Value(FInstancedStruct::Make<Struct>(InValue)) \
-    { \
-    }
+    FAny(const Type& InValue) : Value(FInstancedStruct::Make<Struct>(InValue)) { }
 
 #define COPY_CONSTRUCTOR_GENERATE_PTR(Type, Struct) \
-    FAny(Type* const& InValue) : Value(FInstancedStruct::Make<Struct>(InValue)) \
-    { \
-    }
+    FAny(Type* const& InValue) : Value(FInstancedStruct::Make<Struct>(InValue)) { }
 
 #define COPY_CONSTRUCTOR_GENERATE_TOBJECTPTR(Type, Struct) \
-    FAny(const TObjectPtr<Type>& InValue) : Value(FInstancedStruct::Make<Struct>(InValue)) \
-    { \
-    }
+    FAny(const TObjectPtr<Type>& InValue) : Value(FInstancedStruct::Make<Struct>(InValue)) { }
 #endif
 
 #ifndef MOVE_CONSTRUCTOR_GENERATE
 #define MOVE_CONSTRUCTOR_GENERATE(Type, Struct) \
-    FAny(Type&& InValue) : Value(FInstancedStruct::Make<Struct>(MoveTemp(InValue))) \
-    { \
-    }
+    FAny(Type&& InValue) : Value(FInstancedStruct::Make<Struct>(MoveTemp(InValue))) { }
 
 #define MOVE_CONSTRUCTOR_GENERATE_PTR(Type, Struct) \
-    FAny(Type*&& InValue) : Value(FInstancedStruct::Make<Struct>(MoveTemp(InValue))) \
-    { \
-    }
+    FAny(Type*&& InValue) : Value(FInstancedStruct::Make<Struct>(MoveTemp(InValue))) { }
 
 #define MOVE_CONSTRUCTOR_GENERATE_TOBJECTPTR(Type, Struct) \
-    FAny(TObjectPtr<Type>&& InValue) : Value(FInstancedStruct::Make<Struct>(MoveTemp(InValue))) \
-    { \
-    }
+    FAny(TObjectPtr<Type>&& InValue) : Value(FInstancedStruct::Make<Struct>(MoveTemp(InValue))) { }
 #endif
 
 #ifndef COPY_ASSIGN_GENERATE
@@ -181,7 +169,7 @@
 #ifndef MOVE_SET_GENERATE
 #define MOVE_SET_GENERATE(Type, Struct) \
     template<> \
-    inline FAny& FAny::Set<Type>(Type&& InValue) \
+    inline FAny& FAny::Set<Type>(Type && InValue) \
     { \
         Value = FInstancedStruct::Make<Struct>(MoveTemp(InValue)); \
         return *this; \
@@ -189,7 +177,7 @@
 
 #define MOVE_SET_GENERATE_PTR(Type, Struct) \
     template<> \
-    inline FAny& FAny::Set<Type*>(Type*&& InValue) \
+    inline FAny& FAny::Set<Type*>(Type * &&InValue) \
     { \
         Value = FInstancedStruct::Make<Struct>(MoveTemp(InValue)); \
         return *this; \
@@ -197,7 +185,7 @@
 
 #define MOVE_SET_GENERATE_TOBJECTPTR(Type, Struct) \
     template<> \
-    inline FAny& FAny::Set<TObjectPtr<Type>>(TObjectPtr<Type>&& InValue) \
+    inline FAny& FAny::Set<TObjectPtr<Type>>(TObjectPtr<Type> && InValue) \
     { \
         Value = FInstancedStruct::Make<Struct>(MoveTemp(InValue)); \
         return *this; \
@@ -207,7 +195,7 @@
 /*
   Store any type inside similar to std::any in C++ standard library. This allows to store and pass around
   virtually any type you need and can be used between C++ and blueprints
-  
+
   Can Store:
     - bool [FBoolStruct]
     - uint8 [FUint8Struct]
@@ -219,12 +207,12 @@
     - FText [FFTextStruct]
     - UObject* or TObjectPtr<UObject> and any class that derives from UObject [FUObjectStruct]
     - Structs recognised by Unreal (obviously)
-  
+
   Note: Doesn't store collections like arrays because uses structs to emulate std::any and making a struct
   for each array type was not worth it. Also TArray<AActor*> != TArray<UObject*> so that would mean either
   a new struct for each subclass of every Unreal object or creating an array of the base class and copying
   each element over one at a time every time. If needed they can be added easily by just using the macros
-  
+
   There might be a better way to do this, but I really have no idea and there is nothing online about this.
   I would do something different if Unreal's GC wouldn't get upset like seen in my SDL engine here:
   https://github.com/DavidBarker05/SDL-Game/blob/7b7faec4508d3ad18f7a164791e3fca19f9ba05c/Engine/src/Core/Events/InputEvent.h
@@ -241,13 +229,9 @@ struct GADE7322_TD_API FAny
     FAny(const FAny&) = default;
     FAny(FAny&&) noexcept = default;
 
-    FAny(const FInstancedStruct& InValue) : Value(InValue)
-    {
-    }
+    FAny(const FInstancedStruct& InValue) : Value(InValue) { }
 
-    FAny(FInstancedStruct&& InValue) : Value(MoveTemp(InValue))
-    {
-    }
+    FAny(FInstancedStruct&& InValue) : Value(MoveTemp(InValue)) { }
 
     template<typename T>
     FAny(const T& InValue)

@@ -15,7 +15,7 @@ class GADE7322_TD_API APlayerTower : public ATowerDefensePawn
 
 public:
     APlayerTower();
-    
+
 private:
     UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components", meta = (AllowPrivateAccess = "true"))
     UStaticMeshComponent* TowerMesh;
