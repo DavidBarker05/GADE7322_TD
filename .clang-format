@@ -138,7 +138,7 @@ BreakBinaryOperations: Never
 BreakConstructorInitializers: AfterColon
 BreakFunctionDefinitionParameters: false
 BreakInheritanceList: AfterComma
-BreakStringLiterals: true
+BreakStringLiterals: false
 BreakTemplateDeclarations: Yes
 ColumnLimit: 120
 CommentPragmas: '^ IWYU pragma:'
