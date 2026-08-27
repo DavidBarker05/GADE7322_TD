@@ -20,7 +20,7 @@ class GADE7322_TD_API ATowerDefensePlayer : public APawn,
 {
     GENERATED_BODY()
 
-    EVENTS_TO_LISTEN_TO(TEXT("DeathEvent"), TEXT("PurchaseEvent"), TEXT("SellEvent"))
+    EVENTS_TO_LISTEN_TO(TEXT("DeathEvent"))
 
 public:
     ATowerDefensePlayer();

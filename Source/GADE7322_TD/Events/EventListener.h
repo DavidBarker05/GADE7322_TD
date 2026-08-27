@@ -18,7 +18,7 @@
 #define SUBSCRIBE_TO_EVENTS() \
     do \
     { \
-        if (UEventBus* EventBus = GetGameInstance()->GetSubsystem<UEventBus>()) \
+        if (UEventBus* EventBus = Internal::GetEventBusFromContext(this)) \
         { \
             for (const FString& EventName : EventNames) EventBus->AddListener(FName(EventName), this); \
         } \
@@ -30,7 +30,7 @@
 #define SUBSCRIBE_TO_EVENTS_RUNTIME(...) \
     do \
     { \
-        if (UEventBus* EventBus = GetGameInstance()->GetSubsystem<UEventBus>()) \
+        if (UEventBus* EventBus = Internal::GetEventBusFromContext(this)) \
         { \
             FString TempNames[] = {__VA_ARGS__}; \
             for (const FString& Name : TempNames) \
@@ -48,7 +48,7 @@
 #define UNSUBSCRIBE_FROM_EVENTS() \
     do \
     { \
-        if (UEventBus* EventBus = GetGameInstance()->GetSubsystem<UEventBus>()) \
+        if (UEventBus* EventBus = Internal::GetEventBusFromContext(this)) \
         { \
             for (const FString& EventName : EventNames) EventBus->RemoveListener(FName(EventName), this); \
         } \
@@ -60,7 +60,7 @@
 #define UNSUBSCRIBE_FROM_EVENTS_RUNTIME(...) \
     do \
     { \
-        if (UEventBus* EventBus = GetGameInstance()->GetSubsystem<UEventBus>()) \
+        if (UEventBus* EventBus = Internal::GetEventBusFromContext(this)) \
         { \
             FString TempNames[] = {__VA_ARGS__}; \
             for (const FString& Name : TempNames) \

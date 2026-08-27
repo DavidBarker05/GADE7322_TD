@@ -3,6 +3,7 @@
 #include "Components/BoxComponent.h"
 #include "Events/EventBus.h"
 #include "TowerDefensePawns/Defenders/Defender.h"
+#include "TowerDefensePawns/TowerDefensePawnFactory.h"
 
 ADefenderSpot::ADefenderSpot()
 {
@@ -25,8 +26,8 @@ void ADefenderSpot::BeginPlay()
 
 void ADefenderSpot::EndPlay(const EEndPlayReason::Type EndPlayReason)
 {
-    Super::EndPlay(EndPlayReason);
     UNSUBSCRIBE_FROM_EVENTS();
+    Super::EndPlay(EndPlayReason);
 }
 
 void ADefenderSpot::OnEventReceived_Implementation(const FName& EventName, const TArray<FAny>& Params)
@@ -38,8 +39,15 @@ void ADefenderSpot::OnEventReceived_Implementation(const FName& EventName, const
             if (!IsValid(DeadPawn) || !IsValid(CurrentDefender)) return;
             if (!DeadPawn->IsA<ADefender>()) return;
             if (DeadPawn != CurrentDefender) return;
-            GetWorld()->DestroyActor(CurrentDefender); // Or maybe should play death animation? Works for now
-            CurrentDefender = nullptr;
+            CurrentDefender->OnDeath(
+                [this]() -> void
+                {
+                    if (TOWER_DEFENSE_PAWN_FACTORY_EXISTS)
+                    {
+                        DESTROY_PAWN(CurrentDefender);
+                        CurrentDefender = nullptr;
+                    }
+                });
         }
     }
 }
@@ -49,14 +57,20 @@ bool ADefenderSpot::IsOccupied() const { return IsValid(CurrentDefender); }
 void ADefenderSpot::PurchaseDefender(const TSubclassOf<ADefender>& DefenderBlueprint)
 {
     if (!IsValid(DefenderBlueprint) || IsValid(CurrentDefender)) return;
-    CurrentDefender = GetWorld()->SpawnActor<ADefender>(DefenderBlueprint, GetTransform());
-    BROADCAST_EVENT(TEXT("PurchaseEvent"), CurrentDefender->GetCost());
+    if (TOWER_DEFENSE_PAWN_FACTORY_EXISTS)
+    {
+        CurrentDefender = Cast<ADefender>(CREATE_PAWN(DefenderBlueprint, GetTransform()));
+        BROADCAST_EVENT(TEXT("PurchaseEvent"), CurrentDefender->GetCost());
+    }
 }
 
 void ADefenderSpot::SellDefender()
 {
     if (!IsValid(CurrentDefender)) return;
-    BROADCAST_EVENT(TEXT("SellEvent"), CurrentDefender->GetSellPrice());
-    GetWorld()->DestroyActor(CurrentDefender);
-    CurrentDefender = nullptr;
+    if (TOWER_DEFENSE_PAWN_FACTORY_EXISTS)
+    {
+        BROADCAST_EVENT(TEXT("SellEvent"), CurrentDefender->GetSellPrice());
+        DESTROY_PAWN(CurrentDefender);
+        CurrentDefender = nullptr;
+    }
 }

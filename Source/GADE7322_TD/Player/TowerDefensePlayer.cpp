@@ -7,7 +7,6 @@
 #include "GameFramework/FloatingPawnMovement.h"
 #include "InputActionValue.h"
 #include "Player/Components/CurrencyComponent.h"
-#include "TowerDefensePawns/Attackers/Attacker.h"
 #include "TowerDefensePawns/Defenders/DefenderSpot.h"
 #include "TowerDefensePawns/Tower/PlayerTower.h"
 #include "Widgets/SViewport.h"
@@ -29,8 +28,8 @@ void ATowerDefensePlayer::BeginPlay()
 
 void ATowerDefensePlayer::EndPlay(const EEndPlayReason::Type EndPlayReason)
 {
-    Super::EndPlay(EndPlayReason);
     UNSUBSCRIBE_FROM_EVENTS();
+    Super::EndPlay(EndPlayReason);
 }
 
 void ATowerDefensePlayer::Tick(float DeltaTime) { Super::Tick(DeltaTime); }
@@ -48,27 +47,8 @@ void ATowerDefensePlayer::SetupPlayerInputComponent(UInputComponent* PlayerInput
 
 void ATowerDefensePlayer::OnEventReceived_Implementation(const FName& EventName, const TArray<FAny>& Params)
 {
-    if (EVENT_MATCHES(TEXT("DeathEvent"), 1) && PARAMS_ARE_VALID && PARAMS_ARE_CORRECT_TYPES(ATowerDefensePawn))
-    {
-        if (const ATowerDefensePawn* DeadPawn = Params[0].Get<ATowerDefensePawn>())
-        {
-            if (!IsValid(DeadPawn)) return;
-            if (DeadPawn->IsA<APlayerTower>())
-            {
-                TD_LOG_INFO(TEXT("Player is dead"));
-            }
-            else if (const AAttacker* Attacker = Cast<AAttacker>(DeadPawn))
-            {
-                TD_LOG_INFO(TEXT("%s died. Earned %d currency"), *Attacker->GetPawnDisplayName().ToString(),
-                            Attacker->GetCurrencyOnDeath());
-                CurrencyComponent->IncreaseCurrency(Attacker->GetCurrencyOnDeath());
-            }
-        }
-    }
-    else if (EVENT_MATCHES(TEXT("PurchaseEvent"), 1) && PARAMS_ARE_VALID && PARAMS_ARE_CORRECT_TYPES(int32))
-        CurrencyComponent->DecreaseCurrency(*Params[0].Get<int32>());
-    else if (EVENT_MATCHES(TEXT("SellEvent"), 1) && PARAMS_ARE_VALID && PARAMS_ARE_CORRECT_TYPES(int32))
-        CurrencyComponent->IncreaseCurrency(*Params[0].Get<int32>());
+    if (EVENT_MATCHES(TEXT("DeathEvent"), 1) && PARAMS_ARE_VALID && PARAMS_ARE_CORRECT_TYPES(APlayerTower))
+        TD_LOG_INFO(TEXT("Player is dead"));
 }
 
 void ATowerDefensePlayer::Move(const FInputActionValue& Value)

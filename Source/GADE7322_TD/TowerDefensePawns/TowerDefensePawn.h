@@ -23,10 +23,14 @@ protected:
 public:
     virtual void Tick(float DeltaTime) override;
 
-    virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
-
 public:
     virtual void Attack(ATowerDefensePawn* Other);
+
+    virtual void OnDeath(TFunction<void()>&& Func);
+
+public:
+    UFUNCTION(BlueprintCallable)
+    void OnDeathComplete(); // If override for animation don't forget to set delegate
 
 public:
     const UHealthComponent* GetHealthComponent() const;
@@ -38,6 +42,10 @@ public:
     const FName& GetPawnDisplayName() const;
 
 protected:
+    // Stuff like hide mesh, etc.
+    virtual void DoOnDeathComplete() { }
+
+protected:
     UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components", meta = (AllowPrivateAccess = "true"))
     UHealthComponent* HealthComponent;
 
@@ -46,4 +54,6 @@ protected:
 
     UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Name", meta = (AllowPrivateAccess = "true"))
     FName PawnDisplayName = TEXT("TowerDefensePawn");
+
+    TFunction<void()> DestroyDelegate;
 };

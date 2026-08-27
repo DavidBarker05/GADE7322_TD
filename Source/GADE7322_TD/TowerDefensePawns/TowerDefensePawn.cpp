@@ -1,5 +1,6 @@
 #include "TowerDefensePawns/TowerDefensePawn.h"
 
+#include "EventListener.h"
 #include "TowerDefensePawns/Components/DamageComponent.h"
 #include "TowerDefensePawns/Components/HealthComponent.h"
 
@@ -14,14 +15,21 @@ void ATowerDefensePawn::BeginPlay() { Super::BeginPlay(); }
 
 void ATowerDefensePawn::Tick(float DeltaTime) { Super::Tick(DeltaTime); }
 
-void ATowerDefensePawn::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
-{
-    Super::SetupPlayerInputComponent(PlayerInputComponent);
-}
-
 void ATowerDefensePawn::Attack(ATowerDefensePawn* Other)
 {
     if (Other && IsValid(Other)) DamageComponent->DamageOther(Other->HealthComponent);
+}
+void ATowerDefensePawn::OnDeath(TFunction<void()>&& Func)
+{
+    DestroyDelegate = MoveTemp(Func);
+    OnDeathComplete();
+}
+
+void ATowerDefensePawn::OnDeathComplete()
+{
+    if (!DestroyDelegate) return;
+    DoOnDeathComplete();
+    DestroyDelegate();
 }
 
 const UHealthComponent* ATowerDefensePawn::GetHealthComponent() const { return HealthComponent; }
