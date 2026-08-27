@@ -2,7 +2,7 @@
 
 #include "CoreMinimal.h"
 
-#include "EventListener.h"
+#include "Events/EventListener.h"
 #include "GameFramework/Pawn.h"
 
 #include "TowerDefensePlayer.generated.h"

@@ -1,15 +1,15 @@
-#include "TowerDefensePlayer.h"
+#include "Player/TowerDefensePlayer.h"
 
 #include "Camera/CameraComponent.h"
-#include "CurrencyComponent.h"
 #include "CustomLog.h"
 #include "EnhancedInputComponent.h"
 #include "Framework/Application/SlateApplication.h"
 #include "GameFramework/FloatingPawnMovement.h"
 #include "InputActionValue.h"
-#include "Pawns/EnemyTroop.h"
-#include "Pawns/PlayerPawns/DefenderSpot.h"
-#include "Pawns/PlayerTower.h"
+#include "Player/Components/CurrencyComponent.h"
+#include "TowerDefensePawns/Attackers/Attacker.h"
+#include "TowerDefensePawns/Defenders/DefenderSpot.h"
+#include "TowerDefensePawns/Tower/PlayerTower.h"
 #include "Widgets/SViewport.h"
 
 ATowerDefensePlayer::ATowerDefensePlayer()
@@ -48,7 +48,7 @@ void ATowerDefensePlayer::SetupPlayerInputComponent(UInputComponent* PlayerInput
 
 void ATowerDefensePlayer::OnEventReceived_Implementation(const FName& EventName, const TArray<FAny>& Params)
 {
-    if (EVENT_MATCHES(TEXT("DeathEvent"), 1) && PARAMS_ARE_VALID && PARAMS_ARE_CORRECT_TYPES(AActor))
+    if (EVENT_MATCHES(TEXT("DeathEvent"), 1) && PARAMS_ARE_VALID && PARAMS_ARE_CORRECT_TYPES(ATowerDefensePawn))
     {
         if (const ATowerDefensePawn* DeadPawn = Params[0].Get<ATowerDefensePawn>())
         {
@@ -57,11 +57,11 @@ void ATowerDefensePlayer::OnEventReceived_Implementation(const FName& EventName,
             {
                 TD_LOG_INFO(TEXT("Player is dead"));
             }
-            else if (const AEnemyTroop* EnemyTroop = Cast<AEnemyTroop>(DeadPawn))
+            else if (const AAttacker* Attacker = Cast<AAttacker>(DeadPawn))
             {
-                TD_LOG_INFO(TEXT("%s died. Earned %d currency"), *EnemyTroop->GetPawnDisplayName().ToString(),
-                            EnemyTroop->GetCurrencyOnDeath());
-                CurrencyComponent->IncreaseCurrency(EnemyTroop->GetCurrencyOnDeath());
+                TD_LOG_INFO(TEXT("%s died. Earned %d currency"), *Attacker->GetPawnDisplayName().ToString(),
+                            Attacker->GetCurrencyOnDeath());
+                CurrencyComponent->IncreaseCurrency(Attacker->GetCurrencyOnDeath());
             }
         }
     }

@@ -1,4 +1,4 @@
-#include "Pawns/PlayerTower.h"
+#include "TowerDefensePawns/Tower/PlayerTower.h"
 
 APlayerTower::APlayerTower()
 {

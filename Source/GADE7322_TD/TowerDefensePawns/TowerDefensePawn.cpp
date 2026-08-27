@@ -1,7 +1,7 @@
-#include "Pawns/TowerDefensePawn.h"
+#include "TowerDefensePawns/TowerDefensePawn.h"
 
-#include "DamageComponent.h"
-#include "HealthComponent.h"
+#include "TowerDefensePawns/Components/DamageComponent.h"
+#include "TowerDefensePawns/Components/HealthComponent.h"
 
 ATowerDefensePawn::ATowerDefensePawn()
 {

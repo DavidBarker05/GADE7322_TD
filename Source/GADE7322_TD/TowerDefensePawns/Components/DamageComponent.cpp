@@ -1,6 +1,6 @@
-#include "DamageComponent.h"
+#include "TowerDefensePawns/Components/DamageComponent.h"
 
-#include "HealthComponent.h"
+#include "TowerDefensePawns/Components/HealthComponent.h"
 
 UDamageComponent::UDamageComponent() { PrimaryComponentTick.bCanEverTick = false; }
 

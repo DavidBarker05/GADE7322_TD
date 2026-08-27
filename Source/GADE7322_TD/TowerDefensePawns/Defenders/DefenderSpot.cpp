@@ -1,8 +1,8 @@
-#include "Pawns/PlayerPawns/DefenderSpot.h"
+#include "TowerDefensePawns/Defenders/DefenderSpot.h"
 
 #include "Components/BoxComponent.h"
 #include "Events/EventBus.h"
-#include "Pawns/PlayerTroop.h"
+#include "TowerDefensePawns/Defenders/Defender.h"
 
 ADefenderSpot::ADefenderSpot()
 {
@@ -31,12 +31,12 @@ void ADefenderSpot::EndPlay(const EEndPlayReason::Type EndPlayReason)
 
 void ADefenderSpot::OnEventReceived_Implementation(const FName& EventName, const TArray<FAny>& Params)
 {
-    if (EVENT_MATCHES(TEXT("DeathEvent"), 1) && PARAMS_ARE_VALID && PARAMS_ARE_CORRECT_TYPES(AActor))
+    if (EVENT_MATCHES(TEXT("DeathEvent"), 1) && PARAMS_ARE_VALID && PARAMS_ARE_CORRECT_TYPES(ATowerDefensePawn))
     {
         if (const ATowerDefensePawn* DeadPawn = Params[0].Get<ATowerDefensePawn>())
         {
             if (!IsValid(DeadPawn) || !IsValid(CurrentDefender)) return;
-            if (!DeadPawn->IsA<APlayerTroop>()) return;
+            if (!DeadPawn->IsA<ADefender>()) return;
             if (DeadPawn != CurrentDefender) return;
             GetWorld()->DestroyActor(CurrentDefender); // Or maybe should play death animation? Works for now
             CurrentDefender = nullptr;
@@ -46,10 +46,10 @@ void ADefenderSpot::OnEventReceived_Implementation(const FName& EventName, const
 
 bool ADefenderSpot::IsOccupied() const { return IsValid(CurrentDefender); }
 
-void ADefenderSpot::PurchaseDefender(const TSubclassOf<APlayerTroop>& DefenderBlueprint)
+void ADefenderSpot::PurchaseDefender(const TSubclassOf<ADefender>& DefenderBlueprint)
 {
     if (!IsValid(DefenderBlueprint) || IsValid(CurrentDefender)) return;
-    CurrentDefender = GetWorld()->SpawnActor<APlayerTroop>(DefenderBlueprint, GetTransform());
+    CurrentDefender = GetWorld()->SpawnActor<ADefender>(DefenderBlueprint, GetTransform());
     BROADCAST_EVENT(TEXT("PurchaseEvent"), CurrentDefender->GetCost());
 }
 

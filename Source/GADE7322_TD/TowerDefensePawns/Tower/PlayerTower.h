@@ -2,7 +2,7 @@
 
 #include "CoreMinimal.h"
 
-#include "Pawns/TowerDefensePawn.h"
+#include "TowerDefensePawns/TowerDefensePawn.h"
 
 #include "PlayerTower.generated.h"
 

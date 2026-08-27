@@ -25,9 +25,16 @@ public class GADE7322_TD : ModuleRules
 			"GADE7322_TD",
 			"GADE7322_TD/Any",
 			"GADE7322_TD/Events",
-			"GADE7322_TD/Pawns",
-			"GADE7322_TD/Pawns/PlayerPawns",
-		    "GADE7322_TD/ProceduralGen"
+			"GADE7322_TD/Player",
+			"GADE7322_TD/Player/Components",
+			"GADE7322_TD/ProceduralGen",
+			"GADE7322_TD/TowerDefensePawns",
+			"GADE7322_TD/TowerDefensePawns/Attackers",
+			"GADE7322_TD/TowerDefensePawns/Attackers/Skeleton",
+			"GADE7322_TD/TowerDefensePawns/Components",
+			"GADE7322_TD/TowerDefensePawns/Defenders",
+			"GADE7322_TD/TowerDefensePawns/Defenders/Warrior",
+			"GADE7322_TD/TowerDefensePawns/Tower"
 		});
 
 		// Uncomment if you are using online features

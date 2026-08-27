@@ -2,8 +2,8 @@
 
 #include "DrawDebugHelpers.h"
 #include "KismetProceduralMeshLibrary.h"
-#include "Pawns/PlayerPawns/DefenderSpot.h"
 #include "ProceduralMeshComponent.h"
+#include "TowerDefensePawns/Defenders/DefenderSpot.h"
 
 AProceduralTerrainGen::AProceduralTerrainGen()
 {

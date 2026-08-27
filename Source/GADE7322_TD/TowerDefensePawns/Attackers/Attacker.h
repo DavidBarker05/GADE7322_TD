@@ -2,17 +2,17 @@
 
 #include "CoreMinimal.h"
 
-#include "Pawns/TowerDefensePawn.h"
+#include "TowerDefensePawns/TowerDefensePawn.h"
 
-#include "EnemyTroop.generated.h"
+#include "Attacker.generated.h"
 
 UCLASS(Abstract)
-class GADE7322_TD_API AEnemyTroop : public ATowerDefensePawn
+class GADE7322_TD_API AAttacker : public ATowerDefensePawn
 {
     GENERATED_BODY()
 
 public:
-    AEnemyTroop();
+    AAttacker();
 
 public:
     int32 GetCurrencyOnDeath() const;

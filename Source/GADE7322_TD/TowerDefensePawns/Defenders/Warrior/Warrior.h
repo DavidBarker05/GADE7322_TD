@@ -2,7 +2,7 @@
 
 #include "CoreMinimal.h"
 
-#include "Pawns/PlayerTroop.h"
+#include "TowerDefensePawns/Defenders/Defender.h"
 
 #include "Warrior.generated.h"
 
@@ -10,7 +10,7 @@ class USkeletalMesh;
 class UStaticMeshComponent;
 
 UCLASS(Abstract)
-class GADE7322_TD_API AWarrior : public APlayerTroop
+class GADE7322_TD_API AWarrior : public ADefender
 {
     GENERATED_BODY()
 

@@ -1,6 +1,6 @@
-#include "HealthComponent.h"
+#include "TowerDefensePawns/Components/HealthComponent.h"
 
-#include "EventBus.h"
+#include "Events/EventBus.h"
 
 UHealthComponent::UHealthComponent() { PrimaryComponentTick.bCanEverTick = false; }
 

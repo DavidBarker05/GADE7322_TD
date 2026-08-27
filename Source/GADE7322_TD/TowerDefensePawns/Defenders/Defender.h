@@ -2,17 +2,17 @@
 
 #include "CoreMinimal.h"
 
-#include "Pawns/TowerDefensePawn.h"
+#include "TowerDefensePawns/TowerDefensePawn.h"
 
-#include "PlayerTroop.generated.h"
+#include "Defender.generated.h"
 
 UCLASS(Abstract)
-class GADE7322_TD_API APlayerTroop : public ATowerDefensePawn
+class GADE7322_TD_API ADefender : public ATowerDefensePawn
 {
     GENERATED_BODY()
 
 public:
-    APlayerTroop();
+    ADefender();
 
 public:
     int32 GetCost() const { return Cost; }

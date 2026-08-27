@@ -7,7 +7,7 @@
 
 #include "DefenderSpot.generated.h"
 
-class APlayerTroop;
+class ADefender;
 class UBoxComponent;
 
 UCLASS(Abstract)
@@ -34,11 +34,11 @@ public:
     UFUNCTION(BlueprintPure, Category = "Defender")
     bool IsOccupied() const;
 
-    const APlayerTroop* GetCurrentDefender() const { return CurrentDefender; }
-    APlayerTroop* GetCurrentDefender() { return CurrentDefender; }
+    const ADefender* GetCurrentDefender() const { return CurrentDefender; }
+    ADefender* GetCurrentDefender() { return CurrentDefender; }
 
     UFUNCTION(BlueprintCallable, Category = "Defender")
-    void PurchaseDefender(const TSubclassOf<APlayerTroop>& DefenderBlueprint);
+    void PurchaseDefender(const TSubclassOf<ADefender>& DefenderBlueprint);
 
     UFUNCTION(BlueprintCallable, Category = "Defender")
     void SellDefender();
@@ -49,7 +49,7 @@ private:
 
 private:
     UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Defender", meta = (AllowPrivateAccess = "true"))
-    APlayerTroop* CurrentDefender = nullptr;
+    ADefender* CurrentDefender = nullptr;
 
     UPROPERTY(EditDefaultsOnly, Category = "Collision", meta = (AllowPrivateAccess = "true"))
     FVector ColliderHalfExtents {50.0f, 50.0f, 50.0f};

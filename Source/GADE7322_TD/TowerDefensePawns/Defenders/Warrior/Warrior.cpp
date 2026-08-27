@@ -1,4 +1,4 @@
-#include "Pawns/PlayerPawns/Warrior.h"
+#include "TowerDefensePawns/Defenders/Warrior/Warrior.h"
 
 AWarrior::AWarrior()
 {
