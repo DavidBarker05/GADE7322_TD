@@ -14,10 +14,11 @@ public class GADE7322_TD : ModuleRules
 			"CoreUObject",
 			"Engine",
 			"InputCore",
-			"EnhancedInput"
+			"EnhancedInput",
+			"ProceduralMeshComponent"
 		});
 
-		PrivateDependencyModuleNames.AddRange(new string[] { });
+		PrivateDependencyModuleNames.AddRange(new string[] { "Slate", "SlateCore" });
 
 		PublicIncludePaths.AddRange(new string[]
 		{
@@ -28,9 +29,6 @@ public class GADE7322_TD : ModuleRules
 			"GADE7322_TD/Pawns/PlayerPawns",
 		    "GADE7322_TD/ProceduralGen"
 		});
-
-		// Uncomment if you are using Slate UI
-		// PrivateDependencyModuleNames.AddRange(new string[] { "Slate", "SlateCore" });
 
 		// Uncomment if you are using online features
 		// PrivateDependencyModuleNames.Add("OnlineSubsystem");

@@ -7,6 +7,10 @@
 
 #include "ProceduralTerrainGen.generated.h"
 
+class UProceduralMeshComponent;
+class UMaterialInterface;
+class ADefenderSpot;
+
 USTRUCT(BlueprintType)
 struct FTerrainPath
 {
@@ -33,12 +37,31 @@ protected:
     virtual void BeginPlay() override;
 
 public:
-    // (Re)generates the enemy pathways. Safe to call again to reroll layout.
+    // (Re)generates the enemy pathways
     UFUNCTION(BlueprintCallable, Category = "Terrain Generation")
     void GeneratePaths();
 
     UFUNCTION(BlueprintPure, Category = "Terrain Generation")
     const TArray<FTerrainPath>& GetPaths() const { return Paths; }
+
+    // Builds the terrain mesh, flattening a corridor around each generated path
+    UFUNCTION(BlueprintCallable, Category = "Terrain Generation")
+    void GenerateTerrain();
+
+    // Samples the terrain height (Z) at a given world X/Y, using the same heightfield the mesh was built from
+    UFUNCTION(BlueprintPure, Category = "Terrain Generation")
+    float GetTerrainHeight(const FVector2D& WorldXY) const;
+
+    // Spawns defender placement spots along both sides of every path, clear of the walkable corridors
+    UFUNCTION(BlueprintCallable, Category = "Defender Spots")
+    void GenerateDefenderSpots();
+
+    UFUNCTION(BlueprintPure, Category = "Defender Spots")
+    const TArray<ADefenderSpot*>& GetDefenderSpots() const { return DefenderSpots; }
+
+protected:
+    UPROPERTY(VisibleAnywhere, Category = "Components")
+    TObjectPtr<UProceduralMeshComponent> TerrainMesh;
 
 protected:
     // Radius of the terrain from the tower (0,0) out to the edge spawn points
@@ -56,7 +79,7 @@ protected:
     UPROPERTY(EditAnywhere, Category = "Terrain Generation", meta = (ClampMin = "0.0"))
     float PathWanderAmount = 900.0f;
 
-    // How rapidly the wander offset changes along the path. Higher = wigglier
+    // How rapidly the wander offset changes along the path (higher = wigglier)
     UPROPERTY(EditAnywhere, Category = "Terrain Generation", meta = (ClampMin = "0.01"))
     float PathWanderFrequency = 0.6f;
 
@@ -81,6 +104,60 @@ protected:
     UPROPERTY(EditAnywhere, Category = "Terrain Generation|Debug", meta = (EditCondition = "bDrawDebugPaths"))
     float DebugDrawDuration = 30.0f;
 
+protected:
+    // World units per grid cell (smaller = denser mesh/more triangles)
+    UPROPERTY(EditAnywhere, Category = "Terrain Mesh", meta = (ClampMin = "50.0"))
+    float CellSize = 200.0f;
+
+    // World units of vertical relief added by noise, before path flattening
+    UPROPERTY(EditAnywhere, Category = "Terrain Mesh", meta = (ClampMin = "0.0"))
+    float HeightAmplitude = 600.0f;
+
+    // Larger = more gradual hills (lower frequency noise)
+    UPROPERTY(EditAnywhere, Category = "Terrain Mesh", meta = (ClampMin = "100.0"))
+    float NoiseWavelength = 2500.0f;
+
+    // Number of fractal noise layers combined together (higher = rougher/more detailed terrain)
+    UPROPERTY(EditAnywhere, Category = "Terrain Mesh", meta = (ClampMin = "1", ClampMax = "6"))
+    int32 NoiseOctaves = 4;
+
+    // Extra distance beyond each path's Width over which terrain blends from flat back up to full noise height
+    UPROPERTY(EditAnywhere, Category = "Terrain Mesh", meta = (ClampMin = "0.0"))
+    float PathBlendWidth = 400.0f;
+
+    // World Z of the flat ground along paths
+    UPROPERTY(EditAnywhere, Category = "Terrain Mesh")
+    float PathHeight = 0.0f;
+
+    UPROPERTY(EditAnywhere, Category = "Terrain Mesh")
+    TObjectPtr<UMaterialInterface> TerrainMaterial;
+
+protected:
+    UPROPERTY(EditAnywhere, Category = "Defender Spots")
+    TSubclassOf<ADefenderSpot> DefenderSpotClass;
+
+    // Arc-length distance walked along a path between candidate spot positions
+    UPROPERTY(EditAnywhere, Category = "Defender Spots", meta = (ClampMin = "50.0"))
+    float DefenderSpotSpacing = 500.0f;
+
+    // Extra clearance beyond the path's flattened corridor edge before placing a spot
+    UPROPERTY(EditAnywhere, Category = "Defender Spots", meta = (ClampMin = "0.0"))
+    float DefenderSpotOffset = 150.0f;
+
+    // Minimum distance enforced between two spots so their colliders never overlap
+    UPROPERTY(EditAnywhere, Category = "Defender Spots", meta = (ClampMin = "0.0"))
+    float DefenderSpotMinSeparation = 300.0f;
+
+    UPROPERTY(EditAnywhere, Category = "Terrain Generation|Debug")
+    bool bDrawDebugDefenderSpots = true;
+
+private:
+    // Fractal (multi-octave) Perlin height sample at a world X/Y, before any path flattening
+    float SampleNoiseHeight(const FVector2D& WorldXY) const;
+
+    // Signed distance from Point to the nearest path corridor's edge
+    float DistanceToNearestPathEdge(const FVector2D& Point) const;
+
 private:
     // Picks NumPaths angles around the circle, evenly spaced then jittered, respecting MinEntryAngleSeparation
     TArray<float> GenerateEntryAngles(FRandomStream& Stream) const;
@@ -89,7 +166,15 @@ private:
 
     void DrawDebugForPaths() const;
 
+    // Spawns a spot at CandidateLocation if it clears every path corridor and every previously placed spot
+    void TrySpawnDefenderSpot(const FVector& CandidateLocation, TArray<FVector>& PlacedLocations);
+
+    void DrawDebugForDefenderSpots() const;
+
 private:
     UPROPERTY(BlueprintReadOnly, Category = "Terrain Generation", meta = (AllowPrivateAccess = "true"))
     TArray<FTerrainPath> Paths;
+
+    UPROPERTY(BlueprintReadOnly, Category = "Defender Spots", meta = (AllowPrivateAccess = "true"))
+    TArray<ADefenderSpot*> DefenderSpots;
 };

@@ -8,6 +8,7 @@
 #include "TowerDefensePlayer.generated.h"
 
 class UCameraComponent;
+class UCurrencyComponent;
 class UFloatingPawnMovement;
 class UInputComponent;
 class UInputAction;
@@ -19,7 +20,7 @@ class GADE7322_TD_API ATowerDefensePlayer : public APawn,
 {
     GENERATED_BODY()
 
-    EVENTS_TO_LISTEN_TO(TEXT("DeathEvent"))
+    EVENTS_TO_LISTEN_TO(TEXT("DeathEvent"), TEXT("PurchaseEvent"), TEXT("SellEvent"))
 
 public:
     ATowerDefensePlayer();
@@ -36,14 +37,23 @@ public:
 
 public:
     UFUNCTION(BlueprintCallable)
-    virtual void OnEventReceived_Implementation(FName EventName, const TArray<FAny>& Params) override;
+    virtual void OnEventReceived_Implementation(const FName& EventName, const TArray<FAny>& Params) override;
 
 public:
     void Move(const FInputActionValue& Value);
 
+    void DoMouseClick();
+
+private:
+    // True if the cursor is currently over a hit-testable UMG widget rather than the game viewport.
+    bool IsMouseOverUI(const APlayerController* PlayerController) const;
+
 protected:
     UPROPERTY(EditAnywhere, Category = "Input")
     UInputAction* MoveAction;
+
+    UPROPERTY(EditAnywhere, Category = "Input")
+    UInputAction* MouseClickAction;
 
 private:
     UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components", meta = (AllowPrivateAccess = "true"))
@@ -52,10 +62,6 @@ private:
     UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components", meta = (AllowPrivateAccess = "true"))
     UCameraComponent* CameraComponent;
 
-    UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Currency",
-              meta = (AllowPrivateAccess = "true", ClampMin = "0", UIMin = "0"))
-    int32 StartingCurrency = 0;
-
-    UPROPERTY(BlueprintReadOnly, Category = "Currency", meta = (AllowPrivateAccess = "true"))
-    int32 CurrentCurrency = 0;
+    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components", meta = (AllowPrivateAccess = "true"))
+    UCurrencyComponent* CurrencyComponent;
 };

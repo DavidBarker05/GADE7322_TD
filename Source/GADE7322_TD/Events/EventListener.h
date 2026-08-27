@@ -117,5 +117,5 @@ class GADE7322_TD_API IEventListener
 
 public:
     UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
-    void OnEventReceived(FName EventName, const TArray<FAny>& Params);
+    void OnEventReceived(const FName& EventName, const TArray<FAny>& Params);
 };

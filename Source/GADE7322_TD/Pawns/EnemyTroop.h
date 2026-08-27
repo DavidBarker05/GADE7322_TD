@@ -6,7 +6,7 @@
 
 #include "EnemyTroop.generated.h"
 
-UCLASS()
+UCLASS(Abstract)
 class GADE7322_TD_API AEnemyTroop : public ATowerDefensePawn
 {
     GENERATED_BODY()

@@ -1,13 +1,16 @@
 #include "TowerDefensePlayer.h"
 
 #include "Camera/CameraComponent.h"
+#include "CurrencyComponent.h"
 #include "CustomLog.h"
 #include "EnhancedInputComponent.h"
+#include "Framework/Application/SlateApplication.h"
 #include "GameFramework/FloatingPawnMovement.h"
 #include "InputActionValue.h"
 #include "Pawns/EnemyTroop.h"
+#include "Pawns/PlayerPawns/DefenderSpot.h"
 #include "Pawns/PlayerTower.h"
-#include "PlayerTroop.h"
+#include "Widgets/SViewport.h"
 
 ATowerDefensePlayer::ATowerDefensePlayer()
 {
@@ -15,13 +18,13 @@ ATowerDefensePlayer::ATowerDefensePlayer()
     FloatingPawnMovement = CreateDefaultSubobject<UFloatingPawnMovement>(TEXT("Floating Pawn Movement"));
     CameraComponent = CreateDefaultSubobject<UCameraComponent>(TEXT("Camera"));
     CameraComponent->SetupAttachment(RootComponent);
+    CurrencyComponent = CreateDefaultSubobject<UCurrencyComponent>(TEXT("Currency Component"));
 }
 
 void ATowerDefensePlayer::BeginPlay()
 {
     Super::BeginPlay();
     SUBSCRIBE_TO_EVENTS();
-    CurrentCurrency = StartingCurrency;
 }
 
 void ATowerDefensePlayer::EndPlay(const EEndPlayReason::Type EndPlayReason)
@@ -38,10 +41,12 @@ void ATowerDefensePlayer::SetupPlayerInputComponent(UInputComponent* PlayerInput
     if (UEnhancedInputComponent* EnhancedInputComponent = Cast<UEnhancedInputComponent>(PlayerInputComponent))
     {
         EnhancedInputComponent->BindAction(MoveAction, ETriggerEvent::Triggered, this, &ATowerDefensePlayer::Move);
+        EnhancedInputComponent->BindAction(MouseClickAction, ETriggerEvent::Started, this,
+                                           &ATowerDefensePlayer::DoMouseClick);
     }
 }
 
-void ATowerDefensePlayer::OnEventReceived_Implementation(FName EventName, const TArray<FAny>& Params)
+void ATowerDefensePlayer::OnEventReceived_Implementation(const FName& EventName, const TArray<FAny>& Params)
 {
     if (EVENT_MATCHES(TEXT("DeathEvent"), 1) && PARAMS_ARE_VALID && PARAMS_ARE_CORRECT_TYPES(AActor))
     {
@@ -52,18 +57,18 @@ void ATowerDefensePlayer::OnEventReceived_Implementation(FName EventName, const 
             {
                 TD_LOG_INFO(TEXT("Player is dead"));
             }
-            else if (DeadPawn->IsA<APlayerTroop>())
-            {
-                TD_LOG_INFO(TEXT("%s died"), *DeadPawn->GetPawnDisplayName().ToString());
-            }
             else if (const AEnemyTroop* EnemyTroop = Cast<AEnemyTroop>(DeadPawn))
             {
                 TD_LOG_INFO(TEXT("%s died. Earned %d currency"), *EnemyTroop->GetPawnDisplayName().ToString(),
                             EnemyTroop->GetCurrencyOnDeath());
-                CurrentCurrency += EnemyTroop->GetCurrencyOnDeath();
+                CurrencyComponent->IncreaseCurrency(EnemyTroop->GetCurrencyOnDeath());
             }
         }
     }
+    else if (EVENT_MATCHES(TEXT("PurchaseEvent"), 1) && PARAMS_ARE_VALID && PARAMS_ARE_CORRECT_TYPES(int32))
+        CurrencyComponent->DecreaseCurrency(*Params[0].Get<int32>());
+    else if (EVENT_MATCHES(TEXT("SellEvent"), 1) && PARAMS_ARE_VALID && PARAMS_ARE_CORRECT_TYPES(int32))
+        CurrencyComponent->IncreaseCurrency(*Params[0].Get<int32>());
 }
 
 void ATowerDefensePlayer::Move(const FInputActionValue& Value)
@@ -72,4 +77,38 @@ void ATowerDefensePlayer::Move(const FInputActionValue& Value)
     FVector RightVector = GetActorRightVector() * MovementVector.X;
     FVector ForwardVector = GetActorForwardVector() * MovementVector.Y;
     FloatingPawnMovement->AddInputVector(RightVector + ForwardVector);
+}
+
+bool ATowerDefensePlayer::IsMouseOverUI(const APlayerController* PlayerController) const
+{
+    if (!PlayerController || !FSlateApplication::IsInitialized() || !GEngine || !GEngine->GameViewport) return false;
+
+    float MouseX, MouseY;
+    if (!PlayerController->GetMousePosition(MouseX, MouseY)) return false;
+
+    const TSharedPtr<SViewport> GameViewportWidget = GEngine->GameViewport->GetGameViewportWidget();
+    if (!GameViewportWidget.IsValid()) return false;
+
+    const FWidgetPath WidgetPath = FSlateApplication::Get().LocateWindowUnderMouse(
+        FVector2D(MouseX, MouseY), FSlateApplication::Get().GetInteractiveTopLevelWindows());
+
+    return WidgetPath.IsValid() && WidgetPath.GetLastWidget() != GameViewportWidget;
+}
+
+void ATowerDefensePlayer::DoMouseClick()
+{
+    if (const APlayerController* PlayerController = Cast<APlayerController>(GetController()))
+    {
+        if (IsMouseOverUI(PlayerController)) return;
+
+        FHitResult HitResult;
+        if (!PlayerController->GetHitResultUnderCursorByChannel(UEngineTypes::ConvertToTraceType(ECC_GameTraceChannel1),
+                                                                true, HitResult))
+            return;
+
+        if (ADefenderSpot* DefenderSpot = Cast<ADefenderSpot>(HitResult.GetActor()))
+        {
+            TD_LOG_INFO(TEXT("Clicked on spot"));
+        }
+    }
 }
