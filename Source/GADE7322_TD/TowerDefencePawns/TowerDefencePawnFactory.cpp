@@ -17,14 +17,11 @@ ATowerDefencePawn* UTowerDefencePawnFactory::CreatePawn(const TSubclassOf<ATower
     if (!IsValid(TowerDefencePawnBlueprint)) return nullptr;
     if (!AvailablePawns.Contains(TowerDefencePawnBlueprint)) CreatePool(TowerDefencePawnBlueprint);
     ATowerDefencePawn** PawnPtr = AvailablePawns[TowerDefencePawnBlueprint].FindArbitraryElement();
-    ATowerDefencePawn* Pawn =
-        PawnPtr ? *PawnPtr : GetWorld()->SpawnActor<ATowerDefencePawn>(TowerDefencePawnBlueprint, SpawnTransform);
+    ATowerDefencePawn* Pawn = PawnPtr ? *PawnPtr : GetWorld()->SpawnActor<ATowerDefencePawn>(TowerDefencePawnBlueprint);
     UnavailablePawns[TowerDefencePawnBlueprint].Emplace(Pawn);
-    if (PawnPtr)
-    {
-        Pawn->SetActorTransform(SpawnTransform, false, nullptr, ETeleportType::ResetPhysics);
-        AvailablePawns[TowerDefencePawnBlueprint].Remove(Pawn);
-    }
+    if (PawnPtr) AvailablePawns[TowerDefencePawnBlueprint].Remove(Pawn);
+    Pawn->SetActorLocationAndRotation(SpawnTransform.GetLocation(), SpawnTransform.GetRotation(), false, nullptr,
+                                      ETeleportType::ResetPhysics);
     return Pawn;
 }
 
@@ -47,5 +44,5 @@ void UTowerDefencePawnFactory::CreatePool(const TSubclassOf<ATowerDefencePawn>& 
             GetWorld()->SpawnActor<ATowerDefencePawn>(TowerDefencePawnBlueprint));
     }
     UnavailablePawns.Add(TowerDefencePawnBlueprint);
-    UnavailablePawns.Reserve(StartingPoolSize);
+    UnavailablePawns[TowerDefencePawnBlueprint].Reserve(StartingPoolSize);
 }
