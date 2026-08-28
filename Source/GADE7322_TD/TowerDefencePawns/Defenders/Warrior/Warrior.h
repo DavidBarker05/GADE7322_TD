@@ -6,6 +6,7 @@
 
 #include "Warrior.generated.h"
 
+class UAnimInstance;
 class USkeletalMesh;
 class USkeletalMeshComponent;
 
@@ -35,8 +36,14 @@ private:
     UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Mesh", meta = (AllowPrivateAccess = "true"))
     USkeletalMesh* MaleMesh = nullptr;
 
+    UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Animation", meta = (AllowPrivateAccess = "true"))
+    TSubclassOf<UAnimInstance> MaleAnimationBlueprint;
+
     UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Mesh", meta = (AllowPrivateAccess = "true"))
     USkeletalMesh* FemaleMesh = nullptr;
+
+    UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Animation", meta = (AllowPrivateAccess = "true"))
+    TSubclassOf<UAnimInstance> FemaleAnimationBlueprint;
 
     UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components", meta = (AllowPrivateAccess = "true"))
     USkeletalMeshComponent* SkeletalMesh = nullptr;

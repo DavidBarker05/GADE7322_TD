@@ -13,6 +13,7 @@ void AWarrior::BeginPlay()
     // Gender randomisation wasn't working in constructor :(
     bIsFemale = FMath::RandBool();
     SkeletalMesh->SetSkeletalMesh(bIsFemale ? FemaleMesh : MaleMesh);
+    SkeletalMesh->SetAnimClass(bIsFemale ? FemaleAnimationBlueprint : MaleAnimationBlueprint);
 }
 
 const USkeletalMesh* AWarrior::GetMaleMesh() const { return MaleMesh; }
