@@ -45,6 +45,7 @@ void ADefenderSpot::OnEventReceived_Implementation(const FName& EventName, const
                     if (TOWER_DEFENSE_PAWN_FACTORY_EXISTS)
                     {
                         DESTROY_PAWN(CurrentDefender);
+                        CurrentDefender->SetPawnActive(false);
                         CurrentDefender = nullptr;
                     }
                 });

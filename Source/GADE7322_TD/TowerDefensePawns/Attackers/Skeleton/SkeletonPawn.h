@@ -20,9 +20,7 @@ public:
     virtual void BeginPlay() override;
 
 protected:
-    virtual void DoOnSetActive() override;
-
-    virtual void DoOnDeathComplete() override;
+    virtual void DoOnSetActive(bool bActive) override;
 
 public:
     USkeletalMeshComponent* GetSkeletalMesh() { return SkeletalMesh; }

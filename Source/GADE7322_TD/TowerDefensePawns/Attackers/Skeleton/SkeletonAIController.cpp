@@ -3,24 +3,21 @@
 #include "Components/StateTreeAIComponent.h"
 #include "Perception/AIPerceptionComponent.h"
 #include "Perception/AIPerceptionTypes.h"
-#include "Perception/AISenseConfig_Sight.h"
 #include "PlayerTower.h"
 #include "TowerDefensePawns/Attackers/Skeleton/SkeletonPawn.h"
+#include "TowerDefensePawns/ProximityPerception/AISenseConfig_Proximity.h"
 
 ASkeletonAIController::ASkeletonAIController()
 {
     PrimaryActorTick.bCanEverTick = true;
     PerceptionComponent = CreateDefaultSubobject<UAIPerceptionComponent>(TEXT("Perception Component"));
-    SightConfig = CreateDefaultSubobject<UAISenseConfig_Sight>(TEXT("Sight Config"));
-    SightConfig->SightRadius = 500.0f;
-    SightConfig->LoseSightRadius = 750.f;
-    SightConfig->PeripheralVisionAngleDegrees = 180.0f;
-    SightConfig->SetMaxAge(0.0f);
-    SightConfig->DetectionByAffiliation.bDetectEnemies = true;
-    SightConfig->DetectionByAffiliation.bDetectNeutrals = false;
-    SightConfig->DetectionByAffiliation.bDetectFriendlies = false;
-    PerceptionComponent->ConfigureSense(*SightConfig);
-    PerceptionComponent->SetDominantSense(SightConfig->GetSenseImplementation());
+    ProximityConfig = CreateDefaultSubobject<UAISenseConfig_Proximity>(TEXT("Proximity Config"));
+    ProximityConfig->DetectionRadius = 500.0f;
+    ProximityConfig->DetectionByAffiliation.bDetectEnemies = true;
+    ProximityConfig->DetectionByAffiliation.bDetectNeutrals = false;
+    ProximityConfig->DetectionByAffiliation.bDetectFriendlies = false;
+    PerceptionComponent->ConfigureSense(*ProximityConfig);
+    PerceptionComponent->SetDominantSense(ProximityConfig->GetSenseImplementation());
     StateTree = CreateDefaultSubobject<UStateTreeAIComponent>(TEXT("State Tree"));
     PerceptionComponent->OnTargetPerceptionUpdated.AddDynamic(this, &ASkeletonAIController::OnTargetPerceptionUpdated);
     PerceptionComponent->SetActive(false);
@@ -33,10 +30,11 @@ void ASkeletonAIController::Tick(float DeltaTime)
     if (ASkeletonPawn* SKPawn = GetSkeletonPawn())
     {
         if (!SKPawn->IsPawnActive()) return;
-        if (IsValid(SKPawn->GetAttackTarget()) &&
-            (SKPawn->GetAttackTarget()->IsA<APlayerTower>() ||
-             FVector::Dist2D(SKPawn->GetActorLocation(), SKPawn->GetAttackTarget()->GetActorLocation()) <=
-                 SKPawn->GetAttackRadius() + KINDA_SMALL_NUMBER))
+        const ATowerDefensePawn* AttackTarget = SKPawn->GetAttackTarget();
+        if (IsValid(AttackTarget) && (AttackTarget->IsA<APlayerTower>() ||
+                                      FVector::Dist2D(SKPawn->GetActorLocation(), AttackTarget->GetActorLocation()) -
+                                              AttackTarget->GetOccupiedRadius() <=
+                                          SKPawn->GetAttackRadius() + KINDA_SMALL_NUMBER))
             return;
         if (TimeSinceLastVisionUpdate < 1.0f / VisionUpdateFrequency + KINDA_SMALL_NUMBER)
         {
@@ -45,17 +43,22 @@ void ASkeletonAIController::Tick(float DeltaTime)
         }
         TimeSinceLastVisionUpdate = 0.0f;
         const ATowerDefensePawn* Closest = nullptr;
+        float ClosestDist = TNumericLimits<float>::Max();
+        const FVector PawnLoc = SKPawn->GetActorLocation();
         for (int32 i = VisibleEnemies.Num() - 1; i >= 0; --i)
         {
-            if (!IsValid(VisibleEnemies[i]) || !VisibleEnemies[i]->IsPawnActive())
+            const ATowerDefensePawn* Enemy = VisibleEnemies[i];
+            if (!IsValid(Enemy) || !Enemy->IsPawnActive())
             {
-                VisibleEnemies.RemoveAt(i);
+                VisibleEnemies.RemoveAt(i, EAllowShrinking::No);
                 continue;
             }
-            if (!Closest ||
-                FVector::DistSquared2D(SKPawn->GetActorLocation(), Closest->GetActorLocation()) >
-                    FVector::DistSquared2D(SKPawn->GetActorLocation(), VisibleEnemies[i]->GetActorLocation()))
-                Closest = VisibleEnemies[i];
+            const float CurrentDist = FVector::Dist2D(PawnLoc, Enemy->GetActorLocation()) - Enemy->GetOccupiedRadius();
+            if (CurrentDist < ClosestDist)
+            {
+                Closest = Enemy;
+                ClosestDist = CurrentDist;
+            }
         }
         SKPawn->SetAttackTarget(Closest);
     }
@@ -77,10 +80,13 @@ void ASkeletonAIController::SetControllerActive(bool bActive)
 
 void ASkeletonAIController::OnTargetPerceptionUpdated(AActor* Actor, FAIStimulus Stimulus)
 {
+    if (!IsValid(Actor)) return;
     if (ATowerDefensePawn* TDPawn = Cast<ATowerDefensePawn>(Actor))
     {
-        if (!TDPawn->IsPawnActive()) return;
-        if (Stimulus.WasSuccessfullySensed()) VisibleEnemies.Emplace(TDPawn);
+        if (Stimulus.WasSuccessfullySensed())
+        {
+            if (TDPawn->IsPawnActive()) VisibleEnemies.AddUnique(TDPawn);
+        }
         else VisibleEnemies.Remove(TDPawn);
     }
 }

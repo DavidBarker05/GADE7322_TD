@@ -8,6 +8,7 @@
 
 class UHealthComponent;
 class UDamageComponent;
+class UAIPerceptionStimuliSourceComponent;
 
 UCLASS(Abstract)
 class GADE7322_TD_API ATowerDefensePawn : public APawn
@@ -41,21 +42,15 @@ public:
 
     const FName& GetPawnDisplayName() const;
 
-    ATowerDefensePawn& SetPawnActive(bool bActive)
-    {
-        bIsPawnActive = bActive;
-        if (bActive) DoOnSetActive();
-        return *this;
-    }
+    ATowerDefensePawn& SetPawnActive(bool bActive);
 
     bool IsPawnActive() const { return bIsPawnActive; }
 
-protected:
-    // Stuff like show mesh, enable controller, etc.
-    virtual void DoOnSetActive() { }
+    float GetOccupiedRadius() const { return OccupiedRadius; }
 
-    // Stuff like hide mesh, disable controller, etc.
-    virtual void DoOnDeathComplete() { }
+protected:
+    // Stuff like toggling mesh, controller, etc.
+    virtual void DoOnSetActive(bool bActive) { }
 
 protected:
     UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components", meta = (AllowPrivateAccess = "true"))
@@ -64,8 +59,15 @@ protected:
     UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components", meta = (AllowPrivateAccess = "true"))
     UDamageComponent* DamageComponent;
 
+    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components", meta = (AllowPrivateAccess = "true"))
+    UAIPerceptionStimuliSourceComponent* StimuliSourceComponent;
+
     UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Name", meta = (AllowPrivateAccess = "true"))
     FName PawnDisplayName = TEXT("TowerDefensePawn");
+
+    UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Size",
+              meta = (AllowPrivateAccess = "true", Units = "Centimeters", ClampMin = "0.0", UIMin = "0.0"))
+    float OccupiedRadius = 0.0f;
 
     TFunction<void()> DestroyDelegate;
 

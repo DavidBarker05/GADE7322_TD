@@ -15,14 +15,8 @@ void ASkeletonPawn::BeginPlay()
     SkeletalMesh->SetSkeletalMesh(PossibleMeshes[FMath::RandRange(0, PossibleMeshes.Num() - 1)]);
 }
 
-void ASkeletonPawn::DoOnSetActive()
+void ASkeletonPawn::DoOnSetActive(bool bActive)
 {
     if (ASkeletonAIController* AIController = Cast<ASkeletonAIController>(GetController()))
-        AIController->SetControllerActive(true);
-}
-
-void ASkeletonPawn::DoOnDeathComplete()
-{
-    if (ASkeletonAIController* AIController = Cast<ASkeletonAIController>(GetController()))
-        AIController->SetControllerActive(false);
+        AIController->SetControllerActive(bActive);
 }

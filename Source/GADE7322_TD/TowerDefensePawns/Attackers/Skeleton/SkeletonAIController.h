@@ -9,7 +9,7 @@
 class ASkeletonPawn;
 class ATowerDefensePawn;
 struct FAIStimulus;
-class UAISenseConfig_Sight;
+class UAISenseConfig_Proximity;
 class UStateTreeAIComponent;
 
 UCLASS(Abstract)
@@ -34,7 +34,7 @@ private:
 
 private:
     UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "AI", meta = (AllowPrivateAccess = "true"))
-    UAISenseConfig_Sight* SightConfig;
+    UAISenseConfig_Proximity* ProximityConfig;
 
     UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "AI", meta = (AllowPrivateAccess = "true"))
     UStateTreeAIComponent* StateTree;

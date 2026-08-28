@@ -29,4 +29,10 @@ struct GADE7322_TD_API FGetDestinationTask : public FStateTreeTaskCommonBase
 
     virtual EStateTreeRunStatus EnterState(FStateTreeExecutionContext& Context,
                                            const FStateTreeTransitionResult& Transition) const override;
+
+#if WITH_EDITOR
+    virtual FName GetIconName() const override { return FName("StateTreeEditorStyle|Node.Find"); }
+
+    virtual FColor GetIconColor() const override { return UE::StateTree::Colors::Grey; }
+#endif
 };

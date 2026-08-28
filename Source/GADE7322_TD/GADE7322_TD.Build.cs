@@ -40,6 +40,7 @@ public class GADE7322_TD : ModuleRules
 			"GADE7322_TD/TowerDefensePawns/Components",
 			"GADE7322_TD/TowerDefensePawns/Defenders",
 			"GADE7322_TD/TowerDefensePawns/Defenders/Warrior",
+			"GADE7322_TD/TowerDefensePawns/ProximityPerception",
 			"GADE7322_TD/TowerDefensePawns/Tower"
 		});
 
