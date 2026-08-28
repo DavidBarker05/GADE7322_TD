@@ -32,16 +32,16 @@ public class GADE7322_TD : ModuleRules
 			"GADE7322_TD/Player",
 			"GADE7322_TD/Player/Components",
 			"GADE7322_TD/ProceduralGen",
-			"GADE7322_TD/TowerDefensePawns",
-			"GADE7322_TD/TowerDefensePawns/Attackers",
-			"GADE7322_TD/TowerDefensePawns/Attackers/AI",
-			"GADE7322_TD/TowerDefensePawns/Attackers/AI/CommonTasks",
-			"GADE7322_TD/TowerDefensePawns/Attackers/Skeleton",
-			"GADE7322_TD/TowerDefensePawns/Components",
-			"GADE7322_TD/TowerDefensePawns/Defenders",
-			"GADE7322_TD/TowerDefensePawns/Defenders/Warrior",
-			"GADE7322_TD/TowerDefensePawns/ProximityPerception",
-			"GADE7322_TD/TowerDefensePawns/Tower"
+			"GADE7322_TD/TowerDefencePawns",
+			"GADE7322_TD/TowerDefencePawns/Attackers",
+			"GADE7322_TD/TowerDefencePawns/Attackers/AI",
+			"GADE7322_TD/TowerDefencePawns/Attackers/AI/CommonTasks",
+			"GADE7322_TD/TowerDefencePawns/Attackers/Skeleton",
+			"GADE7322_TD/TowerDefencePawns/Components",
+			"GADE7322_TD/TowerDefencePawns/Defenders",
+			"GADE7322_TD/TowerDefencePawns/Defenders/Warrior",
+			"GADE7322_TD/TowerDefencePawns/ProximityPerception",
+			"GADE7322_TD/TowerDefencePawns/Tower"
 		});
 
 		// Uncomment if you are using online features

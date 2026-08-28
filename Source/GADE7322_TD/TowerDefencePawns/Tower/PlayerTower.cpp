@@ -1,0 +1,8 @@
+#include "TowerDefencePawns/Tower/PlayerTower.h"
+
+APlayerTower::APlayerTower()
+{
+    PawnDisplayName = TEXT("Main Tower");
+    TowerMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Tower Mesh"));
+    TowerMesh->SetupAttachment(RootComponent);
+}
