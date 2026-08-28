@@ -21,7 +21,7 @@ public:
 
 public:
     virtual void StartAttack() override;
-    
+
     virtual void EndAttack() override;
 
 protected:
@@ -31,8 +31,11 @@ public:
     USkeletalMeshComponent* GetSkeletalMesh() { return SkeletalMesh; }
     const USkeletalMeshComponent* GetSkeletalMesh() const { return SkeletalMesh; }
 
-    UFUNCTION(BlueprintCallable, Category = "AI")
-    void SetAttackTarget(const ATowerDefencePawn* Target) { CurrentAttackTarget = Target; }
+    ASkeletonPawn& SetAttackTarget(const ATowerDefencePawn* Target)
+    {
+        CurrentAttackTarget = Target;
+        return *this;
+    }
 
     const ATowerDefencePawn* GetAttackTarget() const { return CurrentAttackTarget; }
 
@@ -45,10 +48,10 @@ private:
     UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components", meta = (AllowPrivateAccess = "true"))
     USkeletalMeshComponent* SkeletalMesh;
 
-    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "AI", meta = (AllowPrivateAccess = "true"))
+    UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "AI", meta = (AllowPrivateAccess = "true"))
     const ATowerDefencePawn* CurrentAttackTarget;
 
     UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "AI",
-              meta = (AllowPrivateAccess = "true", ClampMin = "0.0", UIMin = "0.0"))
+              meta = (AllowPrivateAccess = "true", Units = "Centimeters", ClampMin = "0.0", UIMin = "0.0"))
     float AttackRadius = 100.0f;
 };

@@ -40,6 +40,16 @@ public:
 
     bool IsFemale() const;
 
+    AWarrior& SetAttackTarget(const ATowerDefencePawn* Target)
+    {
+        CurrentAttackTarget = Target;
+        return *this;
+    }
+
+    const ATowerDefencePawn* GetAttackTarget() const { return CurrentAttackTarget; }
+
+    float GetAttackRadius() const { return AttackRadius; }
+
 private:
     UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Mesh", meta = (AllowPrivateAccess = "true"))
     USkeletalMesh* MaleMesh = nullptr;
@@ -58,4 +68,11 @@ private:
 
     UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Gender", meta = (AllowPrivateAccess = "true"))
     bool bIsFemale;
+
+    UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "AI", meta = (AllowPrivateAccess = "true"))
+    const ATowerDefencePawn* CurrentAttackTarget;
+
+    UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "AI",
+              meta = (AllowPrivateAccess = "true", Units = "Centimeters", ClampMin = "0.0", UIMin = "0.0"))
+    float AttackRadius = 100.0f;
 };

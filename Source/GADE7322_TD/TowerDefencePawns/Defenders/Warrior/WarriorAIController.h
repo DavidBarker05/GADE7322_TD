@@ -4,24 +4,24 @@
 
 #include "TowerDefencePawns/AI/TowerDefencePawnAIController.h"
 
-#include "SkeletonAIController.generated.h"
+#include "WarriorAIController.generated.h"
 
-class ASkeletonPawn;
+class AWarrior;
 
 UCLASS(Abstract)
-class GADE7322_TD_API ASkeletonAIController : public ATowerDefencePawnAIController
+class GADE7322_TD_API AWarriorAIController : public ATowerDefencePawnAIController
 {
     GENERATED_BODY()
 
 public:
-    ASkeletonAIController();
+    AWarriorAIController();
 
     virtual void Tick(float DeltaTime) override;
 
     virtual void SetControllerActive(bool bActive) override;
 
     UFUNCTION(BlueprintPure)
-    ASkeletonPawn* GetSkeletonPawn() const;
+    AWarrior* GetWarrior() const;
 
 private:
     UPROPERTY(EditDefaultsOnly, Category = "AI",

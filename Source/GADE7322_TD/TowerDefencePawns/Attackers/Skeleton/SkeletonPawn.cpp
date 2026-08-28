@@ -1,7 +1,6 @@
 #include "TowerDefencePawns/Attackers/Skeleton/SkeletonPawn.h"
 
-#include "DamageComponent.h"
-#include "SkeletonAIController.h"
+#include "TowerDefencePawns/AI/TowerDefencePawnAIController.h"
 
 ASkeletonPawn::ASkeletonPawn()
 {
@@ -26,6 +25,6 @@ void ASkeletonPawn::EndAttack() { bCanAttack = true; }
 
 void ASkeletonPawn::DoOnSetActive(bool bActive)
 {
-    if (ASkeletonAIController* AIController = Cast<ASkeletonAIController>(GetController()))
+    if (ATowerDefencePawnAIController* AIController = Cast<ATowerDefencePawnAIController>(GetController()))
         AIController->SetControllerActive(bActive);
 }

@@ -1,5 +1,7 @@
 #include "TowerDefencePawns/Defenders/Warrior/Warrior.h"
 
+#include "TowerDefencePawns/AI/TowerDefencePawnAIController.h"
+
 AWarrior::AWarrior()
 {
     PawnDisplayName = TEXT("Warrior");
@@ -26,8 +28,8 @@ void AWarrior::EndAttack() { bCanAttack = true; }
 
 void AWarrior::DoOnSetActive(bool bActive)
 {
-    // if (ASkeletonAIController* AIController = Cast<ASkeletonAIController>(GetController()))
-    //     AIController->SetControllerActive(bActive);
+    if (ATowerDefencePawnAIController* AIController = Cast<ATowerDefencePawnAIController>(GetController()))
+        AIController->SetControllerActive(bActive);
 }
 
 const USkeletalMesh* AWarrior::GetMaleMesh() const { return MaleMesh; }
