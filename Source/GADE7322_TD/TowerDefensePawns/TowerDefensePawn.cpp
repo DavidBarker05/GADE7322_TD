@@ -19,6 +19,7 @@ void ATowerDefensePawn::Attack(ATowerDefensePawn* Other)
 {
     if (Other && IsValid(Other)) DamageComponent->DamageOther(Other->HealthComponent);
 }
+
 void ATowerDefensePawn::OnDeath(TFunction<void()>&& Func)
 {
     DestroyDelegate = MoveTemp(Func);

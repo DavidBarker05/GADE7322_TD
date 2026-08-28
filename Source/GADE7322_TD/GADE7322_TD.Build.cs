@@ -15,7 +15,11 @@ public class GADE7322_TD : ModuleRules
 			"Engine",
 			"InputCore",
 			"EnhancedInput",
-			"ProceduralMeshComponent"
+			"ProceduralMeshComponent",
+			"GameplayTasks",
+			"StateTreeModule",
+			"GameplayStateTreeModule",
+			"AIModule"
 		});
 
 		PrivateDependencyModuleNames.AddRange(new string[] { "Slate", "SlateCore" });
@@ -30,6 +34,8 @@ public class GADE7322_TD : ModuleRules
 			"GADE7322_TD/ProceduralGen",
 			"GADE7322_TD/TowerDefensePawns",
 			"GADE7322_TD/TowerDefensePawns/Attackers",
+			"GADE7322_TD/TowerDefensePawns/Attackers/AI",
+			"GADE7322_TD/TowerDefensePawns/Attackers/AI/CommonTasks",
 			"GADE7322_TD/TowerDefensePawns/Attackers/Skeleton",
 			"GADE7322_TD/TowerDefensePawns/Components",
 			"GADE7322_TD/TowerDefensePawns/Defenders",

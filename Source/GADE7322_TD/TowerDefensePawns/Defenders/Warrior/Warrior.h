@@ -7,7 +7,7 @@
 #include "Warrior.generated.h"
 
 class USkeletalMesh;
-class UStaticMeshComponent;
+class USkeletalMeshComponent;
 
 UCLASS(Abstract)
 class GADE7322_TD_API AWarrior : public ADefender

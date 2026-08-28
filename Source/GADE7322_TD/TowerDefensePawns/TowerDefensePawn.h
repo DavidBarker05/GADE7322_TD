@@ -30,7 +30,7 @@ public:
 
 public:
     UFUNCTION(BlueprintCallable)
-    void OnDeathComplete(); // If override for animation don't forget to set delegate
+    virtual void OnDeathComplete(); // If override for animation don't forget to call delegate
 
 public:
     const UHealthComponent* GetHealthComponent() const;
@@ -41,8 +41,20 @@ public:
 
     const FName& GetPawnDisplayName() const;
 
+    ATowerDefensePawn& SetPawnActive(bool bActive)
+    {
+        bIsPawnActive = bActive;
+        if (bActive) DoOnSetActive();
+        return *this;
+    }
+
+    bool IsPawnActive() const { return bIsPawnActive; }
+
 protected:
-    // Stuff like hide mesh, etc.
+    // Stuff like show mesh, enable controller, etc.
+    virtual void DoOnSetActive() { }
+
+    // Stuff like hide mesh, disable controller, etc.
     virtual void DoOnDeathComplete() { }
 
 protected:
@@ -56,4 +68,8 @@ protected:
     FName PawnDisplayName = TEXT("TowerDefensePawn");
 
     TFunction<void()> DestroyDelegate;
+
+private:
+    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "TD Pawn", meta = (AllowPrivateAccess = "true"))
+    bool bIsPawnActive = false;
 };
