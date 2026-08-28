@@ -44,8 +44,9 @@ void ADefenderSpot::OnEventReceived_Implementation(const FName& EventName, const
                 {
                     if (TOWER_DEFENCE_PAWN_FACTORY_EXISTS)
                     {
-                        DESTROY_PAWN(CurrentDefender);
+                        CurrentDefender->SetSpawnPoint(nullptr);
                         CurrentDefender->SetPawnActive(false);
+                        DESTROY_PAWN(CurrentDefender);
                         CurrentDefender = nullptr;
                     }
                 });
@@ -61,6 +62,7 @@ void ADefenderSpot::PurchaseDefender(const TSubclassOf<ADefender>& DefenderBluep
     if (TOWER_DEFENCE_PAWN_FACTORY_EXISTS)
     {
         CurrentDefender = Cast<ADefender>(CREATE_PAWN(DefenderBlueprint, GetTransform()));
+        CurrentDefender->SetSpawnPoint(this);
         CurrentDefender->SetPawnActive(true);
         BROADCAST_EVENT(TEXT("PurchaseEvent"), CurrentDefender->GetCost());
     }
@@ -72,6 +74,7 @@ void ADefenderSpot::SellDefender()
     if (TOWER_DEFENCE_PAWN_FACTORY_EXISTS)
     {
         BROADCAST_EVENT(TEXT("SellEvent"), CurrentDefender->GetSellPrice());
+        CurrentDefender->SetSpawnPoint(nullptr);
         CurrentDefender->SetPawnActive(false);
         DESTROY_PAWN(CurrentDefender);
         CurrentDefender = nullptr;

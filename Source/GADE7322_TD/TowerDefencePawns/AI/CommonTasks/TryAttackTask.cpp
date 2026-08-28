@@ -9,7 +9,7 @@ EStateTreeRunStatus FTryAttackTask::EnterState(FStateTreeExecutionContext& Conte
     FTryAttackTaskInstanceData& Data = Context.GetInstanceData(*this);
     if (!Data.Actor)
     {
-        TD_LOG_ERROR(TEXT("FGetDestinationTask::EnterState -> Actor context is nullptr"));
+        TD_LOG_ERROR(TEXT("FTryAttackTask::EnterState -> Actor context is nullptr"));
         return EStateTreeRunStatus::Failed;
     }
     if (!Data.Actor->CanAttack()) return EStateTreeRunStatus::Failed;

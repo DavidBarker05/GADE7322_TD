@@ -19,7 +19,7 @@ ATowerDefencePawnAIController::ATowerDefencePawnAIController()
 void ATowerDefencePawnAIController::BeginPlay()
 {
     Super::BeginPlay();
-    SetControllerActive(false);
+    if (!GetTowerDefensePawn()->IsPawnActive()) SetControllerActive(false);
 }
 
 void ATowerDefencePawnAIController::SetControllerActive(bool bActive)
@@ -31,6 +31,11 @@ void ATowerDefencePawnAIController::SetControllerActive(bool bActive)
     }
     PerceptionComponent->SetActive(bActive);
     StateTree->SetActive(bActive);
+}
+
+const ATowerDefencePawn* ATowerDefencePawnAIController::GetTowerDefensePawn() const
+{
+    return Cast<ATowerDefencePawn>(GetPawn());
 }
 
 void ATowerDefencePawnAIController::OnTargetPerceptionUpdated(AActor* Actor, FAIStimulus Stimulus)

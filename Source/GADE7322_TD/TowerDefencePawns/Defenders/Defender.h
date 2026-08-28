@@ -19,6 +19,15 @@ public:
 
     int32 GetSellPrice() const { return SellPrice; }
 
+    ADefender& SetSpawnPoint(AActor* Point)
+    {
+        SpawnPoint = Point;
+        return *this;
+    }
+
+    const AActor* GetSpawnPoint() const { return SpawnPoint; }
+    AActor* GetSpawnPoint() { return SpawnPoint; }
+
 protected:
     UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Cost",
               meta = (AllowPrivateAccess = "true", ClampMin = "0", UIMin = "0"))
@@ -27,4 +36,8 @@ protected:
     UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Cost",
               meta = (AllowPrivateAccess = "true", ClampMin = "0", UIMin = "0"))
     int32 SellPrice = 0;
+
+private:
+    UPROPERTY(BlueprintReadWrite, Category = "Defender", meta = (AllowPrivateAccess = "true"))
+    AActor* SpawnPoint = nullptr;
 };

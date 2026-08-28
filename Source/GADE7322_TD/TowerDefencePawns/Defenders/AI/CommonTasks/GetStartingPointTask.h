@@ -3,28 +3,28 @@
 #include "CoreMinimal.h"
 
 #include "StateTreeTaskBase.h"
-#include "TowerDefencePawns/Attackers/Attacker.h"
+#include "TowerDefencePawns/Defenders/Defender.h"
 
-#include "GetDestinationTask.generated.h"
+#include "GetStartingPointTask.generated.h"
 
-USTRUCT(meta = (DisplayName = "Get Destination Instance Data"))
-struct FGetDestinationTaskInstanceData
+USTRUCT(meta = (DisplayName = "Get Starting Point Instance Data"))
+struct FGetStartingPointTaskInstanceData
 {
     GENERATED_BODY()
 
     UPROPERTY(EditAnywhere, Category = Context)
-    TObjectPtr<AAttacker> Actor = nullptr;
+    TObjectPtr<ADefender> Actor = nullptr;
 
     UPROPERTY(EditAnywhere, Category = Output)
-    FVector Destination;
+    FVector StartingPoint;
 };
 
-USTRUCT(meta = (DisplayName = "Get Destination", Category = "AI|Attacker|CommonTask"))
-struct GADE7322_TD_API FGetDestinationTask : public FStateTreeTaskCommonBase
+USTRUCT(meta = (DisplayName = "Get Starting Point", Category = "AI|Defender|CommonTask"))
+struct GADE7322_TD_API FGetStartingPointTask : public FStateTreeTaskCommonBase
 {
     GENERATED_BODY()
 
-    using FInstanceDataType = FGetDestinationTaskInstanceData;
+    using FInstanceDataType = FGetStartingPointTaskInstanceData;
 
     virtual const UStruct* GetInstanceDataType() const override { return FInstanceDataType::StaticStruct(); }
 

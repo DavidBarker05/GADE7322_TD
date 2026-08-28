@@ -32,6 +32,8 @@ public:
     const UStateTreeAIComponent* GetStateTree() const { return StateTree; }
     UStateTreeAIComponent* GetStateTree() { return StateTree; }
 
+    const ATowerDefencePawn* GetTowerDefensePawn() const;
+
 protected:
     UFUNCTION()
     virtual void OnTargetPerceptionUpdated(AActor* Actor, FAIStimulus Stimulus);

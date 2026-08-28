@@ -10,12 +10,12 @@ EStateTreeRunStatus FMaintainDistanceToTargetTask::EnterState(FStateTreeExecutio
     FMaintainDistanceToTargetTaskInstanceData& Data = Context.GetInstanceData(*this);
     if (!Data.AIController)
     {
-        TD_LOG_ERROR(TEXT("FGetDestinationTask::EnterState -> AI Controller context is nullptr"));
+        TD_LOG_ERROR(TEXT("FMaintainDistanceToTargetTask::EnterState -> AI Controller context is nullptr"));
         return EStateTreeRunStatus::Failed;
     }
     if (!Data.Actor)
     {
-        TD_LOG_ERROR(TEXT("FGetDestinationTask::EnterState -> Actor context is nullptr"));
+        TD_LOG_ERROR(TEXT("FMaintainDistanceToTargetTask::EnterState -> Actor context is nullptr"));
         return EStateTreeRunStatus::Failed;
     }
     if (!IsValid(Data.Target)) return EStateTreeRunStatus::Failed;

@@ -42,6 +42,8 @@ public class GADE7322_TD : ModuleRules
 			"GADE7322_TD/TowerDefencePawns/Attackers/Skeleton",
 			"GADE7322_TD/TowerDefencePawns/Components",
 			"GADE7322_TD/TowerDefencePawns/Defenders",
+			"GADE7322_TD/TowerDefencePawns/Defenders/AI",
+			"GADE7322_TD/TowerDefencePawns/Defenders/AI/CommonTasks",
 			"GADE7322_TD/TowerDefencePawns/Defenders/Warrior",
 			"GADE7322_TD/TowerDefencePawns/Tower"
 		});
