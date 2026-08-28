@@ -3,7 +3,7 @@
 #include "CoreMinimal.h"
 
 #include "Perception/AISenseConfig.h"
-#include "TowerDefencePawns/ProximityPerception/AISense_Proximity.h"
+#include "TowerDefencePawns/AI/ProximityPerception/AISense_Proximity.h"
 
 #include "AISenseConfig_Proximity.generated.h"
 

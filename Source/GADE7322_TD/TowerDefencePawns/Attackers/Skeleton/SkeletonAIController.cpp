@@ -4,8 +4,8 @@
 #include "Perception/AIPerceptionComponent.h"
 #include "Perception/AIPerceptionTypes.h"
 #include "PlayerTower.h"
+#include "TowerDefencePawns/AI/ProximityPerception/AISenseConfig_Proximity.h"
 #include "TowerDefencePawns/Attackers/Skeleton/SkeletonPawn.h"
-#include "TowerDefencePawns/ProximityPerception/AISenseConfig_Proximity.h"
 
 ASkeletonAIController::ASkeletonAIController()
 {

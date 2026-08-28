@@ -1,4 +1,4 @@
-#include "TowerDefencePawns/ProximityPerception/AISenseConfig_Proximity.h"
+#include "TowerDefencePawns/AI/ProximityPerception/AISenseConfig_Proximity.h"
 
 UAISenseConfig_Proximity::UAISenseConfig_Proximity(const FObjectInitializer& ObjectInitializer) :
     Super(ObjectInitializer)

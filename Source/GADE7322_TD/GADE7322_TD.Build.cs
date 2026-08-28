@@ -33,6 +33,9 @@ public class GADE7322_TD : ModuleRules
 			"GADE7322_TD/Player/Components",
 			"GADE7322_TD/ProceduralGen",
 			"GADE7322_TD/TowerDefencePawns",
+			"GADE7322_TD/TowerDefencePawns/AI",
+			"GADE7322_TD/TowerDefencePawns/AI/CommonTasks",
+			"GADE7322_TD/TowerDefencePawns/AI/ProximityPerception",
 			"GADE7322_TD/TowerDefencePawns/Attackers",
 			"GADE7322_TD/TowerDefencePawns/Attackers/AI",
 			"GADE7322_TD/TowerDefencePawns/Attackers/AI/CommonTasks",
@@ -40,7 +43,6 @@ public class GADE7322_TD : ModuleRules
 			"GADE7322_TD/TowerDefencePawns/Components",
 			"GADE7322_TD/TowerDefencePawns/Defenders",
 			"GADE7322_TD/TowerDefencePawns/Defenders/Warrior",
-			"GADE7322_TD/TowerDefencePawns/ProximityPerception",
 			"GADE7322_TD/TowerDefencePawns/Tower"
 		});
 

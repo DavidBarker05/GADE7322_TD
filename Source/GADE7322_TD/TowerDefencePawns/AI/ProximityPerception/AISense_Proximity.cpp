@@ -1,9 +1,9 @@
-#include "TowerDefencePawns/ProximityPerception/AISense_Proximity.h"
+#include "TowerDefencePawns/AI/ProximityPerception/AISense_Proximity.h"
 
 #include "GameFramework/Actor.h"
 #include "GenericTeamAgentInterface.h"
 #include "Perception/AIPerceptionComponent.h"
-#include "TowerDefencePawns/ProximityPerception/AISenseConfig_Proximity.h"
+#include "TowerDefencePawns/AI/ProximityPerception/AISenseConfig_Proximity.h"
 
 UAISense_Proximity::UAISense_Proximity(const FObjectInitializer& ObjectInitializer) : Super(ObjectInitializer)
 {
