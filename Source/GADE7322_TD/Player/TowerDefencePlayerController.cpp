@@ -10,7 +10,7 @@ void ATowerDefencePlayerController::SetupInputComponent()
     if (UEnhancedInputLocalPlayerSubsystem* Subsystem =
             ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(GetLocalPlayer()))
     {
-        for (UInputMappingContext* CurrentContext : DefaultMappingContexts)
+        for (const UInputMappingContext* CurrentContext : DefaultMappingContexts)
             Subsystem->AddMappingContext(CurrentContext, 0);
     }
 }

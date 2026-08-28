@@ -1,3 +1,4 @@
+// ReSharper disable CppParameterMayBeConst
 #include "TowerDefencePawns/Defenders/Warrior/Warrior.h"
 
 #include "TowerDefencePawns/AI/TowerDefencePawnAIController.h"
@@ -31,17 +32,3 @@ void AWarrior::DoOnSetActive(bool bActive)
     if (ATowerDefencePawnAIController* AIController = Cast<ATowerDefencePawnAIController>(GetController()))
         AIController->SetControllerActive(bActive);
 }
-
-const USkeletalMesh* AWarrior::GetMaleMesh() const { return MaleMesh; }
-
-USkeletalMesh* AWarrior::GetMaleMesh() { return MaleMesh; }
-
-const USkeletalMesh* AWarrior::GetFemaleMesh() const { return FemaleMesh; }
-
-USkeletalMesh* AWarrior::GetFemaleMesh() { return FemaleMesh; }
-
-const USkeletalMeshComponent* AWarrior::GetMesh() const { return SkeletalMesh; }
-
-USkeletalMeshComponent* AWarrior::GetMesh() { return SkeletalMesh; }
-
-bool AWarrior::IsFemale() const { return bIsFemale; }

@@ -25,8 +25,8 @@ public:
 
 private:
     UPROPERTY(EditDefaultsOnly, Category = "AI",
-              meta = (AllowPrivateAccess = "true", Units = "Hertz", ClampMin = "0.0", UIMin = "0.0",
-                      ClampMax = "16.667", UIMax = "16.667"))
+              meta = (AllowPrivateAccess = true, ClampMin = 0.0, UIMin = 0.0, ClampMax = 16.667, UIMax = 16.667,
+                      Units = "Hertz"))
     float VisionUpdateFrequency = 5.0f;
 
     float TimeSinceLastVisionUpdate = 0.0f;

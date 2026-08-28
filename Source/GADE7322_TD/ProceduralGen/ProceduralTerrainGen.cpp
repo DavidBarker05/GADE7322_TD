@@ -1,3 +1,4 @@
+// ReSharper disable CppParameterMayBeConst
 #include "ProceduralGen/ProceduralTerrainGen.h"
 
 #include "DrawDebugHelpers.h"
@@ -27,17 +28,18 @@ void AProceduralTerrainGen::GeneratePaths()
 {
     if (bRandomSeedEachGame) Seed = FMath::Rand();
 
-    FRandomStream Stream(Seed);
+    const FRandomStream Stream(Seed);
 
     Paths.Empty(NumPaths); // Clears any previous roll and pre-allocates for the new one
 
+    // ReSharper disable once CppTooWideScopeInitStatement
     const TArray<float> EntryAngles = GenerateEntryAngles(Stream);
     for (const float Angle : EntryAngles) Paths.Add(BuildPath(Angle, Stream));
 
     if (bDrawDebugPaths) DrawDebugForPaths();
 }
 
-TArray<float> AProceduralTerrainGen::GenerateEntryAngles(FRandomStream& Stream) const
+TArray<float> AProceduralTerrainGen::GenerateEntryAngles(const FRandomStream& Stream) const
 {
     TArray<float> Angles;
     Angles.Reserve(NumPaths);
@@ -58,7 +60,7 @@ TArray<float> AProceduralTerrainGen::GenerateEntryAngles(FRandomStream& Stream) 
     return Angles;
 }
 
-FTerrainPath AProceduralTerrainGen::BuildPath(float EntryAngleDegrees, FRandomStream& Stream) const
+FTerrainPath AProceduralTerrainGen::BuildPath(float EntryAngleDegrees, const FRandomStream& Stream) const
 {
     FTerrainPath Path;
     Path.Width = PathWidth;
@@ -91,7 +93,7 @@ FTerrainPath AProceduralTerrainGen::BuildPath(float EntryAngleDegrees, FRandomSt
     return Path;
 }
 
-void AProceduralTerrainGen::GenerateTerrain()
+void AProceduralTerrainGen::GenerateTerrain() const
 {
     TerrainMesh->ClearAllMeshSections();
 
@@ -193,17 +195,17 @@ float AProceduralTerrainGen::DistanceToNearestPathEdge(const FVector2D& Point) c
 {
     float MinEdgeDistance = TNumericLimits<float>::Max(); // No paths yet = treat as infinitely far from any corridor
 
-    for (const FTerrainPath& Path : Paths)
+    for (const auto& [Points, Width] : Paths)
     {
         // A path is a polyline, not one straight segment, so distance-to-path means distance to
         // whichever segment of it is closest
-        for (int32 i = 0; i < Path.Points.Num() - 1; ++i)
+        for (int32 i = 0; i < Points.Num() - 1; ++i)
         {
-            const FVector2D SegStart(Path.Points[i]);
-            const FVector2D SegEnd(Path.Points[i + 1]);
+            const FVector2D SegStart(Points[i]);
+            const FVector2D SegEnd(Points[i + 1]);
             const FVector2D Closest = FMath::ClosestPointOnSegment2D(Point, SegStart, SegEnd);
 
-            const float EdgeDistance = FVector2D::Distance(Point, Closest) - Path.Width;
+            const float EdgeDistance = FVector2D::Distance(Point, Closest) - Width;
             MinEdgeDistance = FMath::Min(MinEdgeDistance, EdgeDistance);
         }
     }
@@ -240,7 +242,7 @@ void AProceduralTerrainGen::GenerateDefenderSpots()
 
     TArray<FVector> PlacedLocations;
 
-    for (const FTerrainPath& Path : Paths)
+    for (const auto& [Points, Width] : Paths)
     {
         // Stagger the first spot half a spacing in so it doesn't sit right on the edge spawn point
         float DistanceUntilNextSpot = DefenderSpotSpacing * 0.5f;
@@ -248,16 +250,16 @@ void AProceduralTerrainGen::GenerateDefenderSpots()
         // Walk the path's polyline segment by segment, treating it as one continuous line (arc
         // length), so spots end up evenly spaced along the whole path rather than reset to 0 at
         // every bend
-        for (int32 i = 0; i < Path.Points.Num() - 1; ++i)
+        for (int32 i = 0; i < Points.Num() - 1; ++i)
         {
-            FVector SegPoint = Path.Points[i]; // Current walk position, advances along the segment below
-            const FVector SegEnd = Path.Points[i + 1];
+            FVector SegPoint = Points[i]; // Current walk position, advances along the segment below
+            const FVector SegEnd = Points[i + 1];
             float SegRemaining = FVector::Dist(SegPoint, SegEnd);
             // Yes "KINDA_SMALL_NUMBER" is an actual UE macro lol, who needs epsilon?
             if (SegRemaining <= KINDA_SMALL_NUMBER) continue; // Don't divide by 0
 
             const FVector SegDir = (SegEnd - SegPoint) / SegRemaining;
-            const FVector Perpendicular(-SegDir.Y, SegDir.X, 0.f);
+            const FVector Perpendicular(-SegDir.Y, SegDir.X, 0.0f);
 
             // Fits as many spot positions as this segment has room for before falling through to the next segment
             while (DistanceUntilNextSpot <= SegRemaining)
@@ -265,7 +267,7 @@ void AProceduralTerrainGen::GenerateDefenderSpots()
                 SegPoint += SegDir * DistanceUntilNextSpot;
                 SegRemaining -= DistanceUntilNextSpot;
 
-                const float SpotDistance = Path.Width + DefenderSpotOffset;
+                const float SpotDistance = Width + DefenderSpotOffset;
                 TrySpawnDefenderSpot(SegPoint + Perpendicular * SpotDistance, PlacedLocations); // One spot on the left
                 TrySpawnDefenderSpot(SegPoint - Perpendicular * SpotDistance, PlacedLocations); // One spot on the right
 

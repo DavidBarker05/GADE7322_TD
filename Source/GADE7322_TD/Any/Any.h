@@ -1,3 +1,5 @@
+// ReSharper disable IdentifierTypo
+// ReSharper disable CppNonExplicitConvertingConstructor
 #pragma once
 
 #include "CoreMinimal.h"
@@ -9,6 +11,10 @@
 
 // Originally written by me in 2025 as EventData this is the new and improved version which is way more flexible
 // https://github.com/DavidBarker05/FirstPersonShooter/blob/master/Source/FirstPersonShooter/Events/EventData.h
+
+// There might be a better way to do this, but I really have no idea and there is nothing online about this.
+// I would do something different if Unreal's GC wouldn't get upset like seen in my SDL engine here:
+// https://github.com/DavidBarker05/SDL-Game/blob/7b7faec4508d3ad18f7a164791e3fca19f9ba05c/Engine/src/Core/Events/InputEvent.h
 
 #ifndef COPY_CONSTRUCTOR_GENERATE
 #define COPY_CONSTRUCTOR_GENERATE(Type, Struct) \
@@ -209,13 +215,9 @@
     - Structs recognised by Unreal (obviously)
 
   Note: Doesn't store collections like arrays because uses structs to emulate std::any and making a struct
-  for each array type was not worth it. Also TArray<AActor*> != TArray<UObject*> so that would mean either
+  for each array type was not worth it. Also, TArray<AActor*> != TArray<UObject*> so that would mean either
   a new struct for each subclass of every Unreal object or creating an array of the base class and copying
   each element over one at a time every time. If needed they can be added easily by just using the macros
-
-  There might be a better way to do this, but I really have no idea and there is nothing online about this.
-  I would do something different if Unreal's GC wouldn't get upset like seen in my SDL engine here:
-  https://github.com/DavidBarker05/SDL-Game/blob/7b7faec4508d3ad18f7a164791e3fca19f9ba05c/Engine/src/Core/Events/InputEvent.h
  */
 USTRUCT(BlueprintType, meta = (HasNativeMake = "/Script/GADE7322_TD.AnyFunctionLibrary.MakeAny"))
 struct GADE7322_TD_API FAny
@@ -249,7 +251,7 @@ struct GADE7322_TD_API FAny
             if constexpr (TIsPointer<PointedType>::Value)
             {
                 using PointedPointedType = TRemovePointer<PointedType>::Type; // Can't think of better name
-                static_assert(TIsDerivedFrom<PointedType, UObject>::IsDerived,
+                static_assert(TIsDerivedFrom<PointedPointedType, UObject>::IsDerived,
                               "FAny doesn't work with non-UObject derived pointers to pointers");
                 Value = FInstancedStruct::Make<FUObjectStruct>(*InValue);
             }
@@ -308,7 +310,7 @@ struct GADE7322_TD_API FAny
             if constexpr (TIsPointer<PointedType>::Value)
             {
                 using PointedPointedType = TRemovePointer<PointedType>::Type; // Can't think of better name
-                static_assert(TIsDerivedFrom<PointedType, UObject>::IsDerived,
+                static_assert(TIsDerivedFrom<PointedPointedType, UObject>::IsDerived,
                               "FAny doesn't work with non-UObject derived pointers to pointers");
                 Value = FInstancedStruct::Make<FUObjectStruct>(MoveTemp(*InValue));
             }
@@ -376,7 +378,7 @@ struct GADE7322_TD_API FAny
             if constexpr (TIsPointer<PointedType>::Value)
             {
                 using PointedPointedType = TRemovePointer<PointedType>::Type; // Can't think of better name
-                static_assert(TIsDerivedFrom<PointedType, UObject>::IsDerived,
+                static_assert(TIsDerivedFrom<PointedPointedType, UObject>::IsDerived,
                               "FAny doesn't work with non-UObject derived pointers to pointers");
                 Value = FInstancedStruct::Make<FUObjectStruct>(*InValue);
             }
@@ -436,7 +438,7 @@ struct GADE7322_TD_API FAny
             if constexpr (TIsPointer<PointedType>::Value)
             {
                 using PointedPointedType = TRemovePointer<PointedType>::Type; // Can't think of better name
-                static_assert(TIsDerivedFrom<PointedType, UObject>::IsDerived,
+                static_assert(TIsDerivedFrom<PointedPointedType, UObject>::IsDerived,
                               "FAny doesn't work with non-UObject derived pointers to pointers");
                 Value = FInstancedStruct::Make<FUObjectStruct>(MoveTemp(*InValue));
             }
@@ -515,7 +517,7 @@ struct GADE7322_TD_API FAny
             if constexpr (TIsPointer<PointedType>::Value)
             {
                 using PointedPointedType = TRemovePointer<PointedType>::Type; // Can't think of better name
-                static_assert(TIsDerivedFrom<PointedType, UObject>::IsDerived,
+                static_assert(TIsDerivedFrom<PointedPointedType, UObject>::IsDerived,
                               "FAny doesn't work with non-UObject derived pointers to pointers");
                 Value = FInstancedStruct::Make<FUObjectStruct>(*InValue);
             }
@@ -546,7 +548,7 @@ struct GADE7322_TD_API FAny
             if constexpr (TIsPointer<PointedType>::Value)
             {
                 using PointedPointedType = TRemovePointer<PointedType>::Type; // Can't think of better name
-                static_assert(TIsDerivedFrom<PointedType, UObject>::IsDerived,
+                static_assert(TIsDerivedFrom<PointedPointedType, UObject>::IsDerived,
                               "FAny doesn't work with non-UObject derived pointers to pointers");
                 Value = FInstancedStruct::Make<FUObjectStruct>(MoveTemp(*InValue));
             }

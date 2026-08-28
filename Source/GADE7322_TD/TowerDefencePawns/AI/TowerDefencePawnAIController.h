@@ -19,8 +19,10 @@ class GADE7322_TD_API ATowerDefencePawnAIController : public AAIController
 public:
     ATowerDefencePawnAIController();
 
+protected:
     virtual void BeginPlay() override;
 
+public:
     virtual void SetControllerActive(bool bActive);
 
     const TArray<ATowerDefencePawn*>& GetVisiblePawns() const { return VisiblePawns; }
@@ -39,12 +41,12 @@ protected:
     virtual void OnTargetPerceptionUpdated(AActor* Actor, FAIStimulus Stimulus);
 
 private:
-    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "AI", meta = (AllowPrivateAccess = "true"))
+    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "AI", meta = (AllowPrivateAccess = true))
     TArray<ATowerDefencePawn*> VisiblePawns;
 
-    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "AI", meta = (AllowPrivateAccess = "true"))
+    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "AI", meta = (AllowPrivateAccess = true))
     UAISenseConfig_Proximity* ProximityConfig;
 
-    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "AI", meta = (AllowPrivateAccess = "true"))
+    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "AI", meta = (AllowPrivateAccess = true))
     UStateTreeAIComponent* StateTree;
 };

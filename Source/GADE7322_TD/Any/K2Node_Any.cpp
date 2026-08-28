@@ -11,13 +11,13 @@
 void UK2Node_Any::GetMenuActions(FBlueprintActionDatabaseRegistrar& ActionRegistrar) const
 {
     Super::GetMenuActions(ActionRegistrar);
-    UClass* Action = GetClass();
-    if (ActionRegistrar.IsOpenForRegistration(Action))
+    if (const UClass* Action = GetClass(); ActionRegistrar.IsOpenForRegistration(Action))
     {
-        auto CustomizeLambda = [](UEdGraphNode* NewNode, bool bIsTemplateNode, const FName FunctionName)
+        // ReSharper disable once CppParameterNeverUsed
+        auto CustomizeLambda = [](UEdGraphNode* NewNode, bool bIsTemplateNode, const FName FunctionName) -> void
         {
             UK2Node_Any* Node = CastChecked<UK2Node_Any>(NewNode);
-            UFunction* Function = UAnyFunctionLibrary::StaticClass()->FindFunctionByName(FunctionName);
+            const UFunction* Function = UAnyFunctionLibrary::StaticClass()->FindFunctionByName(FunctionName);
             check(Function);
             Node->SetFromFunction(Function);
         };

@@ -2,6 +2,7 @@
 
 DEFINE_LOG_CATEGORY(LogCustom);
 
+// ReSharper disable once CppParameterMayBeConst
 void FCustomLog::Log(ELogVerbosity::Type Verbosity, const FString& Message)
 {
 #if WITH_EDITOR
@@ -55,8 +56,7 @@ void FCustomLog::Log(ELogVerbosity::Type Verbosity, const FString& Message)
             return;
     }
 #if WITH_EDITOR
-    ELogVerbosity::Type CurrentVerbosity = LogCustom.GetVerbosity();
-    if (CurrentVerbosity < Verbosity) return;
+    if (const ELogVerbosity::Type CurrentVerbosity = LogCustom.GetVerbosity(); CurrentVerbosity < Verbosity) return;
     GEngine->AddOnScreenDebugMessage(INDEX_NONE, 10.0f, Colour, Message);
 #endif
 }

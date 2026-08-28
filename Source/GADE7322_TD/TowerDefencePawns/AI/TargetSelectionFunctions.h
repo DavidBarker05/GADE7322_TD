@@ -10,12 +10,16 @@ const ATowerDefencePawn* SelectTarget(TArray<ATowerDefencePawn*>& Array, T BaseL
                                       TFunction<bool(const T&, const T&)> Predicate)
 {
     const ATowerDefencePawn* Result = nullptr;
+    // Why couldn't we just make this like the STL? :(
     for (int32 i = Array.Num() - 1; i >= 0; --i)
     {
         const ATowerDefencePawn* Enemy = Array[i];
         if (!IsValid(Enemy) || !Enemy->IsPawnActive())
         {
-            Array.RemoveAt(i, EAllowShrinking::No);
+            // Faster erase, because move last element to current element and then pops
+            // and since we already checked last element it's safe to just continue,
+            // and we don't care about the order the elements are
+            Array.RemoveAtSwap(i, EAllowShrinking::No);
             continue;
         }
         T CurrentVal = GetCurrentVal(Enemy);

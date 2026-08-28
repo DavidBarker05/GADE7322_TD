@@ -17,6 +17,6 @@ public:
     APlayerTower();
 
 private:
-    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components", meta = (AllowPrivateAccess = "true"))
+    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components", meta = (AllowPrivateAccess = true))
     UStaticMeshComponent* TowerMesh;
 };

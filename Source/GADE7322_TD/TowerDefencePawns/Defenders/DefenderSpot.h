@@ -30,7 +30,6 @@ public:
     UFUNCTION(BlueprintCallable)
     virtual void OnEventReceived_Implementation(const FName& EventName, const TArray<FAny>& Params) override;
 
-public:
     UFUNCTION(BlueprintPure, Category = "Defender")
     bool IsOccupied() const;
 
@@ -44,13 +43,12 @@ public:
     void SellDefender();
 
 private:
-    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components", meta = (AllowPrivateAccess = "true"))
+    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components", meta = (AllowPrivateAccess = true))
     UBoxComponent* BoxCollider = nullptr;
 
-private:
-    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Defender", meta = (AllowPrivateAccess = "true"))
+    UPROPERTY(BlueprintReadOnly, Category = "Defender", meta = (AllowPrivateAccess = true))
     ADefender* CurrentDefender = nullptr;
 
-    UPROPERTY(EditDefaultsOnly, Category = "Collision", meta = (AllowPrivateAccess = "true"))
+    UPROPERTY(EditDefaultsOnly, Category = "Collision", meta = (AllowPrivateAccess = true))
     FVector ColliderHalfExtents {50.0f, 50.0f, 50.0f};
 };

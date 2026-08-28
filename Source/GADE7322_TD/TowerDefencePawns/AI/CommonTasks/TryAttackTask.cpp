@@ -6,13 +6,13 @@
 EStateTreeRunStatus FTryAttackTask::EnterState(FStateTreeExecutionContext& Context,
                                                const FStateTreeTransitionResult& Transition) const
 {
-    FTryAttackTaskInstanceData& Data = Context.GetInstanceData(*this);
-    if (!Data.Actor)
+    auto& [Actor] = Context.GetInstanceData(*this);
+    if (!Actor)
     {
         TD_LOG_ERROR(TEXT("FTryAttackTask::EnterState -> Actor context is nullptr"));
         return EStateTreeRunStatus::Failed;
     }
-    if (!Data.Actor->CanAttack()) return EStateTreeRunStatus::Failed;
-    Data.Actor->StartAttack();
+    if (!Actor->CanAttack()) return EStateTreeRunStatus::Failed;
+    Actor->StartAttack();
     return EStateTreeRunStatus::Succeeded;
 }

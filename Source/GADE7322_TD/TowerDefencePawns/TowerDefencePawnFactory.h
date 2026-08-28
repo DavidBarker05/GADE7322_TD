@@ -49,15 +49,13 @@ class GADE7322_TD_API UTowerDefencePawnFactory : public UGameInstanceSubsystem
 {
     GENERATED_BODY()
 
-private:
-    using PoolType = TSet<ATowerDefencePawn*>;
-    using SizeType = PoolType::SizeType;
+    using FPoolType = TSet<ATowerDefencePawn*>;
+    using SizeType = FPoolType::SizeType;
 
 public:
     virtual void Initialize(FSubsystemCollectionBase& Collection) override;
     virtual void Deinitialize() override;
 
-public:
     UFUNCTION(BlueprintCallable)
     ATowerDefencePawn* CreatePawn(const TSubclassOf<ATowerDefencePawn>& TowerDefencePawnBlueprint,
                                   const FTransform& SpawnTransform);
@@ -68,9 +66,8 @@ public:
 private:
     void CreatePool(const TSubclassOf<ATowerDefencePawn>& TowerDefencePawnBlueprint);
 
-private:
-    TMap<TSubclassOf<ATowerDefencePawn>, PoolType> AvailablePawns;
-    TMap<TSubclassOf<ATowerDefencePawn>, PoolType> UnavailablePawns;
+    TMap<TSubclassOf<ATowerDefencePawn>, FPoolType> AvailablePawns;
+    TMap<TSubclassOf<ATowerDefencePawn>, FPoolType> UnavailablePawns;
 
     const SizeType StartingPoolSize = 10;
 };

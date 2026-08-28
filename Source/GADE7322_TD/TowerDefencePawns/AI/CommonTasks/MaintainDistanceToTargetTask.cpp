@@ -7,24 +7,26 @@
 EStateTreeRunStatus FMaintainDistanceToTargetTask::EnterState(FStateTreeExecutionContext& Context,
                                                               const FStateTreeTransitionResult& Transition) const
 {
-    FMaintainDistanceToTargetTaskInstanceData& Data = Context.GetInstanceData(*this);
-    if (!Data.AIController)
+    const auto& [AIController, Actor, Target, OccupiedRadius, TargetOccupiedRadius, RadiusToKeepTargetWithin] =
+        Context.GetInstanceData(*this);
+    if (!AIController)
     {
         TD_LOG_ERROR(TEXT("FMaintainDistanceToTargetTask::EnterState -> AI Controller context is nullptr"));
         return EStateTreeRunStatus::Failed;
     }
-    if (!Data.Actor)
+    if (!Actor)
     {
         TD_LOG_ERROR(TEXT("FMaintainDistanceToTargetTask::EnterState -> Actor context is nullptr"));
         return EStateTreeRunStatus::Failed;
     }
-    if (!IsValid(Data.Target)) return EStateTreeRunStatus::Failed;
-    if (FVector::Dist2D(Data.Actor->GetActorLocation(), Data.Target->GetActorLocation()) - Data.TargetOccupiedRadius <
-        Data.RadiusToKeepTargetWithin - KINDA_SMALL_NUMBER) // Rather be slightly closer
+    if (!IsValid(Target)) return EStateTreeRunStatus::Failed;
+    if (FVector::Dist2D(Actor->GetActorLocation(), Target->GetActorLocation()) - TargetOccupiedRadius <
+        RadiusToKeepTargetWithin - KINDA_SMALL_NUMBER) // Rather be slightly closer
         return EStateTreeRunStatus::Succeeded;
-    const float StopEdgeDistance = (Data.OccupiedRadius + Data.RadiusToKeepTargetWithin) / 2.0f;
-    const float AcceptanceRadius = Data.TargetOccupiedRadius + StopEdgeDistance;
-    switch (Data.AIController->MoveToActor(Data.Target, AcceptanceRadius, false))
+    const float StopEdgeDistance = (OccupiedRadius + RadiusToKeepTargetWithin) / 2.0f;
+    // ReSharper disable once CppTooWideScopeInitStatement
+    const float AcceptanceRadius = TargetOccupiedRadius + StopEdgeDistance;
+    switch (AIController->MoveToActor(Target, AcceptanceRadius, false))
     {
         case EPathFollowingRequestResult::AlreadyAtGoal:
             return EStateTreeRunStatus::Succeeded;
@@ -38,15 +40,16 @@ EStateTreeRunStatus FMaintainDistanceToTargetTask::EnterState(FStateTreeExecutio
 EStateTreeRunStatus FMaintainDistanceToTargetTask::Tick(FStateTreeExecutionContext& Context,
                                                         const float DeltaTime) const
 {
-    FMaintainDistanceToTargetTaskInstanceData& Data = Context.GetInstanceData(*this);
-    if (!Data.AIController || !IsValid(Data.Target)) return EStateTreeRunStatus::Failed;
-    return Data.AIController->GetMoveStatus() == EPathFollowingStatus::Idle ? EStateTreeRunStatus::Succeeded :
-                                                                              EStateTreeRunStatus::Running;
+    const auto& [AIController, Actor, Target, OccupiedRadius, TargetOccupiedRadius, RadiusToKeepTargetWithin] =
+        Context.GetInstanceData(*this);
+    if (!AIController || !IsValid(Target)) return EStateTreeRunStatus::Failed;
+    return AIController->GetMoveStatus() == EPathFollowingStatus::Idle ? EStateTreeRunStatus::Succeeded :
+                                                                         EStateTreeRunStatus::Running;
 }
 
 void FMaintainDistanceToTargetTask::ExitState(FStateTreeExecutionContext& Context,
                                               const FStateTreeTransitionResult& Transition) const
 {
-    FMaintainDistanceToTargetTaskInstanceData& Data = Context.GetInstanceData(*this);
-    if (Data.AIController) Data.AIController->StopMovement();
+    if (const FMaintainDistanceToTargetTaskInstanceData& Data = Context.GetInstanceData(*this); Data.AIController)
+        Data.AIController->StopMovement();
 }

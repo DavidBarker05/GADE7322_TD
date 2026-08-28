@@ -46,7 +46,7 @@ public:
 
     // Builds the terrain mesh, flattening a corridor around each generated path
     UFUNCTION(BlueprintCallable, Category = "Terrain Generation")
-    void GenerateTerrain();
+    void GenerateTerrain() const;
 
     // Samples the terrain height (Z) at a given world X/Y, using the same heightfield the mesh was built from
     UFUNCTION(BlueprintPure, Category = "Terrain Generation")
@@ -63,32 +63,31 @@ protected:
     UPROPERTY(VisibleAnywhere, Category = "Components")
     TObjectPtr<UProceduralMeshComponent> TerrainMesh;
 
-protected:
     // Radius of the terrain from the tower (0,0) out to the edge spawn points
-    UPROPERTY(EditAnywhere, Category = "Terrain Generation", meta = (ClampMin = "500.0"))
+    UPROPERTY(EditAnywhere, Category = "Terrain Generation", meta = (ClampMin = 500.0))
     float TerrainRadius = 4000.0f;
 
-    UPROPERTY(EditAnywhere, Category = "Terrain Generation", meta = (ClampMin = "3"))
+    UPROPERTY(EditAnywhere, Category = "Terrain Generation", meta = (ClampMin = 3))
     int32 NumPaths = 3;
 
     // How many straight segments each path is subdivided into before noise is applied
-    UPROPERTY(EditAnywhere, Category = "Terrain Generation", meta = (ClampMin = "4"))
+    UPROPERTY(EditAnywhere, Category = "Terrain Generation", meta = (ClampMin = 4))
     int32 PathSegments = 24;
 
     // Max perpendicular offset (world units) the path can wander from the straight line to the tower
-    UPROPERTY(EditAnywhere, Category = "Terrain Generation", meta = (ClampMin = "0.0"))
+    UPROPERTY(EditAnywhere, Category = "Terrain Generation", meta = (ClampMin = 0.0))
     float PathWanderAmount = 900.0f;
 
     // How rapidly the wander offset changes along the path (higher = wigglier)
-    UPROPERTY(EditAnywhere, Category = "Terrain Generation", meta = (ClampMin = "0.01"))
+    UPROPERTY(EditAnywhere, Category = "Terrain Generation", meta = (ClampMin = 0.01))
     float PathWanderFrequency = 0.6f;
 
     // Half-width of the flat walkable strip each path carves through the terrain
-    UPROPERTY(EditAnywhere, Category = "Terrain Generation", meta = (ClampMin = "50.0"))
+    UPROPERTY(EditAnywhere, Category = "Terrain Generation", meta = (ClampMin = 50.0))
     float PathWidth = 250.0f;
 
     // Minimum angular gap (degrees) enforced between neighbouring path entry points
-    UPROPERTY(EditAnywhere, Category = "Terrain Generation", meta = (ClampMin = "0.0", ClampMax = "180.0"))
+    UPROPERTY(EditAnywhere, Category = "Terrain Generation", meta = (ClampMin = 0.0, ClampMax = 180.0))
     float MinEntryAngleSeparation = 25.0f;
 
     UPROPERTY(EditAnywhere, Category = "Terrain Generation")
@@ -104,25 +103,24 @@ protected:
     UPROPERTY(EditAnywhere, Category = "Terrain Generation|Debug", meta = (EditCondition = "bDrawDebugPaths"))
     float DebugDrawDuration = 30.0f;
 
-protected:
     // World units per grid cell (smaller = denser mesh/more triangles)
-    UPROPERTY(EditAnywhere, Category = "Terrain Mesh", meta = (ClampMin = "50.0"))
+    UPROPERTY(EditAnywhere, Category = "Terrain Mesh", meta = (ClampMin = 50.0))
     float CellSize = 200.0f;
 
     // World units of vertical relief added by noise, before path flattening
-    UPROPERTY(EditAnywhere, Category = "Terrain Mesh", meta = (ClampMin = "0.0"))
+    UPROPERTY(EditAnywhere, Category = "Terrain Mesh", meta = (ClampMin = 0.0))
     float HeightAmplitude = 600.0f;
 
     // Larger = more gradual hills (lower frequency noise)
-    UPROPERTY(EditAnywhere, Category = "Terrain Mesh", meta = (ClampMin = "100.0"))
+    UPROPERTY(EditAnywhere, Category = "Terrain Mesh", meta = (ClampMin = 100.0))
     float NoiseWavelength = 2500.0f;
 
     // Number of fractal noise layers combined together (higher = rougher/more detailed terrain)
-    UPROPERTY(EditAnywhere, Category = "Terrain Mesh", meta = (ClampMin = "1", ClampMax = "6"))
+    UPROPERTY(EditAnywhere, Category = "Terrain Mesh", meta = (ClampMin = 1, ClampMax = 6))
     int32 NoiseOctaves = 4;
 
     // Extra distance beyond each path's Width over which terrain blends from flat back up to full noise height
-    UPROPERTY(EditAnywhere, Category = "Terrain Mesh", meta = (ClampMin = "0.0"))
+    UPROPERTY(EditAnywhere, Category = "Terrain Mesh", meta = (ClampMin = 0.0))
     float PathBlendWidth = 400.0f;
 
     // World Z of the flat ground along paths
@@ -132,20 +130,19 @@ protected:
     UPROPERTY(EditAnywhere, Category = "Terrain Mesh")
     TObjectPtr<UMaterialInterface> TerrainMaterial;
 
-protected:
     UPROPERTY(EditAnywhere, Category = "Defender Spots")
     TSubclassOf<ADefenderSpot> DefenderSpotClass;
 
     // Arc-length distance walked along a path between candidate spot positions
-    UPROPERTY(EditAnywhere, Category = "Defender Spots", meta = (ClampMin = "50.0"))
+    UPROPERTY(EditAnywhere, Category = "Defender Spots", meta = (ClampMin = 50.0))
     float DefenderSpotSpacing = 500.0f;
 
     // Extra clearance beyond the path's flattened corridor edge before placing a spot
-    UPROPERTY(EditAnywhere, Category = "Defender Spots", meta = (ClampMin = "0.0"))
+    UPROPERTY(EditAnywhere, Category = "Defender Spots", meta = (ClampMin = 0.0))
     float DefenderSpotOffset = 150.0f;
 
     // Minimum distance enforced between two spots so their colliders never overlap
-    UPROPERTY(EditAnywhere, Category = "Defender Spots", meta = (ClampMin = "0.0"))
+    UPROPERTY(EditAnywhere, Category = "Defender Spots", meta = (ClampMin = 0.0))
     float DefenderSpotMinSeparation = 300.0f;
 
     UPROPERTY(EditAnywhere, Category = "Terrain Generation|Debug")
@@ -158,11 +155,10 @@ private:
     // Signed distance from Point to the nearest path corridor's edge
     float DistanceToNearestPathEdge(const FVector2D& Point) const;
 
-private:
     // Picks NumPaths angles around the circle, evenly spaced then jittered, respecting MinEntryAngleSeparation
-    TArray<float> GenerateEntryAngles(FRandomStream& Stream) const;
+    TArray<float> GenerateEntryAngles(const FRandomStream& Stream) const;
 
-    FTerrainPath BuildPath(float EntryAngleDegrees, FRandomStream& Stream) const;
+    FTerrainPath BuildPath(float EntryAngleDegrees, const FRandomStream& Stream) const;
 
     void DrawDebugForPaths() const;
 
@@ -171,10 +167,9 @@ private:
 
     void DrawDebugForDefenderSpots() const;
 
-private:
-    UPROPERTY(BlueprintReadOnly, Category = "Terrain Generation", meta = (AllowPrivateAccess = "true"))
+    UPROPERTY(BlueprintReadOnly, Category = "Terrain Generation", meta = (AllowPrivateAccess = true))
     TArray<FTerrainPath> Paths;
 
-    UPROPERTY(BlueprintReadOnly, Category = "Defender Spots", meta = (AllowPrivateAccess = "true"))
+    UPROPERTY(BlueprintReadOnly, Category = "Defender Spots", meta = (AllowPrivateAccess = true))
     TArray<ADefenderSpot*> DefenderSpots;
 };

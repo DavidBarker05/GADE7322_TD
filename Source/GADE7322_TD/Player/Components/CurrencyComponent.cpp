@@ -1,3 +1,4 @@
+// ReSharper disable CppParameterMayBeConst
 #include "Player/Components/CurrencyComponent.h"
 
 UCurrencyComponent::UCurrencyComponent() { PrimaryComponentTick.bCanEverTick = false; }
@@ -5,7 +6,6 @@ UCurrencyComponent::UCurrencyComponent() { PrimaryComponentTick.bCanEverTick = f
 void UCurrencyComponent::BeginPlay()
 {
     Super::BeginPlay();
-    CurrentCurrency = StartingCurrency;
     SUBSCRIBE_TO_EVENTS();
 }
 
@@ -24,8 +24,6 @@ void UCurrencyComponent::DecreaseCurrency(int32 Amount)
 {
     if (Amount > 0) CurrentCurrency -= Amount;
 }
-
-void UCurrencyComponent::ResetCurrency() { CurrentCurrency = StartingCurrency; }
 
 void UCurrencyComponent::OnEventReceived_Implementation(const FName& EventName, const TArray<FAny>& Params)
 {

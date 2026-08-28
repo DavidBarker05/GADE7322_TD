@@ -19,7 +19,6 @@ public:
 
     virtual void BeginPlay() override;
 
-public:
     virtual void StartAttack() override;
 
     virtual void EndAttack() override;
@@ -42,16 +41,16 @@ public:
     float GetAttackRadius() const { return AttackRadius; }
 
 private:
-    UPROPERTY(EditDefaultsOnly, Category = "Meshes", meta = (AllowPrivateAccess = "true"))
+    UPROPERTY(EditDefaultsOnly, Category = "Meshes", meta = (AllowPrivateAccess = true))
     TArray<USkeletalMesh*> PossibleMeshes;
 
-    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components", meta = (AllowPrivateAccess = "true"))
+    UPROPERTY(BlueprintReadOnly, Category = "Components", meta = (AllowPrivateAccess = true))
     USkeletalMeshComponent* SkeletalMesh;
 
-    UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "AI", meta = (AllowPrivateAccess = "true"))
+    UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "AI", meta = (AllowPrivateAccess = true))
     const ATowerDefencePawn* CurrentAttackTarget;
 
     UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "AI",
-              meta = (AllowPrivateAccess = "true", Units = "Centimeters", ClampMin = "0.0", UIMin = "0.0"))
+              meta = (AllowPrivateAccess = true, ClampMin = 0.0, UIMin = 0.0, Units = "Centimeters"))
     float AttackRadius = 100.0f;
 };

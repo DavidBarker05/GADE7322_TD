@@ -1,3 +1,4 @@
+// ReSharper disable CppNonExplicitConvertingConstructor
 #pragma once
 
 #include "CoreMinimal.h"
@@ -19,7 +20,7 @@ public:
     TSubclassOf<UAISense_Proximity> Implementation;
 
     UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Sense", config,
-              meta = (UIMin = "0.0", ClampMin = "0.0", Units = "Centimeters"))
+              meta = (UIMin = 0.0, ClampMin = 0.0, Units = "Centimeters"))
     float DetectionRadius;
 
     UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Sense", config)

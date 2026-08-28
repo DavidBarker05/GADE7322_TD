@@ -1,3 +1,4 @@
+// ReSharper disable CppParameterMayBeConst
 #include "Player/TowerDefencePlayer.h"
 
 #include "Camera/CameraComponent.h"
@@ -24,6 +25,7 @@ void ATowerDefencePlayer::BeginPlay()
 {
     Super::BeginPlay();
     SUBSCRIBE_TO_EVENTS();
+    CurrencyComponent->ResetCurrency();
 }
 
 void ATowerDefencePlayer::EndPlay(const EEndPlayReason::Type EndPlayReason)
@@ -51,15 +53,16 @@ void ATowerDefencePlayer::OnEventReceived_Implementation(const FName& EventName,
         TD_LOG_INFO(TEXT("Player is dead"));
 }
 
+// ReSharper disable once CppMemberFunctionMayBeConst
 void ATowerDefencePlayer::Move(const FInputActionValue& Value)
 {
-    FVector2D MovementVector = Value.Get<FVector2D>();
-    FVector RightVector = GetActorRightVector() * MovementVector.X;
-    FVector ForwardVector = GetActorForwardVector() * MovementVector.Y;
+    const FVector2D MovementVector = Value.Get<FVector2D>();
+    const FVector RightVector = GetActorRightVector() * MovementVector.X;
+    const FVector ForwardVector = GetActorForwardVector() * MovementVector.Y;
     FloatingPawnMovement->AddInputVector(RightVector + ForwardVector);
 }
 
-bool ATowerDefencePlayer::IsMouseOverUI(const APlayerController* PlayerController) const
+bool ATowerDefencePlayer::IsMouseOverUI(const APlayerController* PlayerController)
 {
     if (!PlayerController || !FSlateApplication::IsInitialized() || !GEngine || !GEngine->GameViewport) return false;
 
@@ -75,6 +78,7 @@ bool ATowerDefencePlayer::IsMouseOverUI(const APlayerController* PlayerControlle
     return WidgetPath.IsValid() && WidgetPath.GetLastWidget() != GameViewportWidget;
 }
 
+// ReSharper disable once CppMemberFunctionMayBeConst
 void ATowerDefencePlayer::DoMouseClick()
 {
     if (const APlayerController* PlayerController = Cast<APlayerController>(GetController()))

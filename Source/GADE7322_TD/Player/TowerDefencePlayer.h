@@ -25,28 +25,26 @@ class GADE7322_TD_API ATowerDefencePlayer : public APawn,
 public:
     ATowerDefencePlayer();
 
-protected:
     virtual void BeginPlay() override;
 
     virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
 
-public:
     virtual void Tick(float DeltaTime) override;
 
+protected:
     virtual void SetupPlayerInputComponent(UInputComponent* PlayerInputComponent) override;
 
 public:
     UFUNCTION(BlueprintCallable)
     virtual void OnEventReceived_Implementation(const FName& EventName, const TArray<FAny>& Params) override;
 
-public:
     void Move(const FInputActionValue& Value);
 
     void DoMouseClick();
 
 private:
-    // True if the cursor is currently over a hit-testable UMG widget rather than the game viewport.
-    bool IsMouseOverUI(const APlayerController* PlayerController) const;
+    // True if the cursor is currently over a hit-testable UMG widget rather than the game viewport
+    static bool IsMouseOverUI(const APlayerController* PlayerController);
 
 protected:
     UPROPERTY(EditAnywhere, Category = "Input")
@@ -56,12 +54,12 @@ protected:
     UInputAction* MouseClickAction;
 
 private:
-    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components", meta = (AllowPrivateAccess = "true"))
+    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components", meta = (AllowPrivateAccess = true))
     UFloatingPawnMovement* FloatingPawnMovement;
 
-    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components", meta = (AllowPrivateAccess = "true"))
+    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components", meta = (AllowPrivateAccess = true))
     UCameraComponent* CameraComponent;
 
-    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components", meta = (AllowPrivateAccess = "true"))
+    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components", meta = (AllowPrivateAccess = true))
     UCurrencyComponent* CurrencyComponent;
 };

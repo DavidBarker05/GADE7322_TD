@@ -24,18 +24,18 @@ void UEventBus::RemoveListener(const FName& EventName, TScriptInterface<IEventLi
 {
     if (TArray<TScriptInterface<IEventListener>>* Listeners = EventListeners.Find(EventName))
     {
-        Listeners->Remove(Listener);
+        // Faster remove, because order doesn't really matter
+        Listeners->RemoveSwap(Listener, EAllowShrinking::No);
         if (Listeners->IsEmpty()) EventListeners.Remove(EventName);
     }
 }
 
 void UEventBus::Broadcast(const FName& EventName, const TArray<FAny>& Params)
 {
-    if (!EventListeners.Contains(EventName)) return;
     if (TArray<TScriptInterface<IEventListener>>* Listeners = EventListeners.Find(EventName))
     {
         if (Listeners->IsEmpty()) return;
-        for (int i = Listeners->Num() - 1; i >= 0; --i)
+        for (int32 i = Listeners->Num() - 1; i >= 0; --i)
             if ((*Listeners)[i] && IsValid((*Listeners)[i].GetObject()))
                 (*Listeners)[i]->Execute_OnEventReceived((*Listeners)[i].GetObject(), EventName, Params);
     }

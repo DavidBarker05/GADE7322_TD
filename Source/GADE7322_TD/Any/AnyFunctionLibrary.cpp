@@ -4,7 +4,11 @@
 
 #define LOCTEXT_NAMESPACE "UAnyFunctionLibrary"
 
-FAny UAnyFunctionLibrary::MakeAny(const int32& Value) { checkNoEntry() return {}; }
+FAny UAnyFunctionLibrary::MakeAny(const int32&)
+{
+    checkNoEntry();
+    return {};
+}
 
 bool UAnyFunctionLibrary::Any_IsValid(const FAny& Any) { return Any.IsValid(); }
 
@@ -13,14 +17,19 @@ void UAnyFunctionLibrary::Any_IsValidBranch(const FAny& Any, EIsValidOutputPins&
     OutputPins = Any.IsValid() ? EIsValidOutputPins::Valid : EIsValidOutputPins::NotValid;
 }
 
-void UAnyFunctionLibrary::AnyGet(const FAny& InAny, EIsAOutputPins& OutputPins, int32& Value) {checkNoEntry()}
+void UAnyFunctionLibrary::AnyGet(const FAny&, EIsAOutputPins&, int32&) { checkNoEntry(); }
 
-FAny& UAnyFunctionLibrary::SetAny(FAny& InAny, const int32& Value)
+FAny& UAnyFunctionLibrary::SetAny(FAny& InAny, const int32&)
 {
-    checkNoEntry() return InAny;
+    checkNoEntry();
+    return InAny;
 }
 
-FAny UAnyFunctionLibrary::ToAny(const int32& Value) { checkNoEntry() return {}; }
+FAny UAnyFunctionLibrary::ToAny(const int32&)
+{
+    checkNoEntry();
+    return {};
+}
 
 DEFINE_FUNCTION(UAnyFunctionLibrary::execMakeAny)
 {
@@ -98,12 +107,12 @@ DEFINE_FUNCTION(UAnyFunctionLibrary::execMakeAny)
                 bSuccess = true;
             }
         }
-        else if (const FTextProperty* TextProp = CastField<FTextProperty>(ValueProp))
+        else if (CastField<FTextProperty>(ValueProp))
         {
             Instanced.InitializeAs<FFTextStruct>();
             if (FFTextStruct* TextStructPtr = Instanced.GetMutablePtr<FFTextStruct>())
             {
-                TextStructPtr->Value = *(FText*)ValuePtr;
+                TextStructPtr->Value = *static_cast<const FText*>(ValuePtr);
                 bSuccess = true;
             }
         }
@@ -122,17 +131,17 @@ DEFINE_FUNCTION(UAnyFunctionLibrary::execMakeAny)
             StructProp->Struct->CopyScriptStruct(Instanced.GetMutableMemory(), ValuePtr);
             bSuccess = true;
         }
-        if (bSuccess) *(FAny*)RESULT_PARAM = FAny(MoveTemp(Instanced));
+        if (bSuccess) *static_cast<FAny*>(RESULT_PARAM) = FAny(MoveTemp(Instanced));
         P_NATIVE_END;
     }
     if (!bSuccess)
     {
-        FBlueprintExceptionInfo ExceptionInfo(
+        const FBlueprintExceptionInfo ExceptionInfo(
             EBlueprintExceptionType::AbortExecution,
             LOCTEXT("AnyMake_MakeInvalidValueWarning", "Failed to resolve the Value for Make Any"));
         FBlueprintCoreDelegates::ThrowScriptException(P_THIS, Stack, ExceptionInfo);
         P_NATIVE_BEGIN;
-        *(FAny*)RESULT_PARAM = FAny();
+        *static_cast<FAny*>(RESULT_PARAM) = FAny();
         P_NATIVE_END;
     }
 }
@@ -148,9 +157,9 @@ DEFINE_FUNCTION(UAnyFunctionLibrary::execAnyGet)
     void* ValuePtr = Stack.MostRecentPropertyAddress;
     P_FINISH;
     OutputPins = EIsAOutputPins::IsNotType;
-    bool bSuccess = false;
     if (ValueProp && ValuePtr && InAny.Value.IsValid())
     {
+        bool bSuccess = false;
         P_NATIVE_BEGIN;
         if (const FBoolProperty* BoolProp = CastField<FBoolProperty>(ValueProp))
         {
@@ -176,7 +185,7 @@ DEFINE_FUNCTION(UAnyFunctionLibrary::execAnyGet)
                 bSuccess = true;
             }
         }
-        else if (const FInt64Property* Int64Prop = CastField<FInt64Property>(ValueProp))
+        else if (CastField<FInt64Property>(ValueProp))
         {
             if (const int64* InnerValue = InAny.Get<int64>())
             {
@@ -200,11 +209,11 @@ DEFINE_FUNCTION(UAnyFunctionLibrary::execAnyGet)
                 bSuccess = true;
             }
         }
-        else if (const FTextProperty* TextProp = CastField<FTextProperty>(ValueProp))
+        else if (CastField<FTextProperty>(ValueProp))
         {
             if (const FText* InnerValue = InAny.Get<FText>())
             {
-                *(FText*)ValuePtr = *InnerValue;
+                *static_cast<FText*>(ValuePtr) = *InnerValue;
                 bSuccess = true;
             }
         }
@@ -284,9 +293,9 @@ DEFINE_FUNCTION(UAnyFunctionLibrary::execSetAny)
             InAny = NameProp->GetPropertyValue(ValuePtr);
             bSuccess = true;
         }
-        else if (const FTextProperty* TextProp = CastField<FTextProperty>(ValueProp))
+        else if (CastField<FTextProperty>(ValueProp))
         {
-            InAny.Set<FText>(*(FText*)ValuePtr);
+            InAny.Set<FText>(*static_cast<const FText*>(ValuePtr));
             bSuccess = true;
         }
         else if (const FObjectProperty* ObjectProp = CastField<FObjectProperty>(ValueProp))
@@ -300,17 +309,17 @@ DEFINE_FUNCTION(UAnyFunctionLibrary::execSetAny)
             StructProp->Struct->CopyScriptStruct(InAny.Value.GetMutableMemory(), ValuePtr);
             bSuccess = true;
         }
-        if (bSuccess) *(FAny*)RESULT_PARAM = InAny;
+        if (bSuccess) *static_cast<FAny*>(RESULT_PARAM) = InAny;
         P_NATIVE_END;
     }
     if (!bSuccess)
     {
-        FBlueprintExceptionInfo ExceptionInfo(
+        const FBlueprintExceptionInfo ExceptionInfo(
             EBlueprintExceptionType::AbortExecution,
             LOCTEXT("InstancedStruct_SetInvalidValueWarning", "Failed to resolve the Value for Set Any"));
         FBlueprintCoreDelegates::ThrowScriptException(P_THIS, Stack, ExceptionInfo);
         P_NATIVE_BEGIN;
-        *(FAny*)RESULT_PARAM = InAny;
+        *static_cast<FAny*>(RESULT_PARAM) = InAny;
         P_NATIVE_END;
     }
 }
@@ -391,12 +400,12 @@ DEFINE_FUNCTION(UAnyFunctionLibrary::execToAny)
                 bSuccess = true;
             }
         }
-        else if (const FTextProperty* TextProp = CastField<FTextProperty>(ValueProp))
+        else if (CastField<FTextProperty>(ValueProp))
         {
             Instanced.InitializeAs<FFTextStruct>();
             if (FFTextStruct* TextStructPtr = Instanced.GetMutablePtr<FFTextStruct>())
             {
-                TextStructPtr->Value = *(FText*)ValuePtr;
+                TextStructPtr->Value = *static_cast<const FText*>(ValuePtr);
                 bSuccess = true;
             }
         }
@@ -415,17 +424,17 @@ DEFINE_FUNCTION(UAnyFunctionLibrary::execToAny)
             StructProp->Struct->CopyScriptStruct(Instanced.GetMutableMemory(), ValuePtr);
             bSuccess = true;
         }
-        if (bSuccess) *(FAny*)RESULT_PARAM = FAny(MoveTemp(Instanced));
+        if (bSuccess) *static_cast<FAny*>(RESULT_PARAM) = FAny(MoveTemp(Instanced));
         P_NATIVE_END;
     }
     if (!bSuccess)
     {
-        FBlueprintExceptionInfo ExceptionInfo(
+        const FBlueprintExceptionInfo ExceptionInfo(
             EBlueprintExceptionType::AbortExecution,
             LOCTEXT("InstancedStruct_SetInvalidValueWarning", "Failed to resolve the Value for To Any"));
         FBlueprintCoreDelegates::ThrowScriptException(P_THIS, Stack, ExceptionInfo);
         P_NATIVE_BEGIN;
-        *(FAny*)RESULT_PARAM = FAny();
+        *static_cast<FAny*>(RESULT_PARAM) = FAny();
         P_NATIVE_END;
     }
 }

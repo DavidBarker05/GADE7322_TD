@@ -92,7 +92,8 @@ namespace Internal
         if (Params.Num() != sizeof...(Types)) return false;
         bool bCorrect = true;
         int32 Index = 0;
-        ((bCorrect &= (Params[Index++].Get<Types>() != nullptr)), ...);
+        // ReSharper disable once CppAssignedValueIsNeverUsed
+        ((bCorrect &= Params[Index++].Get<Types>() != nullptr), ...);
         return bCorrect;
     }
 } // namespace Internal

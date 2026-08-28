@@ -18,7 +18,6 @@ class GADE7322_TD_API UCurrencyComponent : public UActorComponent,
 public:
     UCurrencyComponent();
 
-protected:
     virtual void BeginPlay() override;
 
     virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
@@ -31,7 +30,7 @@ public:
     void DecreaseCurrency(int32 Amount);
 
     UFUNCTION(BlueprintCallable)
-    void ResetCurrency();
+    void ResetCurrency() { CurrentCurrency = StartingCurrency; }
 
     int32 GetStartingCurrency() const { return StartingCurrency; }
 
@@ -43,9 +42,9 @@ public:
 
 private:
     UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Currency",
-              meta = (AllowPrivateAccess = true, ClampMin = "0", UIMin = "0"))
+              meta = (AllowPrivateAccess = true, ClampMin = 0, UIMin = 0))
     int32 StartingCurrency = 0;
 
-    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Currency", meta = (AllowPrivateAccess = "true"))
+    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Currency", meta = (AllowPrivateAccess = true))
     int32 CurrentCurrency = 0;
 };

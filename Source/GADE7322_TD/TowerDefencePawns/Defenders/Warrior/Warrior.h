@@ -20,7 +20,6 @@ public:
 
     virtual void BeginPlay() override;
 
-public:
     virtual void StartAttack() override;
 
     virtual void EndAttack() override;
@@ -29,16 +28,8 @@ protected:
     virtual void DoOnSetActive(bool bActive) override;
 
 public:
-    const USkeletalMesh* GetMaleMesh() const;
-    USkeletalMesh* GetMaleMesh();
-
-    const USkeletalMesh* GetFemaleMesh() const;
-    USkeletalMesh* GetFemaleMesh();
-
-    const USkeletalMeshComponent* GetMesh() const;
-    USkeletalMeshComponent* GetMesh();
-
-    bool IsFemale() const;
+    const USkeletalMeshComponent* GetMesh() const { return SkeletalMesh; }
+    USkeletalMeshComponent* GetMesh() { return SkeletalMesh; }
 
     AWarrior& SetAttackTarget(const ATowerDefencePawn* Target)
     {
@@ -51,28 +42,27 @@ public:
     float GetAttackRadius() const { return AttackRadius; }
 
 private:
-    UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Mesh", meta = (AllowPrivateAccess = "true"))
+    UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Mesh", meta = (AllowPrivateAccess = true))
     USkeletalMesh* MaleMesh = nullptr;
 
-    UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Animation", meta = (AllowPrivateAccess = "true"))
+    UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Animation", meta = (AllowPrivateAccess = true))
     TSubclassOf<UAnimInstance> MaleAnimationBlueprint;
 
-    UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Mesh", meta = (AllowPrivateAccess = "true"))
+    UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Mesh", meta = (AllowPrivateAccess = true))
     USkeletalMesh* FemaleMesh = nullptr;
 
-    UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Animation", meta = (AllowPrivateAccess = "true"))
+    UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Animation", meta = (AllowPrivateAccess = true))
     TSubclassOf<UAnimInstance> FemaleAnimationBlueprint;
 
-    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components", meta = (AllowPrivateAccess = "true"))
+    UPROPERTY(BlueprintReadOnly, Category = "Components", meta = (AllowPrivateAccess = true))
     USkeletalMeshComponent* SkeletalMesh = nullptr;
 
-    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Gender", meta = (AllowPrivateAccess = "true"))
-    bool bIsFemale;
-
-    UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "AI", meta = (AllowPrivateAccess = "true"))
+    UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "AI", meta = (AllowPrivateAccess = true))
     const ATowerDefencePawn* CurrentAttackTarget;
 
     UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "AI",
-              meta = (AllowPrivateAccess = "true", Units = "Centimeters", ClampMin = "0.0", UIMin = "0.0"))
+              meta = (AllowPrivateAccess = true, ClampMin = 0.0, UIMin = 0.0, Units = "Centimeters"))
     float AttackRadius = 100.0f;
+
+    bool bIsFemale;
 };

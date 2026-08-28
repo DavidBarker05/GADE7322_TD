@@ -1,6 +1,6 @@
+// ReSharper disable CppParameterMayBeConst
 #include "TowerDefencePawns/TowerDefencePawn.h"
 
-#include "EventListener.h"
 #include "Perception/AIPerceptionStimuliSourceComponent.h"
 #include "TowerDefencePawns/Components/DamageComponent.h"
 #include "TowerDefencePawns/Components/HealthComponent.h"
@@ -22,7 +22,11 @@ void ATowerDefencePawn::BeginPlay()
 ATowerDefencePawn& ATowerDefencePawn::SetPawnActive(bool bActive)
 {
     bIsPawnActive = bActive;
-    if (bActive) StimuliSourceComponent->RegisterWithPerceptionSystem();
+    if (bActive)
+    {
+        StimuliSourceComponent->RegisterWithPerceptionSystem();
+        HealthComponent->ResetHealth();
+    }
     else StimuliSourceComponent->UnregisterFromPerceptionSystem();
     DoOnSetActive(bActive);
     return *this;
@@ -45,13 +49,3 @@ void ATowerDefencePawn::OnDeathComplete()
 {
     if (DestroyDelegate) DestroyDelegate();
 }
-
-const UHealthComponent* ATowerDefencePawn::GetHealthComponent() const { return HealthComponent; }
-
-UHealthComponent* ATowerDefencePawn::GetHealthComponent() { return HealthComponent; }
-
-const UDamageComponent* ATowerDefencePawn::GetDamageComponent() const { return DamageComponent; }
-
-UDamageComponent* ATowerDefencePawn::GetDamageComponent() { return DamageComponent; }
-
-const FName& ATowerDefencePawn::GetPawnDisplayName() const { return PawnDisplayName; }

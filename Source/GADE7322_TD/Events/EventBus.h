@@ -52,7 +52,6 @@ public:
     virtual void Initialize(FSubsystemCollectionBase& Collection) override;
     virtual void Deinitialize() override;
 
-public:
     UFUNCTION(BlueprintCallable)
     void AddListener(const FName& EventName, TScriptInterface<IEventListener> Listener);
 

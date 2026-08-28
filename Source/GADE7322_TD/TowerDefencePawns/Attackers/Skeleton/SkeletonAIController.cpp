@@ -1,3 +1,4 @@
+// ReSharper disable CppParameterMayBeConst
 #include "TowerDefencePawns/Attackers/Skeleton/SkeletonAIController.h"
 
 #include "Perception/AIPerceptionTypes.h"
@@ -24,8 +25,8 @@ void ASkeletonAIController::Tick(float DeltaTime)
     if (ASkeletonPawn* SKPawn = GetSkeletonPawn())
     {
         if (!SKPawn->IsPawnActive()) return;
-        const ATowerDefencePawn* AttackTarget = SKPawn->GetAttackTarget();
-        if (IsValid(AttackTarget) && (AttackTarget->IsA<APlayerTower>() ||
+        if (const ATowerDefencePawn* AttackTarget = SKPawn->GetAttackTarget();
+            IsValid(AttackTarget) && (AttackTarget->IsA<APlayerTower>() ||
                                       FVector::Dist2D(SKPawn->GetActorLocation(), AttackTarget->GetActorLocation()) -
                                               AttackTarget->GetOccupiedRadius() <=
                                           SKPawn->GetAttackRadius() + KINDA_SMALL_NUMBER))
