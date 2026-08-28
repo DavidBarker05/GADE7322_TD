@@ -19,6 +19,11 @@ public:
 
     virtual void BeginPlay() override;
 
+public:
+    virtual void StartAttack() override;
+    
+    virtual void EndAttack() override;
+
 protected:
     virtual void DoOnSetActive(bool bActive) override;
 

@@ -16,6 +16,20 @@ void AWarrior::BeginPlay()
     SkeletalMesh->SetAnimClass(bIsFemale ? FemaleAnimationBlueprint : MaleAnimationBlueprint);
 }
 
+void AWarrior::StartAttack()
+{
+    bCanAttack = false;
+    // Play animation
+}
+
+void AWarrior::EndAttack() { bCanAttack = true; }
+
+void AWarrior::DoOnSetActive(bool bActive)
+{
+    // if (ASkeletonAIController* AIController = Cast<ASkeletonAIController>(GetController()))
+    //     AIController->SetControllerActive(bActive);
+}
+
 const USkeletalMesh* AWarrior::GetMaleMesh() const { return MaleMesh; }
 
 USkeletalMesh* AWarrior::GetMaleMesh() { return MaleMesh; }

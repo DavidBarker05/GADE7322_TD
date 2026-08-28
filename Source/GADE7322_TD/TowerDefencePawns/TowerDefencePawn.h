@@ -25,7 +25,13 @@ public:
     virtual void Tick(float DeltaTime) override;
 
 public:
+    // Play like an attack animation, or shoot projectile, etc.
+    virtual void StartAttack() { }
+
     virtual void Attack(ATowerDefencePawn* Other);
+
+    // After finish attack animation or whatever, do any end stuff and if need to allow attack again do that
+    virtual void EndAttack() { }
 
     virtual void OnDeath(TFunction<void()>&& Func);
 
@@ -48,6 +54,8 @@ public:
 
     float GetOccupiedRadius() const { return OccupiedRadius; }
 
+    bool CanAttack() const { return bCanAttack; }
+
 protected:
     // Stuff like toggling mesh, controller, etc.
     virtual void DoOnSetActive(bool bActive) { }
@@ -68,6 +76,9 @@ protected:
     UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Size",
               meta = (AllowPrivateAccess = "true", Units = "Centimeters", ClampMin = "0.0", UIMin = "0.0"))
     float OccupiedRadius = 0.0f;
+
+    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "TD Pawn", meta = (AllowPrivateAccess = "true"))
+    bool bCanAttack = true;
 
     TFunction<void()> DestroyDelegate;
 

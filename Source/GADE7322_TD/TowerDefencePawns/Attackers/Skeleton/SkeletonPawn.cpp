@@ -1,5 +1,6 @@
 #include "TowerDefencePawns/Attackers/Skeleton/SkeletonPawn.h"
 
+#include "DamageComponent.h"
 #include "SkeletonAIController.h"
 
 ASkeletonPawn::ASkeletonPawn()
@@ -14,6 +15,14 @@ void ASkeletonPawn::BeginPlay()
     Super::BeginPlay();
     SkeletalMesh->SetSkeletalMesh(PossibleMeshes[FMath::RandRange(0, PossibleMeshes.Num() - 1)]);
 }
+
+void ASkeletonPawn::StartAttack()
+{
+    bCanAttack = false;
+    // Play animation
+}
+
+void ASkeletonPawn::EndAttack() { bCanAttack = true; }
 
 void ASkeletonPawn::DoOnSetActive(bool bActive)
 {

@@ -32,7 +32,7 @@ void ATowerDefencePawn::Tick(float DeltaTime) { Super::Tick(DeltaTime); }
 
 void ATowerDefencePawn::Attack(ATowerDefencePawn* Other)
 {
-    if (Other && IsValid(Other)) DamageComponent->DamageOther(Other->HealthComponent);
+    if (IsValid(Other)) DamageComponent->DamageOther(Other->HealthComponent);
 }
 
 void ATowerDefencePawn::OnDeath(TFunction<void()>&& Func)
