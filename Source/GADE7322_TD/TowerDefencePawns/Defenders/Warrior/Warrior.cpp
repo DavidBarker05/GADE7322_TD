@@ -21,6 +21,12 @@ void AWarrior::StartAttack()
 
 void AWarrior::EndAttack() { bCanAttack = true; }
 
+void AWarrior::OnDeath(TFunction<void()>&& Func)
+{
+    DestroyDelegate = MoveTemp(Func);
+    SkeletalMesh->GetAnimInstance()->Montage_Play(bIsFemale ? FemaleDeathMontage : MaleDeathMontage, 1.0f);
+}
+
 void AWarrior::DoOnSetActive(bool bActive)
 {
     if (bActive)

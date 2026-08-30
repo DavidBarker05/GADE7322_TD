@@ -34,10 +34,10 @@ public:
     UFUNCTION(BlueprintCallable)
     virtual void EndAttack() { }
 
-    virtual void OnDeath(TFunction<void()>&& Func);
+    virtual void OnDeath(TFunction<void()>&& Func); // If override for animation don't forget to call delegate
 
     UFUNCTION(BlueprintCallable)
-    virtual void OnDeathComplete(); // If override for animation don't forget to call delegate
+    virtual void OnDeathComplete();
 
     const UHealthComponent* GetHealthComponent() const { return HealthComponent; }
     UHealthComponent* GetHealthComponent() { return HealthComponent; }

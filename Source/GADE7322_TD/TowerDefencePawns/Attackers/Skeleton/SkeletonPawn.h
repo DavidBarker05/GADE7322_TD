@@ -22,6 +22,8 @@ public:
     virtual void StartAttack() override;
 
     virtual void EndAttack() override;
+    
+    virtual void OnDeath(TFunction<void()>&& Func) override;
 
 protected:
     virtual void DoOnSetActive(bool bActive) override;
@@ -49,6 +51,9 @@ private:
 
     UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Animation", meta = (AllowPrivateAccess = true))
     UAnimMontage* AttackMontage;
+
+    UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Animation", meta = (AllowPrivateAccess = true))
+    UAnimMontage* DeathMontage;
 
     UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "AI", meta = (AllowPrivateAccess = true))
     const ATowerDefencePawn* CurrentAttackTarget;

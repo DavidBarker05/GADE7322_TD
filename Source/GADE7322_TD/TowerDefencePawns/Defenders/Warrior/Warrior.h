@@ -24,6 +24,8 @@ public:
 
     virtual void EndAttack() override;
 
+    virtual void OnDeath(TFunction<void()>&& Func) override;
+
 protected:
     virtual void DoOnSetActive(bool bActive) override;
 
@@ -51,6 +53,9 @@ private:
     UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Animation", meta = (AllowPrivateAccess = true))
     UAnimMontage* MaleAttackMontage;
 
+    UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Animation", meta = (AllowPrivateAccess = true))
+    UAnimMontage* MaleDeathMontage;
+
     UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Mesh", meta = (AllowPrivateAccess = true))
     USkeletalMesh* FemaleMesh = nullptr;
 
@@ -59,6 +64,9 @@ private:
 
     UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Animation", meta = (AllowPrivateAccess = true))
     UAnimMontage* FemaleAttackMontage;
+
+    UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Animation", meta = (AllowPrivateAccess = true))
+    UAnimMontage* FemaleDeathMontage;
 
     UPROPERTY(BlueprintReadOnly, Category = "Components", meta = (AllowPrivateAccess = true))
     USkeletalMeshComponent* SkeletalMesh = nullptr;

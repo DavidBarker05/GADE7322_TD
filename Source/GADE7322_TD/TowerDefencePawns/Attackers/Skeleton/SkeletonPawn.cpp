@@ -20,6 +20,12 @@ void ASkeletonPawn::StartAttack()
 
 void ASkeletonPawn::EndAttack() { bCanAttack = true; }
 
+void ASkeletonPawn::OnDeath(TFunction<void()>&& Func)
+{
+    DestroyDelegate = MoveTemp(Func);
+    SkeletalMesh->GetAnimInstance()->Montage_Play(DeathMontage, 1.0f);
+}
+
 void ASkeletonPawn::DoOnSetActive(bool bActive)
 {
     if (bActive) SkeletalMesh->SetSkeletalMesh(PossibleMeshes[FMath::RandRange(0, PossibleMeshes.Num() - 1)]);
