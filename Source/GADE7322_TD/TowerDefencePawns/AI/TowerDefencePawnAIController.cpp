@@ -17,10 +17,16 @@ ATowerDefencePawnAIController::ATowerDefencePawnAIController()
     PerceptionComponent->OnTargetPerceptionUpdated.AddDynamic(
         this, &ATowerDefencePawnAIController::OnTargetPerceptionUpdated);
 }
-void ATowerDefencePawnAIController::BeginPlay()
+void ATowerDefencePawnAIController::OnPossess(APawn* InPawn)
 {
-    Super::BeginPlay();
-    if (!GetTowerDefensePawn()->IsPawnActive()) SetControllerActive(false);
+    Super::OnPossess(InPawn);
+    SetControllerActive(true);
+}
+
+void ATowerDefencePawnAIController::OnUnPossess()
+{
+    SetControllerActive(false);
+    Super::OnUnPossess();
 }
 
 void ATowerDefencePawnAIController::SetControllerActive(bool bActive)

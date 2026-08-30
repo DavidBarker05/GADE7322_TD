@@ -6,6 +6,7 @@
 
 #include "TowerDefencePawn.generated.h"
 
+class ATowerDefencePawnAIController;
 class UHealthComponent;
 class UDamageComponent;
 class UAIPerceptionStimuliSourceComponent;
@@ -51,8 +52,12 @@ public:
 
     bool CanAttack() const { return bCanAttack; }
 
+    bool UseAIController() const { return bUseAIController; }
+
+    TSubclassOf<ATowerDefencePawnAIController> GetTDAIControllerClass() const { return TDAIControllerClass; }
+
 protected:
-    // Stuff like toggling mesh, controller, etc.
+    // Stuff like toggling mesh, etc.
     virtual void DoOnSetActive(bool bActive) { }
 
     UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components", meta = (AllowPrivateAccess = true))
@@ -73,6 +78,12 @@ protected:
 
     UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "TD Pawn", meta = (AllowPrivateAccess = true))
     bool bCanAttack = true;
+
+    UPROPERTY(EditDefaultsOnly, Category = "AI", meta = (DisplayName = "TD AI Controller Class"))
+    TSubclassOf<ATowerDefencePawnAIController> TDAIControllerClass;
+
+    UPROPERTY(EditDefaultsOnly, Category = "AI")
+    bool bUseAIController = false;
 
     TFunction<void()> DestroyDelegate;
 

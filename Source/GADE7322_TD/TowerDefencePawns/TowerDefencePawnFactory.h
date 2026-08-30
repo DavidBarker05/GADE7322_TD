@@ -3,6 +3,7 @@
 #include "CoreMinimal.h"
 
 #include "Subsystems/GameInstanceSubsystem.h"
+#include "UObject/StrongObjectPtr.h"
 
 #include "TowerDefencePawnFactory.generated.h"
 
@@ -49,11 +50,7 @@ class GADE7322_TD_API UTowerDefencePawnFactory : public UGameInstanceSubsystem
 {
     GENERATED_BODY()
 
-    using FPoolType = TSet<ATowerDefencePawn*>;
-    using SizeType = FPoolType::SizeType;
-
 public:
-    virtual void Initialize(FSubsystemCollectionBase& Collection) override;
     virtual void Deinitialize() override;
 
     UFUNCTION(BlueprintCallable)
@@ -66,8 +63,8 @@ public:
 private:
     void CreatePool(const TSubclassOf<ATowerDefencePawn>& TowerDefencePawnBlueprint);
 
-    TMap<TSubclassOf<ATowerDefencePawn>, FPoolType> AvailablePawns;
-    TMap<TSubclassOf<ATowerDefencePawn>, FPoolType> UnavailablePawns;
+    TMap<TSubclassOf<ATowerDefencePawn>, TSet<TStrongObjectPtr<ATowerDefencePawn>>> AvailablePawnPools;
+    TMap<TSubclassOf<ATowerDefencePawn>, TSet<TStrongObjectPtr<ATowerDefencePawn>>> UnavailablePawnPools;
 
-    const SizeType StartingPoolSize = 10;
+    const int32 StartingPoolSize = 10;
 };

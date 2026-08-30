@@ -20,7 +20,11 @@ public:
     ATowerDefencePawnAIController();
 
 protected:
-    virtual void BeginPlay() override;
+    // Controllers are pooled and reused across many possess/unpossess cycles, unlike BeginPlay
+    // (which only ever runs once, right after the controller is first spawned into the pool, long
+    // before it has a pawn). These are what actually turn perception/StateTree on and off each time.
+    virtual void OnPossess(APawn* InPawn) override;
+    virtual void OnUnPossess() override;
 
 public:
     virtual void SetControllerActive(bool bActive);

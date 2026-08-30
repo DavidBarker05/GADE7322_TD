@@ -16,7 +16,7 @@ void AWarrior::BeginPlay()
     // Gender randomisation wasn't working in constructor :(
     bIsFemale = FMath::RandBool();
     SkeletalMesh->SetSkeletalMesh(bIsFemale ? FemaleMesh : MaleMesh);
-    SkeletalMesh->SetAnimClass(bIsFemale ? FemaleAnimationBlueprint : MaleAnimationBlueprint);
+    SkeletalMesh->SetAnimInstanceClass(bIsFemale ? FemaleAnimationBlueprint : MaleAnimationBlueprint);
 }
 
 void AWarrior::StartAttack()
@@ -27,8 +27,4 @@ void AWarrior::StartAttack()
 
 void AWarrior::EndAttack() { bCanAttack = true; }
 
-void AWarrior::DoOnSetActive(bool bActive)
-{
-    if (ATowerDefencePawnAIController* AIController = Cast<ATowerDefencePawnAIController>(GetController()))
-        AIController->SetControllerActive(bActive);
-}
+void AWarrior::DoOnSetActive(bool bActive) { }

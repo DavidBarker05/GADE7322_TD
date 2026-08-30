@@ -24,8 +24,4 @@ void ASkeletonPawn::StartAttack()
 
 void ASkeletonPawn::EndAttack() { bCanAttack = true; }
 
-void ASkeletonPawn::DoOnSetActive(bool bActive)
-{
-    if (ATowerDefencePawnAIController* AIController = Cast<ATowerDefencePawnAIController>(GetController()))
-        AIController->SetControllerActive(bActive);
-}
+void ASkeletonPawn::DoOnSetActive(bool bActive) { }
