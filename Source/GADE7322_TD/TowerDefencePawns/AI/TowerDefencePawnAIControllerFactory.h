@@ -64,12 +64,8 @@ public:
 private:
     void CreatePool(const TSubclassOf<ATowerDefencePawnAIController>& AIControllerClass);
 
-    // Not UPROPERTY: UHT doesn't allow a container (TSet) as a TMap's value type ("nested
-    // containers are not supported"). TStrongObjectPtr keeps each pooled controller alive for GC
-    // purposes on its own, so these don't need reflection to be GC-safe.
     TMap<TSubclassOf<ATowerDefencePawnAIController>, TSet<TStrongObjectPtr<ATowerDefencePawnAIController>>>
         AvailableControllerPools;
-
     TMap<TSubclassOf<ATowerDefencePawnAIController>, TSet<TStrongObjectPtr<ATowerDefencePawnAIController>>>
         UnavailableControllerPools;
 
