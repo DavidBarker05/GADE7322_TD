@@ -1,0 +1,19 @@
+code for player tower to attack enemies
+
+maybe allow player to heal tower with money?
+
+enemy wave spawning
+
+ui for buying and selling
+
+ui for pause and play
+
+anims for warrior and skeleton
+
+navmesh or whatever it is called in unreal
+
+health and damage for all pawns
+
+playtest
+
+models and materials
