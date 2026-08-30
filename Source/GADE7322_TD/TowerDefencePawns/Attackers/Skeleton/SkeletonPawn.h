@@ -47,6 +47,9 @@ private:
     UPROPERTY(BlueprintReadOnly, Category = "Components", meta = (AllowPrivateAccess = true))
     USkeletalMeshComponent* SkeletalMesh;
 
+    UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Animation", meta = (AllowPrivateAccess = true))
+    UAnimMontage* AttackMontage;
+
     UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "AI", meta = (AllowPrivateAccess = true))
     const ATowerDefencePawn* CurrentAttackTarget;
 

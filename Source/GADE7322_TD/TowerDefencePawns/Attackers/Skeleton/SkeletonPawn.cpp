@@ -10,18 +10,22 @@ ASkeletonPawn::ASkeletonPawn()
     SkeletalMesh->SetupAttachment(RootComponent);
 }
 
-void ASkeletonPawn::BeginPlay()
-{
-    Super::BeginPlay();
-    SkeletalMesh->SetSkeletalMesh(PossibleMeshes[FMath::RandRange(0, PossibleMeshes.Num() - 1)]);
-}
+void ASkeletonPawn::BeginPlay() { Super::BeginPlay(); }
 
 void ASkeletonPawn::StartAttack()
 {
     bCanAttack = false;
-    // Play animation
+    SkeletalMesh->GetAnimInstance()->Montage_Play(AttackMontage, 1.0f);
 }
 
 void ASkeletonPawn::EndAttack() { bCanAttack = true; }
 
-void ASkeletonPawn::DoOnSetActive(bool bActive) { }
+void ASkeletonPawn::DoOnSetActive(bool bActive)
+{
+    if (bActive) SkeletalMesh->SetSkeletalMesh(PossibleMeshes[FMath::RandRange(0, PossibleMeshes.Num() - 1)]);
+    SkeletalMesh->SetVisibility(bActive);
+    SkeletalMesh->SetComponentTickEnabled(bActive);
+    SkeletalMesh->SetCollisionEnabled(bActive ? ECollisionEnabled::QueryAndPhysics : ECollisionEnabled::NoCollision);
+    SkeletalMesh->SetCollisionResponseToAllChannels(bActive ? ECR_Block : ECR_Ignore);
+    bCanAttack = bActive;
+}

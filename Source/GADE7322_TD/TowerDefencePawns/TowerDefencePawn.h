@@ -24,11 +24,14 @@ public:
     virtual void Tick(float DeltaTime) override;
 
     // Play like an attack animation, or shoot projectile, etc.
+    UFUNCTION(BlueprintCallable)
     virtual void StartAttack() { }
 
+    UFUNCTION(BlueprintCallable)
     virtual void Attack(ATowerDefencePawn* Other);
 
     // After finish attack animation or whatever, do any end stuff and if it needs to allow attack again do that
+    UFUNCTION(BlueprintCallable)
     virtual void EndAttack() { }
 
     virtual void OnDeath(TFunction<void()>&& Func);

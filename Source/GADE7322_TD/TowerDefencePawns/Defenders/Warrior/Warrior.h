@@ -48,11 +48,17 @@ private:
     UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Animation", meta = (AllowPrivateAccess = true))
     TSubclassOf<UAnimInstance> MaleAnimationBlueprint;
 
+    UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Animation", meta = (AllowPrivateAccess = true))
+    UAnimMontage* MaleAttackMontage;
+
     UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Mesh", meta = (AllowPrivateAccess = true))
     USkeletalMesh* FemaleMesh = nullptr;
 
     UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Animation", meta = (AllowPrivateAccess = true))
     TSubclassOf<UAnimInstance> FemaleAnimationBlueprint;
+
+    UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Animation", meta = (AllowPrivateAccess = true))
+    UAnimMontage* FemaleAttackMontage;
 
     UPROPERTY(BlueprintReadOnly, Category = "Components", meta = (AllowPrivateAccess = true))
     USkeletalMeshComponent* SkeletalMesh = nullptr;
