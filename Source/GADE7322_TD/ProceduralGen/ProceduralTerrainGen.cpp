@@ -64,7 +64,14 @@ FTerrainPath AProceduralTerrainGen::BuildPath(float EntryAngleDegrees, const FRa
 {
     FTerrainPath Path;
     Path.Width = PathWidth;
-    Path.Points.Reserve(PathSegments + 1);
+    Path.Points = SmoothPathControlPoints(BuildPathControlPoints(EntryAngleDegrees, Stream));
+    return Path;
+}
+
+TArray<FVector> AProceduralTerrainGen::BuildPathControlPoints(float EntryAngleDegrees, const FRandomStream& Stream) const
+{
+    TArray<FVector> ControlPoints;
+    ControlPoints.Reserve(PathSegments + 1);
 
     const float AngleRadians = FMath::DegreesToRadians(EntryAngleDegrees);
     const FVector EnemySpawn(TerrainRadius * FMath::Cos(AngleRadians), TerrainRadius * FMath::Sin(AngleRadians), 0.0f);
@@ -87,10 +94,97 @@ FTerrainPath AProceduralTerrainGen::BuildPath(float EntryAngleDegrees, const FRa
 
         const FVector Offset =
             Perpendicular * NoiseSample * PathWanderAmount * Taper; // Sideways only, never changes path length/Z
-        Path.Points.Add(BasePoint + Offset);
+        FVector Point = BasePoint + Offset;
+
+        // Tapered the same as the wander offset above: every path still has to meet exactly at the
+        // tower and start exactly at its own (already angle-separated) edge spawn, so this can't be
+        // allowed to push those two ends around - only the middle of the path is free to steer away.
+        Point += ComputePathSeparationOffset(Point) * Taper;
+
+        ControlPoints.Add(Point);
     }
 
-    return Path;
+    return ControlPoints;
+}
+
+// Checks Point against every already-built path in Paths (this path's own points aren't in there
+// yet) and returns how far it should be nudged away to keep at least MinPathSeparation clear of
+// each one's corridor edge. Only the single closest point on each other path counts, not every
+// point on it - otherwise being near one small arc of a densely-sampled spline would rack up dozens
+// of near-duplicate pushes and wildly overshoot.
+FVector AProceduralTerrainGen::ComputePathSeparationOffset(const FVector& Point) const
+{
+    FVector TotalPush = FVector::ZeroVector;
+
+    for (const FTerrainPath& OtherPath : Paths)
+    {
+        float ClosestEdgeDistance = TNumericLimits<float>::Max();
+        FVector ClosestPoint = FVector::ZeroVector;
+
+        for (const FVector& OtherPoint : OtherPath.Points)
+        {
+            const float EdgeDistance = FVector::Dist2D(Point, OtherPoint) - PathWidth - OtherPath.Width;
+            if (EdgeDistance < ClosestEdgeDistance)
+            {
+                ClosestEdgeDistance = EdgeDistance;
+                ClosestPoint = OtherPoint;
+            }
+        }
+
+        if (ClosestEdgeDistance >= MinPathSeparation) continue; // Already far enough from this path
+
+        FVector Away = Point - ClosestPoint;
+        Away.Z = 0.0f;
+        if (!Away.Normalize()) continue; // Sitting exactly on the other path, no defined direction to push
+
+        TotalPush += Away * (MinPathSeparation - ClosestEdgeDistance);
+    }
+
+    return TotalPush;
+}
+
+// Catmull-Rom spline through the coarse control points. Connecting those points with straight
+// lines is what made the path look like sharp triangular zigzags - it'd wander out to a point then
+// cut straight back, with no curvature carrying the direction through. A spline instead flows
+// smoothly through every control point, turning those same wander offsets into rounded curves.
+TArray<FVector> AProceduralTerrainGen::SmoothPathControlPoints(const TArray<FVector>& ControlPoints) const
+{
+    if (ControlPoints.Num() < 2) return ControlPoints;
+
+    TArray<FVector> Smoothed;
+    const int32 LastIndex = ControlPoints.Num() - 1;
+    Smoothed.Reserve(LastIndex * SplineSubdivisions + 1);
+
+    for (int32 i = 0; i < LastIndex; ++i)
+    {
+        const FVector& P1 = ControlPoints[i];
+        const FVector& P2 = ControlPoints[i + 1];
+
+        // Catmull-Rom needs a point before P1 and after P2 to know which way the curve is heading
+        // at the ends of this segment. At the very start/end of the path there's no real neighbour
+        // to use, so extrapolate one by continuing the existing direction - duplicating P1/P2
+        // instead would give a zero-length chord there, which is a divide-by-zero below.
+        const FVector P0 = i > 0 ? ControlPoints[i - 1] : P1 * 2.0f - P2;
+        const FVector P3 = i < LastIndex - 1 ? ControlPoints[i + 2] : P2 * 2.0f - P1;
+
+        // Centripetal parameterisation (sqrt of chord length): keeps the curve from looping or
+        // cusping where control points end up unevenly spaced, which uniform (0,1,2,3) spacing can't.
+        const float T0 = 0.0f;
+        const float T1 = T0 + FMath::Sqrt(FVector::Dist(P0, P1));
+        const float T2 = T1 + FMath::Sqrt(FVector::Dist(P1, P2));
+        const float T3 = T2 + FMath::Sqrt(FVector::Dist(P2, P3));
+
+        // Every segment contributes its points up to but not including P2, except the very last
+        // segment, which also includes its own endpoint since there's no following segment to add it
+        const int32 NumSteps = (i == LastIndex - 1) ? SplineSubdivisions + 1 : SplineSubdivisions;
+        for (int32 Step = 0; Step < NumSteps; ++Step)
+        {
+            const float T = T1 + (T2 - T1) * (static_cast<float>(Step) / SplineSubdivisions);
+            Smoothed.Add(FMath::CubicCRSplineInterp(P0, P1, P2, P3, T0, T1, T2, T3, T));
+        }
+    }
+
+    return Smoothed;
 }
 
 void AProceduralTerrainGen::GenerateTerrain() const
@@ -98,7 +192,8 @@ void AProceduralTerrainGen::GenerateTerrain() const
     TerrainMesh->ClearAllMeshSections();
 
     // Extend the mesh past TerrainRadius so path wander/width/blend never runs off the edge of the grid.
-    const float HalfExtent = TerrainRadius + PathWanderAmount + PathWidth + PathBlendWidth;
+    const float HalfExtent = TerrainRadius + PathWanderAmount + PathWidth + PathFlatZoneWidth +
+                             FMath::Max(PathHeightBlendWidth, PathTextureBlendWidth);
     const int32 NumCells = FMath::Max(1, FMath::CeilToInt(HalfExtent * 2.0f / CellSize)); // At least 1 cell
     const int32 VertsPerSide = NumCells + 1; // N cells needs N+1 verts per row/column
 
@@ -107,10 +202,16 @@ void AProceduralTerrainGen::GenerateTerrain() const
     TArray<FVector2D> UVs;
     TArray<FVector> Normals;
     TArray<FProcMeshTangent> Tangents;
-    const TArray<FLinearColor> VertexColors;
+    // R channel is the path/terrain texture blend mask: 0 inside a path corridor, ramping up to 1 by
+    // PathTextureBlendWidth out - independent of the (usually wider) PathHeightBlendWidth the height
+    // above already blended over. G and B are set the same so a material can read whichever channel
+    // is convenient. In the material graph: VertexColor -> Lerp(PathLook, TerrainLook, Alpha =
+    // VertexColor.R) -> Base Color (and Roughness/Normal etc. the same way if the looks differ there too).
+    TArray<FLinearColor> VertexColors;
 
     Vertices.Reserve(VertsPerSide * VertsPerSide);
     UVs.Reserve(VertsPerSide * VertsPerSide);
+    VertexColors.Reserve(VertsPerSide * VertsPerSide);
 
     // Build the vertex grid, one vertex per (X, Y) cell corner, height sampled from the same
     // heightfield GetTerrainHeight() exposes, so a spot placed later at some WorldXY will always
@@ -123,8 +224,12 @@ void AProceduralTerrainGen::GenerateTerrain() const
             const float WorldY = -HalfExtent + Y * CellSize;
             const FVector2D WorldXY(WorldX, WorldY);
 
-            Vertices.Add(FVector(WorldX, WorldY, GetTerrainHeight(WorldXY)));
+            float Height, TextureBlendAlpha;
+            SampleTerrainPoint(WorldXY, Height, TextureBlendAlpha);
+
+            Vertices.Add(FVector(WorldX, WorldY, Height));
             UVs.Add(WorldXY / 1000.0f);
+            VertexColors.Add(FLinearColor(TextureBlendAlpha, TextureBlendAlpha, TextureBlendAlpha, 1.0f));
         }
     }
 
@@ -159,10 +264,24 @@ void AProceduralTerrainGen::GenerateTerrain() const
 
 float AProceduralTerrainGen::GetTerrainHeight(const FVector2D& WorldXY) const
 {
+    float Height, TextureBlendAlpha;
+    SampleTerrainPoint(WorldXY, Height, TextureBlendAlpha);
+    return Height;
+}
+
+void AProceduralTerrainGen::SampleTerrainPoint(const FVector2D& WorldXY, float& OutHeight,
+                                               float& OutTextureBlendAlpha) const
+{
     const float NoiseHeight = SampleNoiseHeight(WorldXY); // What the height would be with no paths at all
-    const float EdgeDistance = DistanceToNearestPathEdge(WorldXY); // Negative = inside a path
-    const float Alpha = FMath::SmoothStep(0.0f, PathBlendWidth, EdgeDistance);
-    return FMath::Lerp(PathHeight, NoiseHeight, Alpha); // Alpha 0 = flat path height, Alpha 1 = full noise terrain
+    const float EdgeDistance = DistanceToNearestPathEdge(WorldXY); // Negative = inside a path, shared by both blends below
+
+    // Subtracting PathFlatZoneWidth first means the ramp doesn't even begin until past that buffer -
+    // SmoothStep clamps negative input to 0, so everything inside the flat zone stays pinned flat
+    // instead of already being partway up the ramp to full noise amplitude.
+    const float HeightAlpha = FMath::SmoothStep(0.0f, PathHeightBlendWidth, EdgeDistance - PathFlatZoneWidth);
+    OutHeight = FMath::Lerp(PathHeight, NoiseHeight, HeightAlpha);
+
+    OutTextureBlendAlpha = FMath::SmoothStep(0.0f, PathTextureBlendWidth, EdgeDistance);
 }
 
 // Fractal Brownian Motion: stack several Perlin samples on top of each other, each one higher
