@@ -7,12 +7,13 @@
 
 #include "TowerDefencePlayer.generated.h"
 
+struct FInputActionValue;
 class UCameraComponent;
 class UCurrencyComponent;
 class UFloatingPawnMovement;
 class UInputComponent;
 class UInputAction;
-struct FInputActionValue;
+class USpringArmComponent;
 
 UCLASS(Abstract)
 class GADE7322_TD_API ATowerDefencePlayer : public APawn,
@@ -38,9 +39,19 @@ public:
     UFUNCTION(BlueprintCallable)
     virtual void OnEventReceived_Implementation(const FName& EventName, const TArray<FAny>& Params) override;
 
-    void Move(const FInputActionValue& Value);
+    void DoMove(const FInputActionValue& Value);
+    
+    void DoRotate(const FInputActionValue& Value);
 
-    void DoMouseClick();
+    void DoSelect();
+
+    void DoDeselect();
+
+    void DoZoom(const FInputActionValue& Value);
+
+    void DoFocus();
+
+    void DoPause();
 
 private:
     // True if the cursor is currently over a hit-testable UMG widget rather than the game viewport
@@ -49,17 +60,42 @@ private:
 protected:
     UPROPERTY(EditAnywhere, Category = "Input")
     UInputAction* MoveAction;
+    
+    UPROPERTY(EditAnywhere, Category = "Input")
+    UInputAction* RotateAction;
 
     UPROPERTY(EditAnywhere, Category = "Input")
-    UInputAction* MouseClickAction;
+    UInputAction* SelectAction;
+
+    UPROPERTY(EditAnywhere, Category = "Input")
+    UInputAction* DeselectAction;
+
+    UPROPERTY(EditAnywhere, Category = "Input")
+    UInputAction* ZoomAction;
+
+    UPROPERTY(EditAnywhere, Category = "Input")
+    UInputAction* FocusAction;
+
+    UPROPERTY(EditAnywhere, Category = "Input")
+    UInputAction* PauseAction;
+
+#if WITH_EDITORONLY_DATA
+    UPROPERTY(EditAnywhere, Category = "Input")
+    UInputAction* EditorPauseAction; // Because esc closes game so extra key to pause in editor
+#endif
 
 private:
     UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components", meta = (AllowPrivateAccess = true))
     UFloatingPawnMovement* FloatingPawnMovement;
 
     UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components", meta = (AllowPrivateAccess = true))
+    USpringArmComponent* SpringArmComponent;
+
+    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components", meta = (AllowPrivateAccess = true))
     UCameraComponent* CameraComponent;
 
     UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components", meta = (AllowPrivateAccess = true))
     UCurrencyComponent* CurrencyComponent;
+
+    bool bPaused = false;
 };
