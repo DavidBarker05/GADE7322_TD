@@ -15,11 +15,11 @@ ATowerDefencePawn* UTowerDefencePawnFactory::CreatePawn(const TSubclassOf<ATower
     if (!IsValid(TowerDefencePawnBlueprint)) return nullptr;
     if (!AvailablePawnPools.Contains(TowerDefencePawnBlueprint)) CreatePool(TowerDefencePawnBlueprint);
     const FTransform SpawnLocationAndRotation(SpawnTransform.GetRotation(), SpawnTransform.GetLocation());
-    TSet<TStrongObjectPtr<ATowerDefencePawn>>& AvailablePool = AvailablePawnPools[TowerDefencePawnBlueprint];
-    TStrongObjectPtr<ATowerDefencePawn>* PawnPtr = AvailablePool.FindArbitraryElement();
-    ATowerDefencePawn* Pawn =
-        PawnPtr ? PawnPtr->Get() :
-                  GetWorld()->SpawnActor<ATowerDefencePawn>(TowerDefencePawnBlueprint, SpawnLocationAndRotation);
+    auto& AvailablePool = AvailablePawnPools[TowerDefencePawnBlueprint];
+    const auto* PawnPtr = AvailablePool.FindArbitraryElement();
+    auto* Pawn = PawnPtr ?
+                     PawnPtr->Get() :
+                     GetWorld()->SpawnActor<ATowerDefencePawn>(TowerDefencePawnBlueprint, SpawnLocationAndRotation);
     UnavailablePawnPools[TowerDefencePawnBlueprint].Emplace(Pawn);
     if (PawnPtr)
     {
@@ -34,7 +34,7 @@ void UTowerDefencePawnFactory::DestroyPawn(ATowerDefencePawn* TowerDefencePawn)
     if (!IsValid(TowerDefencePawn)) return;
     if (!UnavailablePawnPools.Contains(TowerDefencePawn->GetClass())) return;
     const TStrongObjectPtr<ATowerDefencePawn> StrongPawn(TowerDefencePawn);
-    TSet<TStrongObjectPtr<ATowerDefencePawn>>& UnavailablePool = UnavailablePawnPools[TowerDefencePawn->GetClass()];
+    auto& UnavailablePool = UnavailablePawnPools[TowerDefencePawn->GetClass()];
     if (!UnavailablePool.Contains(StrongPawn)) return;
     AvailablePawnPools[TowerDefencePawn->GetClass()].Add(StrongPawn);
     UnavailablePool.Remove(StrongPawn);

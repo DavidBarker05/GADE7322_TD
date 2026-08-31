@@ -12,11 +12,11 @@ void UTowerDefencePawnAIControllerFactory::Deinitialize()
 void UTowerDefencePawnAIControllerFactory::PossessTowerDefencePawn(ATowerDefencePawn* TowerDefencePawn)
 {
     if (!IsValid(TowerDefencePawn)) return;
-    const TSubclassOf<ATowerDefencePawnAIController> ControllerClass = TowerDefencePawn->GetTDAIControllerClass();
+    const auto ControllerClass = TowerDefencePawn->GetTDAIControllerClass();
     if (!AvailableControllerPools.Contains(ControllerClass)) CreatePool(ControllerClass);
-    TSet<TStrongObjectPtr<ATowerDefencePawnAIController>>& AvailablePool = AvailableControllerPools[ControllerClass];
-    TStrongObjectPtr<ATowerDefencePawnAIController>* ControllerPtr = AvailablePool.FindArbitraryElement();
-    ATowerDefencePawnAIController* Controller =
+    auto& AvailablePool = AvailableControllerPools[ControllerClass];
+    const auto* ControllerPtr = AvailablePool.FindArbitraryElement();
+    auto* Controller =
         ControllerPtr ? ControllerPtr->Get() : GetWorld()->SpawnActor<ATowerDefencePawnAIController>(ControllerClass);
     UnavailableControllerPools[ControllerClass].Emplace(Controller);
     if (ControllerPtr) AvailablePool.Remove(*ControllerPtr);
@@ -26,13 +26,11 @@ void UTowerDefencePawnAIControllerFactory::PossessTowerDefencePawn(ATowerDefence
 void UTowerDefencePawnAIControllerFactory::UnpossessTowerDefencePawn(ATowerDefencePawn* TowerDefencePawn)
 {
     if (!IsValid(TowerDefencePawn)) return;
-
-    ATowerDefencePawnAIController* Controller = Cast<ATowerDefencePawnAIController>(TowerDefencePawn->GetController());
+    auto* Controller = Cast<ATowerDefencePawnAIController>(TowerDefencePawn->GetController());
     if (!Controller) return;
     if (!UnavailableControllerPools.Contains(Controller->GetClass())) return;
     const TStrongObjectPtr<ATowerDefencePawnAIController> StrongController(Controller);
-    TSet<TStrongObjectPtr<ATowerDefencePawnAIController>>& UnavailablePool =
-        UnavailableControllerPools[Controller->GetClass()];
+    auto& UnavailablePool = UnavailableControllerPools[Controller->GetClass()];
     if (!UnavailablePool.Contains(StrongController)) return;
     AvailableControllerPools[Controller->GetClass()].Add(StrongController);
     UnavailablePool.Remove(StrongController);
