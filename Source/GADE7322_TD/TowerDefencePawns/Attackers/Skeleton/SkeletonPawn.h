@@ -29,8 +29,8 @@ protected:
     virtual void DoOnSetActive(bool bActive) override;
 
 public:
-    USkeletalMeshComponent* GetSkeletalMesh() { return SkeletalMesh; }
-    const USkeletalMeshComponent* GetSkeletalMesh() const { return SkeletalMesh; }
+    USkeletalMeshComponent* GetMesh() { return SkeletalMesh; }
+    const USkeletalMeshComponent* GetMesh() const { return SkeletalMesh; }
 
     ASkeletonPawn& SetAttackTarget(ATowerDefencePawn* Target)
     {
@@ -43,10 +43,7 @@ public:
     float GetAttackRadius() const { return AttackRadius; }
 
 private:
-    UPROPERTY(EditDefaultsOnly, Category = "Meshes", meta = (AllowPrivateAccess = true))
-    TArray<USkeletalMesh*> PossibleMeshes;
-
-    UPROPERTY(BlueprintReadOnly, Category = "Components", meta = (AllowPrivateAccess = true))
+    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components", meta = (AllowPrivateAccess = true))
     USkeletalMeshComponent* SkeletalMesh;
 
     UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Animation", meta = (AllowPrivateAccess = true))

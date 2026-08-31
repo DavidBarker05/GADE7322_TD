@@ -32,7 +32,6 @@ void ASkeletonPawn::OnDeath(TFunction<void()>&& Func)
 
 void ASkeletonPawn::DoOnSetActive(bool bActive)
 {
-    if (bActive) SkeletalMesh->SetSkeletalMesh(PossibleMeshes[FMath::RandRange(0, PossibleMeshes.Num() - 1)]);
     SkeletalMesh->SetVisibility(bActive);
     SkeletalMesh->SetComponentTickEnabled(bActive);
     SkeletalMesh->SetCollisionEnabled(bActive ? ECollisionEnabled::QueryAndPhysics : ECollisionEnabled::NoCollision);
