@@ -6,6 +6,7 @@
 
 #include "Warrior.generated.h"
 
+class AWeapon;
 class UAnimInstance;
 class USkeletalMesh;
 class USkeletalMeshComponent;
@@ -17,8 +18,6 @@ class GADE7322_TD_API AWarrior : public ADefender
 
 public:
     AWarrior();
-
-    virtual void BeginPlay() override;
 
     virtual void StartAttack() override;
 
@@ -42,6 +41,9 @@ public:
     const ATowerDefencePawn* GetAttackTarget() const { return CurrentAttackTarget; }
 
     float GetAttackRadius() const { return AttackRadius; }
+
+    const AWeapon* GetSword() const { return Sword; }
+    AWeapon* GetSword() { return Sword; }
 
 private:
     UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Mesh", meta = (AllowPrivateAccess = true))
@@ -70,6 +72,9 @@ private:
 
     UPROPERTY(BlueprintReadOnly, Category = "Components", meta = (AllowPrivateAccess = true))
     USkeletalMeshComponent* SkeletalMesh = nullptr;
+
+    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Weapon", meta = (AllowPrivateAccess = true))
+    AWeapon* Sword;
 
     UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "AI", meta = (AllowPrivateAccess = true))
     ATowerDefencePawn* CurrentAttackTarget;

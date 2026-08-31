@@ -1,16 +1,15 @@
 // ReSharper disable CppParameterMayBeConst
 #include "TowerDefencePawns/Defenders/Warrior/Warrior.h"
 
-#include "TowerDefencePawns/AI/TowerDefencePawnAIController.h"
+#include "TowerDefencePawns/Weapon.h"
 
 AWarrior::AWarrior()
 {
     PawnDisplayName = TEXT("Warrior");
     SkeletalMesh = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("Skeletal Mesh"));
     SkeletalMesh->SetupAttachment(RootComponent);
+    Sword = CreateDefaultSubobject<AWeapon>(TEXT("Sword"));
 }
-
-void AWarrior::BeginPlay() { Super::BeginPlay(); }
 
 void AWarrior::StartAttack()
 {
@@ -38,10 +37,13 @@ void AWarrior::DoOnSetActive(bool bActive)
         bIsFemale = FMath::RandBool();
         SkeletalMesh->SetSkeletalMesh(bIsFemale ? FemaleMesh : MaleMesh);
         SkeletalMesh->SetAnimInstanceClass(bIsFemale ? FemaleAnimationBlueprint : MaleAnimationBlueprint);
+        Sword->AttachToSkeleton(SkeletalMesh);
     }
     SkeletalMesh->SetVisibility(bActive);
     SkeletalMesh->SetComponentTickEnabled(bActive);
     SkeletalMesh->SetCollisionEnabled(bActive ? ECollisionEnabled::QueryAndPhysics : ECollisionEnabled::NoCollision);
     SkeletalMesh->SetCollisionResponseToAllChannels(bActive ? ECR_Block : ECR_Ignore);
+    Sword->GetMesh()->SetVisibility(bActive);
+    Sword->GetMesh()->SetComponentTickEnabled(bActive && Sword->DoesMeshTick());
     bCanAttack = bActive;
 }

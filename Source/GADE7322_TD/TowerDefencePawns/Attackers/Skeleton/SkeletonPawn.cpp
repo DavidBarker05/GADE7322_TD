@@ -1,13 +1,14 @@
 // ReSharper disable CppParameterMayBeConst
 #include "TowerDefencePawns/Attackers/Skeleton/SkeletonPawn.h"
 
-#include "TowerDefencePawns/AI/TowerDefencePawnAIController.h"
+#include "Weapon.h"
 
 ASkeletonPawn::ASkeletonPawn()
 {
     PawnDisplayName = TEXT("Skeleton");
     SkeletalMesh = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("Skeletal Mesh"));
     SkeletalMesh->SetupAttachment(RootComponent);
+    Sword = CreateDefaultSubobject<AWeapon>(TEXT("Sword"));
 }
 
 void ASkeletonPawn::BeginPlay() { Super::BeginPlay(); }
@@ -32,9 +33,12 @@ void ASkeletonPawn::OnDeath(TFunction<void()>&& Func)
 
 void ASkeletonPawn::DoOnSetActive(bool bActive)
 {
+    if (bActive) Sword->AttachToSkeleton(SkeletalMesh);
     SkeletalMesh->SetVisibility(bActive);
     SkeletalMesh->SetComponentTickEnabled(bActive);
     SkeletalMesh->SetCollisionEnabled(bActive ? ECollisionEnabled::QueryAndPhysics : ECollisionEnabled::NoCollision);
     SkeletalMesh->SetCollisionResponseToAllChannels(bActive ? ECR_Block : ECR_Ignore);
+    Sword->GetMesh()->SetVisibility(bActive);
+    Sword->GetMesh()->SetComponentTickEnabled(bActive && Sword->DoesMeshTick());
     bCanAttack = bActive;
 }

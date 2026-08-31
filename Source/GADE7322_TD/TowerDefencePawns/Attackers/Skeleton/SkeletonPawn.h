@@ -6,6 +6,7 @@
 
 #include "SkeletonPawn.generated.h"
 
+class AWeapon;
 class USkeletalMesh;
 class USkeletalMeshComponent;
 
@@ -42,6 +43,9 @@ public:
 
     float GetAttackRadius() const { return AttackRadius; }
 
+    const AWeapon* GetSword() const { return Sword; }
+    AWeapon* GetSword() { return Sword; }
+
 private:
     UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components", meta = (AllowPrivateAccess = true))
     USkeletalMeshComponent* SkeletalMesh;
@@ -54,6 +58,9 @@ private:
 
     UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "AI", meta = (AllowPrivateAccess = true))
     ATowerDefencePawn* CurrentAttackTarget;
+
+    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Weapon", meta = (AllowPrivateAccess = true))
+    AWeapon* Sword;
 
     UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "AI",
               meta = (AllowPrivateAccess = true, ClampMin = 0.0, UIMin = 0.0, Units = "Centimeters"))
