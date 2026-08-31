@@ -91,6 +91,9 @@ protected:
     TFunction<void()> DestroyDelegate;
 
 private:
+    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = true))
+    USceneComponent* Root;
+
     UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "TD Pawn", meta = (AllowPrivateAccess = true))
     bool bIsPawnActive = false;
 };

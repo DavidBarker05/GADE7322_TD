@@ -8,6 +8,8 @@
 ATowerDefencePawn::ATowerDefencePawn()
 {
     PrimaryActorTick.bCanEverTick = true;
+    Root = CreateDefaultSubobject<USceneComponent>(TEXT("Root"));
+    SetRootComponent(Root);
     HealthComponent = CreateDefaultSubobject<UHealthComponent>("Health Component");
     DamageComponent = CreateDefaultSubobject<UDamageComponent>("Damage Component");
     StimuliSourceComponent = CreateDefaultSubobject<UAIPerceptionStimuliSourceComponent>("Stimuli Source Component");

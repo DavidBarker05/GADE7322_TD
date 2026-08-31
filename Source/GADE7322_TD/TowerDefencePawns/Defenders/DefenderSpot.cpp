@@ -10,7 +10,8 @@
 ADefenderSpot::ADefenderSpot()
 {
     PrimaryActorTick.bCanEverTick = false;
-
+    Root = CreateDefaultSubobject<USceneComponent>(TEXT("Root"));
+    SetRootComponent(Root);
     BoxCollider = CreateDefaultSubobject<UBoxComponent>(TEXT("Box Collider"));
     BoxCollider->SetupAttachment(RootComponent);
     BoxCollider->SetBoxExtent(ColliderHalfExtents);

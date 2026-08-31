@@ -43,6 +43,9 @@ public:
     void SellDefender();
 
 private:
+    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = true))
+    USceneComponent* Root;
+
     UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components", meta = (AllowPrivateAccess = true))
     UBoxComponent* BoxCollider = nullptr;
 
