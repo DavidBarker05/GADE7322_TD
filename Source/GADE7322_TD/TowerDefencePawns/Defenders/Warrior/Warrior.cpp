@@ -19,7 +19,11 @@ void AWarrior::StartAttack()
     SkeletalMesh->GetAnimInstance()->Montage_Play(bIsFemale ? FemaleAttackMontage : MaleAttackMontage, 1.0f);
 }
 
-void AWarrior::EndAttack() { bCanAttack = true; }
+void AWarrior::EndAttack()
+{
+    GetWorldTimerManager().SetTimer(
+        AttackCooldownHandle, [this]() -> void { bCanAttack = true; }, AttackCooldown, false);
+}
 
 void AWarrior::OnDeath(TFunction<void()>&& Func)
 {

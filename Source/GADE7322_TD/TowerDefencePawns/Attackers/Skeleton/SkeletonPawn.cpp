@@ -18,7 +18,11 @@ void ASkeletonPawn::StartAttack()
     SkeletalMesh->GetAnimInstance()->Montage_Play(AttackMontage, 1.0f);
 }
 
-void ASkeletonPawn::EndAttack() { bCanAttack = true; }
+void ASkeletonPawn::EndAttack()
+{
+    GetWorldTimerManager().SetTimer(
+        AttackCooldownHandle, [this]() -> void { bCanAttack = true; }, AttackCooldown, false);
+}
 
 void ASkeletonPawn::OnDeath(TFunction<void()>&& Func)
 {

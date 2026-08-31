@@ -22,7 +22,7 @@ public:
     virtual void StartAttack() override;
 
     virtual void EndAttack() override;
-    
+
     virtual void OnDeath(TFunction<void()>&& Func) override;
 
 protected:
@@ -61,4 +61,10 @@ private:
     UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "AI",
               meta = (AllowPrivateAccess = true, ClampMin = 0.0, UIMin = 0.0, Units = "Centimeters"))
     float AttackRadius = 100.0f;
+
+    UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "AI",
+              meta = (AllowPrivateAccess = true, ClampMin = 0.0, UIMin = 0.0, Units = "Seconds"))
+    float AttackCooldown = 0.5f;
+
+    FTimerHandle AttackCooldownHandle;
 };
