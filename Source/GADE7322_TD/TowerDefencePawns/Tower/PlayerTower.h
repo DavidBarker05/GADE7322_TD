@@ -8,6 +8,9 @@
 #include "PlayerTower.generated.h"
 
 class UStaticMeshComponent;
+class UAIPerceptionComponent;
+class UAISenseConfig_Proximity;
+struct FAIStimulus;
 
 UCLASS(Abstract)
 class GADE7322_TD_API APlayerTower : public ATowerDefencePawn
@@ -17,9 +20,9 @@ class GADE7322_TD_API APlayerTower : public ATowerDefencePawn
 public:
     APlayerTower();
 
-    virtual void StartAttack() override;
+    virtual void Tick(float DeltaTime) override;
 
-    // Resetting attack might break stuff? Especially if order keeps changing even if the elements are the same
+    virtual void StartAttack() override;
 
     APlayerTower& SetAttackTargets(const TArray<ATowerDefencePawn*>& Targets)
     {
@@ -45,8 +48,19 @@ public:
     const ATowerDefencePawn* GetAttackTarget(uint32 Index) { return Index < 3 ? AttackTargets[Index] : nullptr; }
 
 private:
+    UFUNCTION()
+    void OnTargetPerceptionUpdated(AActor* Actor, FAIStimulus Stimulus);
+
+    void UpdateAttackTargets();
+
     UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components", meta = (AllowPrivateAccess = true))
     UStaticMeshComponent* TowerMesh;
+
+    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components", meta = (AllowPrivateAccess = true))
+    UAIPerceptionComponent* PerceptionComponent;
+
+    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "AI", meta = (AllowPrivateAccess = true))
+    UAISenseConfig_Proximity* ProximityConfig;
 
     UPROPERTY(BlueprintReadWrite, Category = "Components", meta = (AllowPrivateAccess = true))
     TArray<ATowerDefencePawn*> AttackTargets;
@@ -58,6 +72,15 @@ private:
     UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "AI",
               meta = (AllowPrivateAccess = true, ClampMin = 0.0, UIMin = 0.0, Units = "Seconds"))
     float AttackCooldown = 1.0f;
+
+    UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "AI",
+              meta = (AllowPrivateAccess = true, ClampMin = 0.0, UIMin = 0.0, Units = "Hertz"))
+    float TargetUpdateFrequency = 5.0f;
+
+    float TimeSinceLastTargetUpdate = 0.0f;
+
+    UPROPERTY(BlueprintReadOnly, Category = "AI", meta = (AllowPrivateAccess = true))
+    TArray<ATowerDefencePawn*> VisiblePawns;
 
     TArray<bool, TFixedAllocator<3>> CanAttackTarget = {true, true, true};
 
