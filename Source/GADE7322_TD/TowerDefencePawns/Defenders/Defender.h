@@ -6,6 +6,9 @@
 
 #include "Defender.generated.h"
 
+class ADefenderSpot;
+class UBoxComponent;
+
 UCLASS(Abstract)
 class GADE7322_TD_API ADefender : public ATowerDefencePawn
 {
@@ -18,14 +21,14 @@ public:
 
     int32 GetSellPrice() const { return SellPrice; }
 
-    ADefender& SetSpawnPoint(AActor* Point)
+    ADefender& SetSpawnPoint(ADefenderSpot* Point)
     {
         SpawnPoint = Point;
         return *this;
     }
 
-    const AActor* GetSpawnPoint() const { return SpawnPoint; }
-    AActor* GetSpawnPoint() { return SpawnPoint; }
+    const ADefenderSpot* GetSpawnPoint() const { return SpawnPoint; }
+    ADefenderSpot* GetSpawnPoint() { return SpawnPoint; }
 
 protected:
     UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Cost",
@@ -38,5 +41,11 @@ protected:
 
 private:
     UPROPERTY(BlueprintReadWrite, Category = "Defender", meta = (AllowPrivateAccess = true))
-    AActor* SpawnPoint = nullptr;
+    ADefenderSpot* SpawnPoint = nullptr;
+
+    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components", meta = (AllowPrivateAccess = true))
+    UBoxComponent* BoxCollider = nullptr;
+
+    UPROPERTY(EditDefaultsOnly, Category = "Collision", meta = (AllowPrivateAccess = true))
+    FVector ColliderHalfExtents {50.0f, 50.0f, 50.0f};
 };

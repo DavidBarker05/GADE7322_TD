@@ -9,6 +9,7 @@
 #include "GameFramework/SpringArmComponent.h"
 #include "InputActionValue.h"
 #include "Player/Components/CurrencyComponent.h"
+#include "TowerDefencePawns/Defenders/Defender.h"
 #include "TowerDefencePawns/Defenders/DefenderSpot.h"
 #include "TowerDefencePawns/Tower/PlayerTower.h"
 #include "Widgets/SViewport.h"
@@ -16,9 +17,13 @@
 ATowerDefencePlayer::ATowerDefencePlayer()
 {
     PrimaryActorTick.bCanEverTick = true;
+    Root = CreateDefaultSubobject<USceneComponent>(TEXT("Root"));
+    SetRootComponent(Root);
     FloatingPawnMovement = CreateDefaultSubobject<UFloatingPawnMovement>(TEXT("Floating Pawn Movement"));
     SpringArmComponent = CreateDefaultSubobject<USpringArmComponent>(TEXT("Spring Arm Component"));
     SpringArmComponent->SetupAttachment(RootComponent);
+    SpringArmComponent->TargetArmLength = FurthestCameraDistance; // Start fully zoomed out
+    SpringArmComponent->bDoCollisionTest = false;
     CameraComponent = CreateDefaultSubobject<UCameraComponent>(TEXT("Camera"));
     CameraComponent->SetupAttachment(SpringArmComponent, USpringArmComponent::SocketName);
     CurrencyComponent = CreateDefaultSubobject<UCurrencyComponent>(TEXT("Currency Component"));
@@ -37,7 +42,22 @@ void ATowerDefencePlayer::EndPlay(const EEndPlayReason::Type EndPlayReason)
     Super::EndPlay(EndPlayReason);
 }
 
-void ATowerDefencePlayer::Tick(float DeltaTime) { Super::Tick(DeltaTime); }
+void ATowerDefencePlayer::Tick(float DeltaTime)
+{
+    Super::Tick(DeltaTime);
+    // This will probably lag behind, but Unreal doesn't really have a late update
+    // like unity. There are tick groups, but I'm not sure which group to go in.
+    // Because either I miss physics or miss camera update and idk if either is safe
+    if (!bFollowTarget) return;
+    if (!IsValid(CurrentFocusTarget))
+    {
+        bFollowTarget = false;
+        return;
+    }
+    FVector DesiredLocation = CurrentFocusTarget->GetActorLocation();
+    DesiredLocation.Z = GetActorLocation().Z; // Height, I think... Unreal is weird
+    SetActorLocation(DesiredLocation);
+}
 
 void ATowerDefencePlayer::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 {
@@ -65,6 +85,22 @@ void ATowerDefencePlayer::OnEventReceived_Implementation(const FName& EventName,
         TD_LOG_INFO(TEXT("Player is dead"));
 }
 
+void ATowerDefencePlayer::SwitchBetweenSpotAndDefender()
+{
+    if (!IsValid(CurrentFocusTarget)) return;
+    if (const ADefenderSpot* Spot = Cast<ADefenderSpot>(CurrentFocusTarget))
+    {
+        if (IsValid(Spot->GetCurrentDefender())) CurrentFocusTarget = Spot->GetCurrentDefender();
+        else CurrentFocusTarget = nullptr;
+    }
+    else if (const ADefender* Defender = Cast<ADefender>(CurrentFocusTarget))
+    {
+        if (IsValid(Defender->GetSpawnPoint())) CurrentFocusTarget = Defender->GetSpawnPoint();
+        else CurrentFocusTarget = nullptr;
+    }
+    else CurrentFocusTarget = nullptr;
+}
+
 // ReSharper disable once CppMemberFunctionMayBeConst
 void ATowerDefencePlayer::DoMove(const FInputActionValue& Value)
 {
@@ -72,9 +108,15 @@ void ATowerDefencePlayer::DoMove(const FInputActionValue& Value)
     const FVector RightVector = GetActorRightVector() * MovementVector.X;
     const FVector ForwardVector = GetActorForwardVector() * MovementVector.Y;
     FloatingPawnMovement->AddInputVector(RightVector + ForwardVector);
+    if (MovementVector.SquaredLength() > KINDA_SMALL_NUMBER) bFollowTarget = false;
 }
 
-void ATowerDefencePlayer::DoRotate(const FInputActionValue& Value) { }
+// ReSharper disable once CppMemberFunctionMayBeConst
+void ATowerDefencePlayer::DoRotate(const FInputActionValue& Value)
+{
+    const float RotationInput = Value.Get<float>();
+    AddActorWorldRotation(FRotator(0.0f, RotationInput * RotationSpeed * GetWorld()->GetDeltaSeconds(), 0.0f));
+}
 
 bool ATowerDefencePlayer::IsMouseOverUI(const APlayerController* PlayerController)
 {
@@ -104,18 +146,51 @@ void ATowerDefencePlayer::DoSelect()
                                                                 true, HitResult))
             return;
 
-        if (ADefenderSpot* DefenderSpot = Cast<ADefenderSpot>(HitResult.GetActor()))
+        if (const ADefenderSpot* Spot = Cast<ADefenderSpot>(HitResult.GetActor()))
         {
-            TD_LOG_INFO(TEXT("Clicked on spot"));
+            CurrentlySelectedDefenderSpot = Spot;
+            CurrentFocusTarget = Spot;
+            bFollowTarget = false;
+        }
+
+        if (const ADefender* Defender = Cast<ADefender>(HitResult.GetActor()))
+        {
+            CurrentlySelectedDefenderSpot = Defender->GetSpawnPoint();
+            CurrentFocusTarget = Defender;
         }
     }
 }
 
-void ATowerDefencePlayer::DoDeselect() { }
+void ATowerDefencePlayer::DoDeselect()
+{
+    CurrentlySelectedDefenderSpot = nullptr;
+    CurrentFocusTarget = nullptr;
+    bFollowTarget = false;
+}
 
-void ATowerDefencePlayer::DoZoom(const FInputActionValue& Value) { }
+// ReSharper disable once CppMemberFunctionMayBeConst
+void ATowerDefencePlayer::DoZoom(const FInputActionValue& Value)
+{
+    const float ScrollAmount = Value.Get<float>();
+    SpringArmComponent->TargetArmLength = FMath::Clamp(SpringArmComponent->TargetArmLength - ScrollAmount * ZoomSpeed,
+                                                       ClosestCameraDistance, FurthestCameraDistance);
+}
 
-void ATowerDefencePlayer::DoFocus() { }
+void ATowerDefencePlayer::DoFocus()
+{
+    if (!IsValid(CurrentFocusTarget)) return;
+    FVector DesiredLocation = CurrentFocusTarget->GetActorLocation();
+    DesiredLocation.Z = GetActorLocation().Z;
+    SetActorLocation(DesiredLocation);
+    SpringArmComponent->TargetArmLength = ClosestCameraDistance;
+    bFollowTarget = CurrentFocusTarget->IsA<ADefender>();
+}
+
+void ATowerDefencePlayer::DoReset()
+{
+    SetActorLocationAndRotation(FVector {}, FQuat {}, false, nullptr);
+    SpringArmComponent->TargetArmLength = FurthestCameraDistance;
+}
 
 void ATowerDefencePlayer::DoPause()
 {
