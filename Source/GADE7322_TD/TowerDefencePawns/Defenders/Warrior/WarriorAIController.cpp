@@ -35,7 +35,7 @@ void AWarriorAIController::Tick(float DeltaTime)
             return;
         }
         TimeSinceLastVisionUpdate = 0.0f;
-        const ATowerDefencePawn* Closest = SelectClosestTarget(GetVisiblePawns(), WPawn);
+        ATowerDefencePawn* Closest = SelectClosestTarget(GetVisiblePawns(), WPawn);
         WPawn->SetAttackTarget(Closest);
     }
 }

@@ -33,7 +33,7 @@ public:
     const USkeletalMeshComponent* GetMesh() const { return SkeletalMesh; }
     USkeletalMeshComponent* GetMesh() { return SkeletalMesh; }
 
-    AWarrior& SetAttackTarget(const ATowerDefencePawn* Target)
+    AWarrior& SetAttackTarget(ATowerDefencePawn* Target)
     {
         CurrentAttackTarget = Target;
         return *this;
@@ -72,7 +72,7 @@ private:
     USkeletalMeshComponent* SkeletalMesh = nullptr;
 
     UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "AI", meta = (AllowPrivateAccess = true))
-    const ATowerDefencePawn* CurrentAttackTarget;
+    ATowerDefencePawn* CurrentAttackTarget;
 
     UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "AI",
               meta = (AllowPrivateAccess = true, ClampMin = 0.0, UIMin = 0.0, Units = "Centimeters"))

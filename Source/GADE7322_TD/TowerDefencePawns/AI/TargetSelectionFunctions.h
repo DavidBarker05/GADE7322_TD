@@ -5,15 +5,15 @@
 #include "TowerDefencePawns/TowerDefencePawn.h"
 
 template<typename T>
-const ATowerDefencePawn* SelectTarget(TArray<ATowerDefencePawn*>& Array, T BaseLine,
-                                      TFunction<T(const ATowerDefencePawn*)> GetCurrentVal,
-                                      TFunction<bool(const T&, const T&)> Predicate)
+ATowerDefencePawn* SelectTarget(TArray<ATowerDefencePawn*>& Array, T BaseLine,
+                                TFunction<T(const ATowerDefencePawn*)> GetCurrentVal,
+                                TFunction<bool(const T&, const T&)> Predicate)
 {
-    const ATowerDefencePawn* Result = nullptr;
+    ATowerDefencePawn* Result = nullptr;
     // Why couldn't we just make this like the STL? :(
     for (int32 i = Array.Num() - 1; i >= 0; --i)
     {
-        const ATowerDefencePawn* Enemy = Array[i];
+        ATowerDefencePawn* Enemy = Array[i];
         if (!IsValid(Enemy) || !Enemy->IsPawnActive())
         {
             // Faster erase, because move last element to current element and then pops
@@ -32,7 +32,7 @@ const ATowerDefencePawn* SelectTarget(TArray<ATowerDefencePawn*>& Array, T BaseL
     return Result;
 }
 
-inline const ATowerDefencePawn* SelectClosestTarget(TArray<ATowerDefencePawn*>& Array, const ATowerDefencePawn* Pawn)
+inline ATowerDefencePawn* SelectClosestTarget(TArray<ATowerDefencePawn*>& Array, const ATowerDefencePawn* Pawn)
 {
     const FVector PawnLoc = Pawn->GetActorLocation();
 

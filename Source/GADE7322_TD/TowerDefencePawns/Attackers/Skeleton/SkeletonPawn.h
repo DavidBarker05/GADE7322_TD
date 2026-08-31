@@ -32,7 +32,7 @@ public:
     USkeletalMeshComponent* GetSkeletalMesh() { return SkeletalMesh; }
     const USkeletalMeshComponent* GetSkeletalMesh() const { return SkeletalMesh; }
 
-    ASkeletonPawn& SetAttackTarget(const ATowerDefencePawn* Target)
+    ASkeletonPawn& SetAttackTarget(ATowerDefencePawn* Target)
     {
         CurrentAttackTarget = Target;
         return *this;
@@ -56,7 +56,7 @@ private:
     UAnimMontage* DeathMontage;
 
     UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "AI", meta = (AllowPrivateAccess = true))
-    const ATowerDefencePawn* CurrentAttackTarget;
+    ATowerDefencePawn* CurrentAttackTarget;
 
     UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "AI",
               meta = (AllowPrivateAccess = true, ClampMin = 0.0, UIMin = 0.0, Units = "Centimeters"))

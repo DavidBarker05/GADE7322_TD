@@ -37,7 +37,7 @@ void ASkeletonAIController::Tick(float DeltaTime)
             return;
         }
         TimeSinceLastVisionUpdate = 0.0f;
-        const ATowerDefencePawn* Closest = SelectClosestTarget(GetVisiblePawns(), SKPawn);
+        ATowerDefencePawn* Closest = SelectClosestTarget(GetVisiblePawns(), SKPawn);
         SKPawn->SetAttackTarget(Closest);
     }
 }
