@@ -30,7 +30,7 @@ public:
     void DecreaseCurrency(int32 Amount);
 
     UFUNCTION(BlueprintCallable)
-    void ResetCurrency() { CurrentCurrency = StartingCurrency; }
+    void ResetCurrency();
 
     int32 GetStartingCurrency() const { return StartingCurrency; }
 

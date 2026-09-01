@@ -8,6 +8,7 @@
 
 class UInputMappingContext;
 class UPauseScreenWidget;
+class UPlayerHUDWidget;
 
 UCLASS()
 class GADE7322_TD_API ATowerDefencePlayerController : public APlayerController
@@ -34,6 +35,12 @@ private:
 
     UPROPERTY(BlueprintReadOnly, Category = "UI", meta = (AllowPrivateAccess = true))
     UPauseScreenWidget* PauseScreenWidgetInstance;
+
+    UPROPERTY(EditDefaultsOnly, Category = "UI", meta = (AllowPrivateAccess = true))
+    TSubclassOf<UPlayerHUDWidget> PlayerHUDWidgetClass;
+
+    UPROPERTY(BlueprintReadOnly, Category = "UI", meta = (AllowPrivateAccess = true))
+    UPlayerHUDWidget* PlayerHUDWidgetInstance;
 
     UPROPERTY(BlueprintReadOnly, Category = "Game", meta = (AllowPrivateAccess = true))
     bool bIsPaused = false;

@@ -24,12 +24,20 @@ void UCurrencyComponent::DecreaseCurrency(int32 Amount)
 {
     if (Amount > 0) CurrentCurrency -= Amount;
 }
+void UCurrencyComponent::ResetCurrency()
+{
+    CurrentCurrency = StartingCurrency;
+    BROADCAST_EVENT(TEXT("UpdateHUDEvent"), FName(TEXT("Currency")), CurrentCurrency);
+}
 
 void UCurrencyComponent::OnEventReceived_Implementation(const FName& EventName, const TArray<FAny>& Params)
 {
-    if (EVENT_MATCHES(TEXT("PurchaseEvent"), 1) && PARAMS_ARE_VALID && PARAMS_ARE_CORRECT_TYPES(int32))
-        DecreaseCurrency(*Params[0].Get<int32>());
-    else if ((EVENT_MATCHES(TEXT("SellEvent"), 1) || EVENT_MATCHES(TEXT("MoneyEarnedEvent"), 1)) && PARAMS_ARE_VALID &&
-             PARAMS_ARE_CORRECT_TYPES(int32))
-        IncreaseCurrency(*Params[0].Get<int32>());
+    if ((EventName != TEXT("PurchaseEvent") && EventName != TEXT("SellEvent") &&
+         EventName != TEXT("MoneyEarnedEvent")) ||
+        Params.Num() != 1 || !PARAMS_ARE_VALID || !PARAMS_ARE_CORRECT_TYPES(int32))
+        return;
+    const int32 Amount = *Params[0].Get<int32>();
+    if (EventName == TEXT("PurchaseEvent")) DecreaseCurrency(Amount);
+    else IncreaseCurrency(Amount);
+    BROADCAST_EVENT(TEXT("UpdateHUDEvent"), FName(TEXT("Currency")), CurrentCurrency);
 }

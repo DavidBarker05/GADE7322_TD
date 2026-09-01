@@ -1,8 +1,9 @@
-// ReSharper disable IdentifierTypo
 // ReSharper disable CppNonExplicitConvertingConstructor
 #pragma once
 
 #include "CoreMinimal.h"
+
+#include <type_traits>
 
 #include "CustomStructs.h"
 #include "StructUtils/InstancedStruct.h"
@@ -16,187 +17,97 @@
 // I would do something different if Unreal's GC wouldn't get upset like seen in my SDL engine here:
 // https://github.com/DavidBarker05/SDL-Game/blob/7b7faec4508d3ad18f7a164791e3fca19f9ba05c/Engine/src/Core/Events/InputEvent.h
 
-#ifndef COPY_CONSTRUCTOR_GENERATE
-#define COPY_CONSTRUCTOR_GENERATE(Type, Struct) \
-    FAny(const Type& InValue) : Value(FInstancedStruct::Make<Struct>(InValue)) { }
+template<typename T, typename Enable = void>
+struct TAnyType
+{
+    using Type = T;
+};
 
-#define COPY_CONSTRUCTOR_GENERATE_PTR(Type, Struct) \
-    FAny(Type* const& InValue) : Value(FInstancedStruct::Make<Struct>(InValue)) { }
+template<>
+struct TAnyType<bool>
+{
+    using Type = FBoolStruct;
+};
 
-#define COPY_CONSTRUCTOR_GENERATE_TOBJECTPTR(Type, Struct) \
-    FAny(const TObjectPtr<Type>& InValue) : Value(FInstancedStruct::Make<Struct>(InValue)) { }
-#endif
+template<>
+struct TAnyType<uint8>
+{
+    using Type = FUint8Struct;
+};
 
-#ifndef MOVE_CONSTRUCTOR_GENERATE
-#define MOVE_CONSTRUCTOR_GENERATE(Type, Struct) \
-    FAny(Type&& InValue) : Value(FInstancedStruct::Make<Struct>(MoveTemp(InValue))) { }
+template<>
+struct TAnyType<int32>
+{
+    using Type = FInt32Struct;
+};
 
-#define MOVE_CONSTRUCTOR_GENERATE_PTR(Type, Struct) \
-    FAny(Type*&& InValue) : Value(FInstancedStruct::Make<Struct>(MoveTemp(InValue))) { }
+template<>
+struct TAnyType<int64>
+{
+    using Type = FInt64Struct;
+};
 
-#define MOVE_CONSTRUCTOR_GENERATE_TOBJECTPTR(Type, Struct) \
-    FAny(TObjectPtr<Type>&& InValue) : Value(FInstancedStruct::Make<Struct>(MoveTemp(InValue))) { }
-#endif
+template<>
+struct TAnyType<float>
+{
+    using Type = FFloatStruct;
+};
 
-#ifndef COPY_ASSIGN_GENERATE
-#define COPY_ASSIGN_GENERATE(Type, Struct) \
-    inline const FAny& operator=(const Type& InValue) \
-    { \
-        Value = FInstancedStruct::Make<Struct>(InValue); \
-        return *this; \
-    }
+template<>
+struct TAnyType<FString>
+{
+    using Type = FFStringStruct;
+};
 
-#define COPY_ASSIGN_GENERATE_PTR(Type, Struct) \
-    inline const FAny& operator=(Type* const& InValue) \
-    { \
-        Value = FInstancedStruct::Make<Struct>(InValue); \
-        return *this; \
-    }
+template<>
+struct TAnyType<const char*>
+{
+    using Type = FFStringStruct;
+};
 
-#define COPY_ASSIGN_GENERATE_TOBJECTPTR(Type, Struct) \
-    inline const FAny& operator=(const TObjectPtr<Type>& InValue) \
-    { \
-        Value = FInstancedStruct::Make<Struct>(InValue); \
-        return *this; \
-    }
-#endif
+template<>
+struct TAnyType<char*>
+{
+    using Type = FFStringStruct;
+};
 
-#ifndef MOVE_ASSIGN_GENERATE
-#define MOVE_ASSIGN_GENERATE(Type, Struct) \
-    inline const FAny& operator=(Type&& InValue) \
-    { \
-        Value = FInstancedStruct::Make<Struct>(MoveTemp(InValue)); \
-        return *this; \
-    }
+template<>
+struct TAnyType<const WIDECHAR*>
+{
+    using Type = FFStringStruct;
+};
 
-#define MOVE_ASSIGN_GENERATE_PTR(Type, Struct) \
-    inline const FAny& operator=(Type*&& InValue) \
-    { \
-        Value = FInstancedStruct::Make<Struct>(MoveTemp(InValue)); \
-        return *this; \
-    }
+template<>
+struct TAnyType<WIDECHAR*>
+{
+    using Type = FFStringStruct;
+};
 
-#define MOVE_ASSIGN_GENERATE_TOBJECTPTR(Type, Struct) \
-    inline const FAny& operator=(TObjectPtr<Type>&& InValue) \
-    { \
-        Value = FInstancedStruct::Make<Struct>(MoveTemp(InValue)); \
-        return *this; \
-    }
-#endif
+template<>
+struct TAnyType<FName>
+{
+    using Type = FFNameStruct;
+};
 
-#ifndef GET_GENERATE
-#define GET_GENERATE(Type, Struct) \
-    template<> \
-    inline Type* FAny::Get<Type>() \
-    { \
-        if (Struct* StructPtr = Value.GetMutablePtr<Struct>()) \
-        { \
-            return &StructPtr->Value; \
-        } \
-        return nullptr; \
-    } \
-    template<> \
-    inline const Type* FAny::Get<Type>() const \
-    { \
-        if (const Struct* StructPtr = Value.GetPtr<Struct>()) \
-        { \
-            return &StructPtr->Value; \
-        } \
-        return nullptr; \
-    }
+template<>
+struct TAnyType<FText>
+{
+    using Type = FFTextStruct;
+};
 
-#define GET_GENERATE_PTR(Type, Struct) \
-    template<> \
-    inline Type** FAny::Get<Type*>() \
-    { \
-        if (Struct* StructPtr = Value.GetMutablePtr<Struct>()) \
-        { \
-            return reinterpret_cast<Type**>(&StructPtr->Value); \
-        } \
-        return nullptr; \
-    } \
-    template<> \
-    inline Type* const* FAny::Get<Type*>() const \
-    { \
-        if (const Struct* StructPtr = Value.GetPtr<Struct>()) \
-        { \
-            return reinterpret_cast<Type* const*>(&StructPtr->Value); \
-        } \
-        return nullptr; \
-    }
+template<typename T>
+struct TAnyType<T, typename TEnableIf<TIsTObjectPtr_V<T> &&
+                                      TIsDerivedFrom<typename TRemoveObjectPointer<T>::Type, UObject>::IsDerived>::Type>
+{
+    using Type = FUObjectStruct;
+};
 
-#define GET_GENERATE_TOBJECTPTR(Type, Struct) \
-    template<> \
-    inline TObjectPtr<Type>* FAny::Get<TObjectPtr<Type>>() \
-    { \
-        if (Struct* StructPtr = Value.GetMutablePtr<Struct>()) \
-        { \
-            return &StructPtr->Value; \
-        } \
-        return nullptr; \
-    } \
-    template<> \
-    inline const TObjectPtr<Type>* FAny::Get<TObjectPtr<Type>>() const \
-    { \
-        if (const Struct* StructPtr = Value.GetPtr<Struct>()) \
-        { \
-            return &StructPtr->Value; \
-        } \
-        return nullptr; \
-    }
-#endif
-
-#ifndef COPY_SET_GENERATE
-#define COPY_SET_GENERATE(Type, Struct) \
-    template<> \
-    inline FAny& FAny::Set<Type>(const Type& InValue) \
-    { \
-        Value = FInstancedStruct::Make<Struct>(InValue); \
-        return *this; \
-    }
-
-#define COPY_SET_GENERATE_PTR(Type, Struct) \
-    template<> \
-    inline FAny& FAny::Set<Type*>(Type* const& InValue) \
-    { \
-        Value = FInstancedStruct::Make<Struct>(InValue); \
-        return *this; \
-    }
-
-#define COPY_SET_GENERATE_TOBJECTPTR(Type, Struct) \
-    template<> \
-    inline FAny& FAny::Set<TObjectPtr<Type>>(const TObjectPtr<Type>& InValue) \
-    { \
-        Value = FInstancedStruct::Make<Struct>(InValue); \
-        return *this; \
-    }
-#endif
-
-#ifndef MOVE_SET_GENERATE
-#define MOVE_SET_GENERATE(Type, Struct) \
-    template<> \
-    inline FAny& FAny::Set<Type>(Type && InValue) \
-    { \
-        Value = FInstancedStruct::Make<Struct>(MoveTemp(InValue)); \
-        return *this; \
-    }
-
-#define MOVE_SET_GENERATE_PTR(Type, Struct) \
-    template<> \
-    inline FAny& FAny::Set<Type*>(Type * &&InValue) \
-    { \
-        Value = FInstancedStruct::Make<Struct>(MoveTemp(InValue)); \
-        return *this; \
-    }
-
-#define MOVE_SET_GENERATE_TOBJECTPTR(Type, Struct) \
-    template<> \
-    inline FAny& FAny::Set<TObjectPtr<Type>>(TObjectPtr<Type> && InValue) \
-    { \
-        Value = FInstancedStruct::Make<Struct>(MoveTemp(InValue)); \
-        return *this; \
-    }
-#endif
+template<typename T>
+struct TAnyType<T, typename TEnableIf<TIsPointer<T>::Value &&
+                                      TIsDerivedFrom<typename TRemovePointer<T>::Type, UObject>::IsDerived>::Type>
+{
+    using Type = FUObjectStruct;
+};
 
 /*
   Store any type inside similar to std::any in C++ standard library. This allows to store and pass around
@@ -217,7 +128,7 @@
   Note: Doesn't store collections like arrays because uses structs to emulate std::any and making a struct
   for each array type was not worth it. Also, TArray<AActor*> != TArray<UObject*> so that would mean either
   a new struct for each subclass of every Unreal object or creating an array of the base class and copying
-  each element over one at a time every time. If needed they can be added easily by just using the macros
+  each element over one at a time every time. If needed they can be added easily
  */
 USTRUCT(BlueprintType, meta = (HasNativeMake = "/Script/GADE7322_TD.AnyFunctionLibrary.MakeAny"))
 struct GADE7322_TD_API FAny
@@ -236,454 +147,112 @@ struct GADE7322_TD_API FAny
     FAny(FInstancedStruct&& InValue) : Value(MoveTemp(InValue)) { }
 
     template<typename T>
-    FAny(const T& InValue)
+    FAny(const T& InValue) : Value(FInstancedStruct::Make<typename TAnyType<T>::Type>(InValue))
     {
-        if constexpr (TIsTObjectPtr<T>::Value)
-        {
-            using ObjectType = TRemoveObjectPointer<T>::Type;
-            static_assert(TIsDerivedFrom<ObjectType, UObject>::IsDerived,
-                          "FAny doesn't work with non-UObject derived TObjectPtrs");
-            Value = FInstancedStruct::Make<FUObjectStruct>(InValue);
-        }
-        else if constexpr (TIsPointer<T>::Value)
-        {
-            using PointedType = TRemovePointer<T>::Type;
-            if constexpr (TIsPointer<PointedType>::Value)
-            {
-                using PointedPointedType = TRemovePointer<PointedType>::Type; // Can't think of better name
-                static_assert(TIsDerivedFrom<PointedPointedType, UObject>::IsDerived,
-                              "FAny doesn't work with non-UObject derived pointers to pointers");
-                Value = FInstancedStruct::Make<FUObjectStruct>(*InValue);
-            }
-            else
-            {
-                static_assert(TIsDerivedFrom<PointedType, UObject>::IsDerived,
-                              "FAny doesn't work with non-UObject derived pointers");
-                Value = FInstancedStruct::Make<FUObjectStruct>(InValue);
-            }
-        }
-        else Value = FInstancedStruct::Make(InValue);
     }
 
-    // Type COPY_CONSTRUCTOR_GENERATE below here
-
-    COPY_CONSTRUCTOR_GENERATE(bool, FBoolStruct)
-
-    COPY_CONSTRUCTOR_GENERATE(uint8, FUint8Struct)
-
-    COPY_CONSTRUCTOR_GENERATE(int32, FInt32Struct)
-
-    COPY_CONSTRUCTOR_GENERATE(int64, FInt64Struct)
-
-    COPY_CONSTRUCTOR_GENERATE(float, FFloatStruct)
-
-    COPY_CONSTRUCTOR_GENERATE(FString, FFStringStruct)
-
-    COPY_CONSTRUCTOR_GENERATE_PTR(const char, FFStringStruct)
-    COPY_CONSTRUCTOR_GENERATE_PTR(char, FFStringStruct)
-    COPY_CONSTRUCTOR_GENERATE_PTR(const WIDECHAR, FFStringStruct)
-    COPY_CONSTRUCTOR_GENERATE_PTR(WIDECHAR, FFStringStruct)
-
-    COPY_CONSTRUCTOR_GENERATE(FName, FFNameStruct)
-
-    COPY_CONSTRUCTOR_GENERATE(FText, FFTextStruct)
-
-    COPY_CONSTRUCTOR_GENERATE_PTR(UObject, FUObjectStruct)
-
-    COPY_CONSTRUCTOR_GENERATE_TOBJECTPTR(UObject, FUObjectStruct)
-
-    // Type COPY_CONSTRUCTOR_GENERATE above here
-
-    template<typename T>
-    FAny(T&& InValue)
+    template<typename T, TEnableIf<!std::is_same_v<TDecay<T>, FAny>>>
+    FAny(T&& InValue) : Value(FInstancedStruct::Make<typename TAnyType<TDecay<T>>::Type>(Forward<T>(InValue)))
     {
-        if constexpr (TIsTObjectPtr<T>::Value)
-        {
-            using ObjectType = TRemoveObjectPointer<T>::Type;
-            static_assert(TIsDerivedFrom<ObjectType, UObject>::IsDerived,
-                          "FAny doesn't work with non-UObject derived TObjectPtrs");
-            Value = FInstancedStruct::Make<FUObjectStruct>(MoveTemp(InValue));
-        }
-        else if constexpr (TIsPointer<T>::Value)
-        {
-            using PointedType = TRemovePointer<T>::Type;
-            if constexpr (TIsPointer<PointedType>::Value)
-            {
-                using PointedPointedType = TRemovePointer<PointedType>::Type; // Can't think of better name
-                static_assert(TIsDerivedFrom<PointedPointedType, UObject>::IsDerived,
-                              "FAny doesn't work with non-UObject derived pointers to pointers");
-                Value = FInstancedStruct::Make<FUObjectStruct>(MoveTemp(*InValue));
-            }
-            else
-            {
-                static_assert(TIsDerivedFrom<PointedType, UObject>::IsDerived,
-                              "FAny doesn't work with non-UObject derived pointers");
-                Value = FInstancedStruct::Make<FUObjectStruct>(MoveTemp(InValue));
-            }
-        }
-        else Value = FInstancedStruct::Make(MoveTemp(InValue));
     }
-
-    // Type MOVE_CONSTRUCTOR_GENERATE below here
-
-    MOVE_CONSTRUCTOR_GENERATE(bool, FBoolStruct)
-
-    MOVE_CONSTRUCTOR_GENERATE(uint8, FUint8Struct)
-
-    MOVE_CONSTRUCTOR_GENERATE(int32, FInt32Struct)
-
-    MOVE_CONSTRUCTOR_GENERATE(int64, FInt64Struct)
-
-    MOVE_CONSTRUCTOR_GENERATE(float, FFloatStruct)
-
-    MOVE_CONSTRUCTOR_GENERATE(FString, FFStringStruct)
-
-    MOVE_CONSTRUCTOR_GENERATE(FName, FFNameStruct)
-
-    MOVE_CONSTRUCTOR_GENERATE(FText, FFTextStruct)
-
-    MOVE_CONSTRUCTOR_GENERATE_PTR(UObject, FUObjectStruct)
-
-    MOVE_CONSTRUCTOR_GENERATE_TOBJECTPTR(UObject, FUObjectStruct)
-
-    // Type MOVE_CONSTRUCTOR_GENERATE above here
 
     template<typename Type, typename... Args>
-    FAny(Args&&... Params) : Value(FInstancedStruct::Make<Type>(Forward<Args>(Params)...))
+    FAny(Args&&... Params) : Value(FInstancedStruct::Make<typename TAnyType<Type>::Type>(Forward<Args>(Params)...))
     {
     }
 
-    inline FAny& operator=(const FAny&) = default;
-    inline FAny& operator=(FAny&&) noexcept = default;
+    FAny& operator=(const FAny&) = default;
+    FAny& operator=(FAny&&) noexcept = default;
 
-    inline FAny& operator=(const FInstancedStruct& InValue)
+    FAny& operator=(const FInstancedStruct& InValue)
     {
         Value = InValue;
         return *this;
     }
 
     template<typename T>
-    inline FAny& operator=(const T& InValue)
+    FAny& operator=(const T& InValue)
     {
-        if constexpr (TIsTObjectPtr<T>::Value)
-        {
-            using ObjectType = TRemoveObjectPointer<T>::Type;
-            static_assert(TIsDerivedFrom<ObjectType, UObject>::IsDerived,
-                          "FAny doesn't work with non-UObject derived TObjectPtrs");
-            Value = FInstancedStruct::Make<FUObjectStruct>(InValue);
-        }
-        else if constexpr (TIsPointer<T>::Value)
-        {
-            using PointedType = TRemovePointer<T>::Type;
-            if constexpr (TIsPointer<PointedType>::Value)
-            {
-                using PointedPointedType = TRemovePointer<PointedType>::Type; // Can't think of better name
-                static_assert(TIsDerivedFrom<PointedPointedType, UObject>::IsDerived,
-                              "FAny doesn't work with non-UObject derived pointers to pointers");
-                Value = FInstancedStruct::Make<FUObjectStruct>(*InValue);
-            }
-            else
-            {
-                static_assert(TIsDerivedFrom<PointedType, UObject>::IsDerived,
-                              "FAny doesn't work with non-UObject derived pointers");
-                Value = FInstancedStruct::Make<FUObjectStruct>(InValue);
-            }
-        }
-        else Value = FInstancedStruct::Make(InValue);
+        Value = FInstancedStruct::Make<typename TAnyType<T>::Type>(InValue);
         return *this;
     }
 
-    // Type COPY_ASSIGN_GENERATE below here
-
-    COPY_ASSIGN_GENERATE(bool, FBoolStruct)
-
-    COPY_ASSIGN_GENERATE(uint8, FUint8Struct)
-
-    COPY_ASSIGN_GENERATE(int32, FInt32Struct)
-
-    COPY_ASSIGN_GENERATE(int64, FInt64Struct)
-
-    COPY_ASSIGN_GENERATE(float, FFloatStruct)
-
-    COPY_ASSIGN_GENERATE(FString, FFStringStruct)
-
-    COPY_ASSIGN_GENERATE_PTR(const char, FFStringStruct)
-    COPY_ASSIGN_GENERATE_PTR(char, FFStringStruct)
-    COPY_ASSIGN_GENERATE_PTR(const WIDECHAR, FFStringStruct)
-    COPY_ASSIGN_GENERATE_PTR(WIDECHAR, FFStringStruct)
-
-    COPY_ASSIGN_GENERATE(FName, FFNameStruct)
-
-    COPY_ASSIGN_GENERATE(FText, FFTextStruct)
-
-    COPY_ASSIGN_GENERATE_PTR(UObject, FUObjectStruct)
-
-    COPY_ASSIGN_GENERATE_TOBJECTPTR(UObject, FUObjectStruct)
-
-    // Type COPY_ASSIGN_GENERATE above here
-
-    template<typename T>
+    template<typename T, TEnableIf<!std::is_same_v<TDecay<T>, FAny>>>
     FAny& operator=(T&& InValue)
     {
-        if constexpr (TIsTObjectPtr<T>::Value)
-        {
-            using ObjectType = TRemoveObjectPointer<T>::Type;
-            static_assert(TIsDerivedFrom<ObjectType, UObject>::IsDerived,
-                          "FAny doesn't work with non-UObject derived TObjectPtrs");
-            Value = FInstancedStruct::Make<FUObjectStruct>(MoveTemp(InValue));
-        }
-        else if constexpr (TIsPointer<T>::Value)
-        {
-            using PointedType = TRemovePointer<T>::Type;
-            if constexpr (TIsPointer<PointedType>::Value)
-            {
-                using PointedPointedType = TRemovePointer<PointedType>::Type; // Can't think of better name
-                static_assert(TIsDerivedFrom<PointedPointedType, UObject>::IsDerived,
-                              "FAny doesn't work with non-UObject derived pointers to pointers");
-                Value = FInstancedStruct::Make<FUObjectStruct>(MoveTemp(*InValue));
-            }
-            else
-            {
-                static_assert(TIsDerivedFrom<PointedType, UObject>::IsDerived,
-                              "FAny doesn't work with non-UObject derived pointers");
-                Value = FInstancedStruct::Make<FUObjectStruct>(MoveTemp(InValue));
-            }
-        }
-        else Value = FInstancedStruct::Make(MoveTemp(InValue));
+        Value = FInstancedStruct::Make<typename TAnyType<TDecay<T>>::Type>(Forward<T>(InValue));
         return *this;
     }
-
-    // Type MOVE_ASSIGN_GENERATE below here
-
-    MOVE_ASSIGN_GENERATE(bool, FBoolStruct)
-
-    MOVE_ASSIGN_GENERATE(uint8, FUint8Struct)
-
-    MOVE_ASSIGN_GENERATE(int32, FInt32Struct)
-
-    MOVE_ASSIGN_GENERATE(int64, FInt64Struct)
-
-    MOVE_ASSIGN_GENERATE(float, FFloatStruct)
-
-    MOVE_ASSIGN_GENERATE(FString, FFStringStruct)
-
-    MOVE_ASSIGN_GENERATE(FName, FFNameStruct)
-
-    MOVE_ASSIGN_GENERATE(FText, FFTextStruct)
-
-    MOVE_ASSIGN_GENERATE_PTR(UObject, FUObjectStruct)
-
-    MOVE_ASSIGN_GENERATE_TOBJECTPTR(UObject, FUObjectStruct)
-
-    // Type MOVE_ASSIGN_GENERATE above here
 
     bool IsValid() const { return Value.IsValid(); }
 
     template<typename T>
     T* Get()
     {
-        if constexpr (TIsDerivedFrom<T, UObject>::IsDerived)
+        using StoredType = TAnyType<T>::Type;
+        if constexpr (std::is_same_v<StoredType, FUObjectStruct>)
         {
-            if (Value.GetScriptStruct() != TBaseStructure<FUObjectStruct>::Get()) return nullptr;
-            return Cast<T>(Value.GetMutable<FUObjectStruct>().Value.Get());
+            FUObjectStruct* Wrapper = Value.GetMutablePtr<FUObjectStruct>();
+            if (!Wrapper) return nullptr;
+            if constexpr (TIsTObjectPtr_V<T>)
+            {
+                using PointedType = TRemoveObjectPointer<T>::Type;
+                if (!Cast<PointedType>(Wrapper->Value)) return nullptr;
+            }
+            else
+            {
+                using PointedType = TRemovePointer<T>::Type;
+                if (!Cast<PointedType>(Wrapper->Value.Get())) return nullptr;
+            }
+            return reinterpret_cast<T*>(&Wrapper->Value);
         }
-        else return Value.GetScriptStruct() == TBaseStructure<T>::Get() ? Value.GetMutable<T>() : nullptr;
+        else if constexpr (std::is_same_v<T, StoredType>) return Value.GetMutablePtr<T>(); // T is a USTRUCT
+        else
+        {
+            StoredType* Wrapper = Value.GetMutablePtr<StoredType>();
+            return Wrapper ? &Wrapper->Value : nullptr; // T was wrapped (e.g. int32 -> FInt32Struct)
+        }
     }
 
     template<typename T>
     const T* Get() const
     {
-        if constexpr (TIsDerivedFrom<T, UObject>::IsDerived)
+        using StoredType = TAnyType<T>::Type;
+        if constexpr (std::is_same_v<StoredType, FUObjectStruct>)
         {
-            if (Value.GetScriptStruct() != TBaseStructure<FUObjectStruct>::Get()) return nullptr;
-            return Cast<T>(Value.Get<FUObjectStruct>().Value.Get());
+            const FUObjectStruct* Wrapper = Value.GetPtr<FUObjectStruct>();
+            if (!Wrapper) return nullptr;
+            if constexpr (TIsTObjectPtr_V<T>)
+            {
+                using PointedType = TRemoveObjectPointer<T>::Type;
+                if (!Cast<PointedType>(Wrapper->Value)) return nullptr;
+            }
+            else
+            {
+                using PointedType = TRemovePointer<T>::Type;
+                if (!Cast<PointedType>(Wrapper->Value.Get())) return nullptr;
+            }
+            return reinterpret_cast<const T*>(&Wrapper->Value);
         }
-        else return Value.GetScriptStruct() == TBaseStructure<T>::Get() ? Value.Get<T>() : nullptr;
+        else if constexpr (std::is_same_v<T, StoredType>) return Value.GetPtr<T>();
+        else
+        {
+            const StoredType* Wrapper = Value.GetPtr<StoredType>();
+            return Wrapper ? &Wrapper->Value : nullptr;
+        }
     }
 
     template<typename T>
     FAny& Set(const T& InValue)
     {
-        if constexpr (TIsTObjectPtr<T>::Value)
-        {
-            using ObjectType = TRemoveObjectPointer<T>::Type;
-            static_assert(TIsDerivedFrom<ObjectType, UObject>::IsDerived,
-                          "FAny doesn't work with non-UObject derived TObjectPtrs");
-            Value = FInstancedStruct::Make<FUObjectStruct>(InValue);
-        }
-        else if constexpr (TIsPointer<T>::Value)
-        {
-            using PointedType = TRemovePointer<T>::Type;
-            if constexpr (TIsPointer<PointedType>::Value)
-            {
-                using PointedPointedType = TRemovePointer<PointedType>::Type; // Can't think of better name
-                static_assert(TIsDerivedFrom<PointedPointedType, UObject>::IsDerived,
-                              "FAny doesn't work with non-UObject derived pointers to pointers");
-                Value = FInstancedStruct::Make<FUObjectStruct>(*InValue);
-            }
-            else
-            {
-                static_assert(TIsDerivedFrom<PointedType, UObject>::IsDerived,
-                              "FAny doesn't work with non-UObject derived pointers");
-                Value = FInstancedStruct::Make<FUObjectStruct>(InValue);
-            }
-        }
-        else Value = FInstancedStruct::Make(InValue);
+        Value = FInstancedStruct::Make<typename TAnyType<T>::Type>(InValue);
         return *this;
     }
 
     template<typename T>
     FAny& Set(T&& InValue)
     {
-        if constexpr (TIsTObjectPtr<T>::Value)
-        {
-            using ObjectType = TRemoveObjectPointer<T>::Type;
-            static_assert(TIsDerivedFrom<ObjectType, UObject>::IsDerived,
-                          "FAny doesn't work with non-UObject derived TObjectPtrs");
-            Value = FInstancedStruct::Make<FUObjectStruct>(MoveTemp(InValue));
-        }
-        else if constexpr (TIsPointer<T>::Value)
-        {
-            using PointedType = TRemovePointer<T>::Type;
-            if constexpr (TIsPointer<PointedType>::Value)
-            {
-                using PointedPointedType = TRemovePointer<PointedType>::Type; // Can't think of better name
-                static_assert(TIsDerivedFrom<PointedPointedType, UObject>::IsDerived,
-                              "FAny doesn't work with non-UObject derived pointers to pointers");
-                Value = FInstancedStruct::Make<FUObjectStruct>(MoveTemp(*InValue));
-            }
-            else
-            {
-                static_assert(TIsDerivedFrom<PointedType, UObject>::IsDerived,
-                              "FAny doesn't work with non-UObject derived pointers");
-                Value = FInstancedStruct::Make<FUObjectStruct>(MoveTemp(InValue));
-            }
-        }
-        else Value = FInstancedStruct::Make(MoveTemp(InValue));
+        Value = FInstancedStruct::Make<typename TAnyType<TDecay<T>>::Type>(Forward<T>(InValue));
         return *this;
     }
 };
-
-// Type GET_GENERATE below here
-
-GET_GENERATE(bool, FBoolStruct)
-
-GET_GENERATE(uint8, FUint8Struct)
-
-GET_GENERATE(int32, FInt32Struct)
-
-GET_GENERATE(int64, FInt64Struct)
-
-GET_GENERATE(float, FFloatStruct)
-
-GET_GENERATE(FString, FFStringStruct)
-
-GET_GENERATE(FName, FFNameStruct)
-
-GET_GENERATE(FText, FFTextStruct)
-
-template<>
-inline UObject* FAny::Get<UObject>()
-{
-    if (FUObjectStruct* StructPtr = Value.GetMutablePtr<FUObjectStruct>())
-    {
-        return StructPtr->Value;
-    }
-    return nullptr;
-}
-
-template<>
-inline const UObject* FAny::Get<UObject>() const
-{
-    if (const FUObjectStruct* StructPtr = Value.GetPtr<FUObjectStruct>())
-    {
-        return StructPtr->Value;
-    }
-    return nullptr;
-}
-
-GET_GENERATE_PTR(UObject, FUObjectStruct)
-
-GET_GENERATE_TOBJECTPTR(UObject, FUObjectStruct)
-
-// Type GET_GENERATE above here
-
-// Type COPY_SET_GENERATE below here
-
-COPY_SET_GENERATE(bool, FBoolStruct)
-
-COPY_SET_GENERATE(uint8, FUint8Struct)
-
-COPY_SET_GENERATE(int32, FInt32Struct)
-
-COPY_SET_GENERATE(int64, FInt64Struct)
-
-COPY_SET_GENERATE(float, FFloatStruct)
-
-COPY_SET_GENERATE(FString, FFStringStruct)
-
-COPY_SET_GENERATE_PTR(const char, FFStringStruct)
-COPY_SET_GENERATE_PTR(char, FFStringStruct)
-COPY_SET_GENERATE_PTR(const WIDECHAR, FFStringStruct)
-COPY_SET_GENERATE_PTR(WIDECHAR, FFStringStruct)
-
-COPY_SET_GENERATE(FName, FFNameStruct)
-
-COPY_SET_GENERATE(FText, FFTextStruct)
-
-COPY_SET_GENERATE_PTR(UObject, FUObjectStruct)
-
-COPY_SET_GENERATE_TOBJECTPTR(UObject, FUObjectStruct)
-
-// Type COPY_SET_GENERATE above here
-
-// Type MOVE_SET_GENERATE below here
-
-MOVE_SET_GENERATE(bool, FBoolStruct)
-
-MOVE_SET_GENERATE(uint8, FUint8Struct)
-
-MOVE_SET_GENERATE(int32, FInt32Struct)
-
-MOVE_SET_GENERATE(int64, FInt64Struct)
-
-MOVE_SET_GENERATE(float, FFloatStruct)
-
-MOVE_SET_GENERATE(FString, FFStringStruct)
-
-MOVE_SET_GENERATE_PTR(const char, FFStringStruct)
-MOVE_SET_GENERATE_PTR(char, FFStringStruct)
-MOVE_SET_GENERATE_PTR(const WIDECHAR, FFStringStruct)
-MOVE_SET_GENERATE_PTR(WIDECHAR, FFStringStruct)
-
-MOVE_SET_GENERATE(FName, FFNameStruct)
-
-MOVE_SET_GENERATE(FText, FFTextStruct)
-
-MOVE_SET_GENERATE_PTR(UObject, FUObjectStruct)
-
-MOVE_SET_GENERATE_TOBJECTPTR(UObject, FUObjectStruct)
-
-// Type MOVE_SET_GENERATE above here
-
-#undef MOVE_SET_GENERATE_TOBJECTPTR
-#undef MOVE_SET_GENERATE_PTR
-#undef MOVE_SET_GENERATE
-#undef COPY_SET_GENERATE_TOBJECTPTR
-#undef COPY_SET_GENERATE_PTR
-#undef COPY_SET_GENERATE
-#undef GET_GENERATE_TOBJECTPTR
-#undef GET_GENERATE_PTR
-#undef GET_GENERATE
-#undef MOVE_ASSIGN_GENERATE_TOBJECTPTR
-#undef MOVE_ASSIGN_GENERATE_PTR
-#undef MOVE_ASSIGN_GENERATE
-#undef COPY_ASSIGN_GENERATE_TOBJECTPTR
-#undef COPY_ASSIGN_GENERATE_PTR
-#undef COPY_ASSIGN_GENERATE
-#undef MOVE_CONSTRUCTOR_GENERATE_TOBJECTPTR
-#undef MOVE_CONSTRUCTOR_GENERATE_PTR
-#undef MOVE_CONSTRUCTOR_GENERATE
-#undef COPY_CONSTRUCTOR_GENERATE_TOBJECTPTR
-#undef COPY_CONSTRUCTOR_GENERATE_PTR
-#undef COPY_CONSTRUCTOR_GENERATE

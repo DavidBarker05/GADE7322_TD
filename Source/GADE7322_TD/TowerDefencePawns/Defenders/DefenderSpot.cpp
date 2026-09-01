@@ -35,13 +35,13 @@ void ADefenderSpot::EndPlay(const EEndPlayReason::Type EndPlayReason)
 
 void ADefenderSpot::OnEventReceived_Implementation(const FName& EventName, const TArray<FAny>& Params)
 {
-    if (EVENT_MATCHES(TEXT("DeathEvent"), 1) && PARAMS_ARE_VALID && PARAMS_ARE_CORRECT_TYPES(ATowerDefencePawn))
+    if (EVENT_MATCHES(TEXT("DeathEvent"), 1) && PARAMS_ARE_VALID && PARAMS_ARE_CORRECT_TYPES(ATowerDefencePawn*))
     {
-        if (const ATowerDefencePawn* DeadPawn = Params[0].Get<ATowerDefencePawn>())
+        if (const ATowerDefencePawn* const* DeadPawn = Params[0].Get<ATowerDefencePawn*>())
         {
-            if (!IsValid(DeadPawn) || !IsValid(CurrentDefender)) return;
-            if (!DeadPawn->IsA<ADefender>()) return;
-            if (DeadPawn != CurrentDefender) return;
+            if (!IsValid(*DeadPawn) || !IsValid(CurrentDefender)) return;
+            if (!(*DeadPawn)->IsA<ADefender>()) return;
+            if (*DeadPawn != CurrentDefender) return;
             CurrentDefender->OnDeath(
                 [this]() -> void
                 {

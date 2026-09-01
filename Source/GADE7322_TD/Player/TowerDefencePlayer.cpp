@@ -83,7 +83,7 @@ void ATowerDefencePlayer::SetupPlayerInputComponent(UInputComponent* PlayerInput
 
 void ATowerDefencePlayer::OnEventReceived_Implementation(const FName& EventName, const TArray<FAny>& Params)
 {
-    if (EVENT_MATCHES(TEXT("DeathEvent"), 1) && PARAMS_ARE_VALID && PARAMS_ARE_CORRECT_TYPES(APlayerTower))
+    if (EVENT_MATCHES(TEXT("DeathEvent"), 1) && PARAMS_ARE_VALID && PARAMS_ARE_CORRECT_TYPES(APlayerTower*))
         TD_LOG_INFO(TEXT("Player is dead"));
 }
 

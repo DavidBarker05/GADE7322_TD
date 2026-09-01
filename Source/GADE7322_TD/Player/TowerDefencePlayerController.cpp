@@ -5,6 +5,7 @@
 #include "EnhancedInputSubsystems.h"
 #include "InputMappingContext.h"
 #include "UI/PauseScreenWidget.h"
+#include "UI/PlayerHUDWidget.h"
 
 void ATowerDefencePlayerController::BeginPlay()
 {
@@ -14,6 +15,8 @@ void ATowerDefencePlayerController::BeginPlay()
     InputMode.SetHideCursorDuringCapture(false);
     SetInputMode(InputMode);
     bShowMouseCursor = true;
+    if (!PlayerHUDWidgetInstance) PlayerHUDWidgetInstance = CreateWidget<UPlayerHUDWidget>(this, PlayerHUDWidgetClass);
+    if (PlayerHUDWidgetInstance && !PlayerHUDWidgetInstance->IsInViewport()) PlayerHUDWidgetInstance->AddToViewport();
 }
 
 void ATowerDefencePlayerController::TogglePause()
