@@ -89,37 +89,29 @@
 #define EVENT_MATCHES(Name, NumArgs) EventName.IsEqual(Name) && Params.Num() == NumArgs
 #endif
 
-namespace Internal
-{
-    static bool EventParamsAreValid(const TArray<FAny>& Params)
-    {
-        bool bValid = true;
-        for (const FAny& Param : Params) bValid &= Param.IsValid();
-        return bValid;
-    }
-
-    template<typename... Types>
-    static bool EventParamsAreCorrectTypes(const TArray<FAny>& Params)
-    {
-        if (Params.Num() != sizeof...(Types)) return false;
-        bool bCorrect = true;
-        int32 Index = 0;
-        // ReSharper disable once CppAssignedValueIsNeverUsed
-        ((bCorrect &= Params[Index++].Get<Types>() != nullptr), ...);
-        return bCorrect;
-    }
-} // namespace Internal
-
 #ifndef PARAMS_ARE_VALID
-#define PARAMS_ARE_VALID Internal::EventParamsAreValid(Params)
+#define PARAMS_ARE_VALID \
+    [&Params]() -> bool \
+    { \
+        bool bValid = true; \
+        for (const FAny& Param : Params) bValid &= Param.IsValid(); \
+        return bValid; \
+    }()
 #endif
 
 #ifndef PARAMS_ARE_CORRECT_TYPES
-#define PARAMS_ARE_CORRECT_TYPES(...) Internal::EventParamsAreCorrectTypes<__VA_ARGS__>(Params)
+#define PARAMS_ARE_CORRECT_TYPES(...) \
+    [&Params]<typename... Types>() -> bool \
+    { \
+        if (Params.Num() != sizeof...(Types)) return false; \
+        bool bCorrect = true; \
+        int32 Index = 0; \
+        ((bCorrect &= Params[Index++].Get<Types>() != nullptr), ...); \
+        return bCorrect; \
+    }.template operator()<__VA_ARGS__>()
 #endif
 
-UINTERFACE(MinimalAPI, BlueprintType)
-class UEventListener : public UInterface
+UINTERFACE(MinimalAPI, BlueprintType) class UEventListener : public UInterface
 {
     GENERATED_BODY()
 };
