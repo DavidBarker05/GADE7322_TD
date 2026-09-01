@@ -254,7 +254,7 @@ struct GADE7322_TD_API FAny
             {
                 using PointedType = TRemovePointer<T>::Type; // ...
                 if (!Cast<PointedType>(Wrapper->Value.Get()))
-                    return nullptr; // If can't cast to PointeType return nullptr
+                    return nullptr; // If can't cast to PointedType return nullptr
             }
             return reinterpret_cast<T*>(&Wrapper->Value); // Reinterpret the address to the underlying data as T* and return it
         }
