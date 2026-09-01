@@ -23,7 +23,9 @@ public class GADE7322_TD : ModuleRules
 			"GameplayTasks",
 			"StateTreeModule",
 			"GameplayStateTreeModule",
-			"AIModule"
+			"AIModule",
+			"UMG",
+			"Slate"
 		});
 
 		PrivateDependencyModuleNames.AddRange(new string[] { "Slate", "SlateCore" });
@@ -49,7 +51,8 @@ public class GADE7322_TD : ModuleRules
 			"GADE7322_TD/TowerDefencePawns/Defenders/AI",
 			"GADE7322_TD/TowerDefencePawns/Defenders/AI/CommonTasks",
 			"GADE7322_TD/TowerDefencePawns/Defenders/Warrior",
-			"GADE7322_TD/TowerDefencePawns/Tower"
+			"GADE7322_TD/TowerDefencePawns/Tower",
+			"GADE7322_TD/TowerDefencePawns/UI"
 		});
 
 		// Uncomment if you are using online features

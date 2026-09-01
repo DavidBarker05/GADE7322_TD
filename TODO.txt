@@ -4,8 +4,6 @@ enemy wave spawning
 
 ui for buying and selling
 
-ui for pause and play
-
 navmesh or whatever it is called in unreal
 
 health and damage for all pawns

@@ -6,9 +6,11 @@
 #include "EnhancedInputComponent.h"
 #include "Framework/Application/SlateApplication.h"
 #include "GameFramework/FloatingPawnMovement.h"
+#include "GameFramework/PlayerController.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "InputActionValue.h"
 #include "Player/Components/CurrencyComponent.h"
+#include "Player/TowerDefencePlayerController.h"
 #include "TowerDefencePawns/Defenders/Defender.h"
 #include "TowerDefencePawns/Defenders/DefenderSpot.h"
 #include "TowerDefencePawns/Tower/PlayerTower.h"
@@ -104,6 +106,7 @@ void ATowerDefencePlayer::SwitchBetweenSpotAndDefender()
 // ReSharper disable once CppMemberFunctionMayBeConst
 void ATowerDefencePlayer::DoMove(const FInputActionValue& Value)
 {
+    if (bPaused) return;
     const FVector2D MovementVector = Value.Get<FVector2D>();
     const FVector RightVector = GetActorRightVector() * MovementVector.X;
     const FVector ForwardVector = GetActorForwardVector() * MovementVector.Y;
@@ -114,6 +117,7 @@ void ATowerDefencePlayer::DoMove(const FInputActionValue& Value)
 // ReSharper disable once CppMemberFunctionMayBeConst
 void ATowerDefencePlayer::DoRotate(const FInputActionValue& Value)
 {
+    if (bPaused) return;
     const float RotationInput = Value.Get<float>();
     AddActorWorldRotation(FRotator(0.0f, RotationInput * RotationSpeed * GetWorld()->GetDeltaSeconds(), 0.0f));
 }
@@ -137,6 +141,7 @@ bool ATowerDefencePlayer::IsMouseOverUI(const APlayerController* PlayerControlle
 // ReSharper disable once CppMemberFunctionMayBeConst
 void ATowerDefencePlayer::DoSelect()
 {
+    if (bPaused) return;
     if (const APlayerController* PlayerController = Cast<APlayerController>(GetController()))
     {
         if (IsMouseOverUI(PlayerController)) return;
@@ -163,6 +168,7 @@ void ATowerDefencePlayer::DoSelect()
 
 void ATowerDefencePlayer::DoDeselect()
 {
+    if (bPaused) return;
     CurrentlySelectedDefenderSpot = nullptr;
     CurrentFocusTarget = nullptr;
     bFollowTarget = false;
@@ -171,6 +177,7 @@ void ATowerDefencePlayer::DoDeselect()
 // ReSharper disable once CppMemberFunctionMayBeConst
 void ATowerDefencePlayer::DoZoom(const FInputActionValue& Value)
 {
+    if (bPaused) return;
     const float ScrollAmount = Value.Get<float>();
     SpringArmComponent->TargetArmLength = FMath::Clamp(SpringArmComponent->TargetArmLength - ScrollAmount * ZoomSpeed,
                                                        ClosestCameraDistance, FurthestCameraDistance);
@@ -178,7 +185,7 @@ void ATowerDefencePlayer::DoZoom(const FInputActionValue& Value)
 
 void ATowerDefencePlayer::DoFocus()
 {
-    if (!IsValid(CurrentFocusTarget)) return;
+    if (bPaused || !IsValid(CurrentFocusTarget)) return;
     FVector DesiredLocation = CurrentFocusTarget->GetActorLocation();
     DesiredLocation.Z = GetActorLocation().Z;
     SetActorLocation(DesiredLocation);
@@ -188,15 +195,13 @@ void ATowerDefencePlayer::DoFocus()
 
 void ATowerDefencePlayer::DoReset()
 {
+    if (bPaused) return;
     SetActorLocationAndRotation(FVector {}, FQuat {}, false, nullptr);
     SpringArmComponent->TargetArmLength = FurthestCameraDistance;
 }
 
+// ReSharper disable once CppMemberFunctionMayBeConst
 void ATowerDefencePlayer::DoPause()
 {
-    if (APlayerController* PC = Cast<APlayerController>(GetController()))
-    {
-        bPaused = !bPaused;
-        PC->SetPause(bPaused);
-    }
+    if (ATowerDefencePlayerController* TDPC = Cast<ATowerDefencePlayerController>(GetController())) TDPC->TogglePause();
 }
