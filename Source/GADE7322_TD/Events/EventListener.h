@@ -18,9 +18,12 @@
 #define SUBSCRIBE_TO_EVENTS() \
     do \
     { \
-        if (UEventBus* EventBus = Internal::GetEventBusFromContext(this)) \
+        if (const UWorld* World = this->GetWorld(); const UGameInstance* GameInstance = World->GetGameInstance()) \
         { \
-            for (const FString& EventName : EventNames) EventBus->AddListener(FName(EventName), this); \
+            if (UEventBus* EventBus = GameInstance->GetSubsystem<UEventBus>()) \
+            { \
+                for (const FString& EventName : EventNames) EventBus->AddListener(FName(EventName), this); \
+            } \
         } \
     } while (0)
 #endif
@@ -30,14 +33,17 @@
 #define SUBSCRIBE_TO_EVENTS_RUNTIME(...) \
     do \
     { \
-        if (UEventBus* EventBus = Internal::GetEventBusFromContext(this)) \
+        if (const UWorld* World = this->GetWorld(); const UGameInstance* GameInstance = World->GetGameInstance()) \
         { \
-            FString TempNames[] = {__VA_ARGS__}; \
-            for (const FString& Name : TempNames) \
+            if (UEventBus* EventBus = GameInstance->GetSubsystem<UEventBus>()) \
             { \
-                if (EventNames.Contains(Name)) continue; \
-                (void)EventNames.Add(Name); \
-                EventBus->AddListener(FName(Name), this); \
+                FString TempNames[] = {__VA_ARGS__}; \
+                for (const FString& Name : TempNames) \
+                { \
+                    if (EventNames.Contains(Name)) continue; \
+                    (void)EventNames.Add(Name); \
+                    EventBus->AddListener(FName(Name), this); \
+                } \
             } \
         } \
     } while (0)
@@ -48,9 +54,12 @@
 #define UNSUBSCRIBE_FROM_EVENTS() \
     do \
     { \
-        if (UEventBus* EventBus = Internal::GetEventBusFromContext(this)) \
+        if (const UWorld* World = this->GetWorld(); const UGameInstance* GameInstance = World->GetGameInstance()) \
         { \
-            for (const FString& EventName : EventNames) EventBus->RemoveListener(FName(EventName), this); \
+            if (UEventBus* EventBus = GameInstance->GetSubsystem<UEventBus>()) \
+            { \
+                for (const FString& EventName : EventNames) EventBus->RemoveListener(FName(EventName), this); \
+            } \
         } \
     } while (0)
 #endif
@@ -60,14 +69,17 @@
 #define UNSUBSCRIBE_FROM_EVENTS_RUNTIME(...) \
     do \
     { \
-        if (UEventBus* EventBus = Internal::GetEventBusFromContext(this)) \
+        if (const UWorld* World = this->GetWorld(); const UGameInstance* GameInstance = World->GetGameInstance()) \
         { \
-            FString TempNames[] = {__VA_ARGS__}; \
-            for (const FString& Name : TempNames) \
+            if (UEventBus* EventBus = GameInstance->GetSubsystem<UEventBus>()) \
             { \
-                if (!EventNames.Contains(Name)) continue; \
-                (void)EventNames.Remove(Name); \
-                EventBus->RemoveListener(FName(Name), this); \
+                FString TempNames[] = {__VA_ARGS__}; \
+                for (const FString& Name : TempNames) \
+                { \
+                    if (!EventNames.Contains(Name)) continue; \
+                    (void)EventNames.Remove(Name); \
+                    EventBus->RemoveListener(FName(Name), this); \
+                } \
             } \
         } \
     } while (0)

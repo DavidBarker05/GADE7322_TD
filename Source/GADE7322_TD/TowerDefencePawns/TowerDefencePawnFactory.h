@@ -7,32 +7,21 @@
 
 #include "TowerDefencePawnFactory.generated.h"
 
-class UTowerDefencePawnFactory;
-
-namespace Internal
-{
-    static UTowerDefencePawnFactory* GetTowerDefencePawnFactoryFromContext(const UObject* ContextObject)
-    {
-        if (!ContextObject || !IsValid(ContextObject)) return nullptr;
-        const UWorld* World = nullptr;
-        if (const AActor* Actor = Cast<AActor>(ContextObject)) World = Actor->GetWorld();
-        else if (const USceneComponent* SceneComponent = Cast<USceneComponent>(ContextObject))
-            World = SceneComponent->GetWorld();
-        else if (const UActorComponent* ActorComponent = Cast<UActorComponent>(ContextObject))
-        {
-            if (const AActor* Owner = ActorComponent->GetOwner()) World = Owner->GetWorld();
-        }
-        if (!World) return nullptr;
-        if (const UGameInstance* GameInstance = World->GetGameInstance())
-            return GameInstance->GetSubsystem<UTowerDefencePawnFactory>();
-        return nullptr;
-    }
-} // namespace Internal
-
 #ifndef TOWER_DEFENCE_PAWN_FACTORY_EXISTS
 #define TOWER_DEFENCE_PAWN_FACTORY_EXISTS \
-    UTowerDefencePawnFactory* TowerDefencePawnFactory = Internal::GetTowerDefencePawnFactoryFromContext(this)
+    UTowerDefencePawnFactory* TowerDefencePawnFactory = [](const UWorld* World) -> UTowerDefencePawnFactory* \
+    { \
+        if (World; const UGameInstance* GameInstance = World->GetGameInstance()) \
+            return GameInstance->GetSubsystem<UTowerDefencePawnFactory>(); \
+        return nullptr; \
+    }(this->GetWorld())
 #endif
+// ^ This is very hacky way around of not being able to do:
+// ---
+// const UWorld* World = this->GetWorld(); const UGameInstance* GameInstance = World->GetGameInstance();
+// UTowerDefencePawnFactory* TowerDefencePawnFactory = GameInstance->GetSubsystem<UTowerDefencePawnFactory>()
+// ---
+// inside one if statement
 
 #ifndef CREATE_PAWN
 #define CREATE_PAWN(TowerDefencePawnBlueprint, SpawnTransform) \

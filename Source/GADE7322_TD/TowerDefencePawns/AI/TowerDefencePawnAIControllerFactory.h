@@ -7,41 +7,30 @@
 
 #include "TowerDefencePawnAIControllerFactory.generated.h"
 
-class UTowerDefencePawnAIControllerFactory;
-
-namespace Internal
-{
-    static UTowerDefencePawnAIControllerFactory*
-    GetTowerDefencePawnAIControllerFactoryFromContext(const UObject* ContextObject)
-    {
-        if (!ContextObject || !IsValid(ContextObject)) return nullptr;
-        const UWorld* World = nullptr;
-        if (const AActor* Actor = Cast<AActor>(ContextObject)) World = Actor->GetWorld();
-        else if (const USceneComponent* SceneComponent = Cast<USceneComponent>(ContextObject))
-            World = SceneComponent->GetWorld();
-        else if (const UActorComponent* ActorComponent = Cast<UActorComponent>(ContextObject))
-        {
-            if (const AActor* Owner = ActorComponent->GetOwner()) World = Owner->GetWorld();
-        }
-        if (!World) return nullptr;
-        if (const UGameInstance* GameInstance = World->GetGameInstance())
-            return GameInstance->GetSubsystem<UTowerDefencePawnAIControllerFactory>();
-        return nullptr;
-    }
-} // namespace Internal
-
 #ifndef POSSESS_TOWER_DEFENCE_PAWN
 #define POSSESS_TOWER_DEFENCE_PAWN(TowerDefencePawn) \
-    if (UTowerDefencePawnAIControllerFactory* TowerDefencePawnAIControllerFactory = \
-            Internal::GetTowerDefencePawnAIControllerFactoryFromContext(this)) \
-    TowerDefencePawnAIControllerFactory->PossessTowerDefencePawn(TowerDefencePawn)
+    do \
+    { \
+        if (const UWorld* World = this->GetWorld(); const UGameInstance* GameInstance = World->GetGameInstance()) \
+        { \
+            if (UTowerDefencePawnAIControllerFactory* TowerDefencePawnAIControllerFactory = \
+                    GameInstance->GetSubsystem<UTowerDefencePawnAIControllerFactory>()) \
+                TowerDefencePawnAIControllerFactory->PossessTowerDefencePawn(TowerDefencePawn); \
+        } \
+    } while (0)
 #endif
 
 #ifndef UNPOSSESS_TOWER_DEFENCE_PAWN
 #define UNPOSSESS_TOWER_DEFENCE_PAWN(TowerDefencePawn) \
-    if (UTowerDefencePawnAIControllerFactory* TowerDefencePawnAIControllerFactory = \
-            Internal::GetTowerDefencePawnAIControllerFactoryFromContext(this)) \
-    TowerDefencePawnAIControllerFactory->UnpossessTowerDefencePawn(TowerDefencePawn)
+    do \
+    { \
+        if (const UWorld* World = this->GetWorld(); const UGameInstance* GameInstance = World->GetGameInstance()) \
+        { \
+            if (UTowerDefencePawnAIControllerFactory* TowerDefencePawnAIControllerFactory = \
+                    GameInstance->GetSubsystem<UTowerDefencePawnAIControllerFactory>()) \
+                TowerDefencePawnAIControllerFactory->UnpossessTowerDefencePawn(TowerDefencePawn); \
+        } \
+    } while (0)
 #endif
 
 class ATowerDefencePawn;
