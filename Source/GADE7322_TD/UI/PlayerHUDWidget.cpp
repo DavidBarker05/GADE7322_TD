@@ -1,6 +1,16 @@
 #include "UI/PlayerHUDWidget.h"
 
+#include "Components/Button.h"
 #include "Components/TextBlock.h"
+#include "TowerDefenceGameMode.h"
+
+bool UPlayerHUDWidget::Initialize()
+{
+    if (!Super::Initialize()) return false;
+    if (!(WaveButton && WaveButtonText)) return false;
+    WaveButton->OnClicked.AddDynamic(this, &UPlayerHUDWidget::HandleWaveButtonClicked);
+    return true;
+}
 
 void UPlayerHUDWidget::NativeOnInitialized()
 {
@@ -11,6 +21,12 @@ void UPlayerHUDWidget::NativeDestruct()
 {
     UNSUBSCRIBE_FROM_EVENTS();
     Super::NativeDestruct();
+}
+
+void UPlayerHUDWidget::HandleWaveButtonClicked()
+{
+    if (ATowerDefenceGameMode* GameMode = GetWorld() ? GetWorld()->GetAuthGameMode<ATowerDefenceGameMode>() : nullptr)
+        GameMode->StartNextWave();
 }
 
 void UPlayerHUDWidget::OnEventReceived_Implementation(const FName& EventName, const TArray<FAny>& Params)
@@ -24,7 +40,23 @@ void UPlayerHUDWidget::OnEventReceived_Implementation(const FName& EventName, co
     {
         if (NumParams != 2) return;
         if (const int32* Round = Params[1].Get<int32>())
+        {
+            LastKnownRound = *Round;
             RoundDisplay->SetText(FText::FromString(FString::Printf(TEXT("Round: %d"), *Round)));
+        }
+    }
+    else if (ElemName == TEXT("WaveState"))
+    {
+        if (NumParams != 2) return;
+        if (const FName* StatePtr = Params[1].Get<FName>())
+        {
+            if (*StatePtr == TEXT("AwaitingStart"))
+            {
+                WaveButtonText->SetText(FText::FromString(LastKnownRound == 0 ? TEXT("Start") : TEXT("Next Wave")));
+                WaveButton->SetVisibility(ESlateVisibility::Visible);
+            }
+            else if (*StatePtr == TEXT("InProgress")) WaveButton->SetVisibility(ESlateVisibility::Collapsed);
+        }
     }
     else if (ElemName == TEXT("EnemyCount"))
     {

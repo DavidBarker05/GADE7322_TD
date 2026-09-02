@@ -33,6 +33,9 @@ protected:
     UFUNCTION()
     virtual void QuitGame() const;
 
+    UFUNCTION()
+    virtual void HandleAutoPlayChanged(bool bIsChecked) const;
+
     UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
     UButton* ResumeButton;
 

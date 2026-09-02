@@ -16,7 +16,11 @@ public:
 
     int32 GetCurrencyOnDeath() const { return CurrencyOnDeath; }
 
-    void SetPathPoints(const TArray<FVector>& InPathPoints) { PathPoints = InPathPoints; }
+    void SetPathPoints(const TArray<FVector>& InPathPoints)
+    {
+        PathPoints = InPathPoints;
+        CurrentPathIndex = 0;
+    }
 
     const TArray<FVector>& GetPathPoints() const { return PathPoints; }
 

@@ -4,6 +4,7 @@
 #include "Components/CheckBox.h"
 #include "Kismet/GameplayStatics.h"
 #include "Kismet/KismetSystemLibrary.h"
+#include "Settings/GameSettingsSubsystem.h"
 #include "TowerDefencePlayerController.h"
 #include "UI/ControlsWidget.h"
 
@@ -15,6 +16,10 @@ bool UPauseScreenWidget::Initialize()
     ResumeButton->OnClicked.AddDynamic(this, &UPauseScreenWidget::ResumeGame);
     ControlsButton->OnClicked.AddDynamic(this, &UPauseScreenWidget::OpenControls);
     QuitButton->OnClicked.AddDynamic(this, &UPauseScreenWidget::QuitGame);
+    AutoPlayToggle->OnCheckStateChanged.AddDynamic(this, &UPauseScreenWidget::HandleAutoPlayChanged);
+    if (const UWorld* World = GetWorld(); const UGameInstance* GameInstance = World ? World->GetGameInstance() : nullptr)
+        if (const UGameSettingsSubsystem* Settings = GameInstance->GetSubsystem<UGameSettingsSubsystem>())
+            AutoPlayToggle->SetIsChecked(Settings->IsAutoPlay());
     ShowMainPanel();
     return true;
 }
@@ -53,4 +58,11 @@ void UPauseScreenWidget::OpenControls() const
 void UPauseScreenWidget::QuitGame() const
 {
     UKismetSystemLibrary::QuitGame(this, GetOwningPlayer(), EQuitPreference::Quit, false);
+}
+
+void UPauseScreenWidget::HandleAutoPlayChanged(bool bIsChecked) const
+{
+    if (const UWorld* World = GetWorld(); UGameInstance* GameInstance = World ? World->GetGameInstance() : nullptr)
+        if (UGameSettingsSubsystem* Settings = GameInstance->GetSubsystem<UGameSettingsSubsystem>())
+            Settings->SetAutoPlay(bIsChecked);
 }

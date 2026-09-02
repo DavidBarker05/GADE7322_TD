@@ -20,6 +20,8 @@ class GADE7322_TD_API UPlayerHUDWidget : public UUserWidget,
     EVENTS_TO_LISTEN_TO(TEXT("UpdateHUDEvent"))
 
 protected:
+    virtual bool Initialize() override;
+
     virtual void NativeOnInitialized() override;
 
     virtual void NativeDestruct() override;
@@ -28,6 +30,9 @@ public:
     virtual void OnEventReceived_Implementation(const FName& EventName, const TArray<FAny>& Params) override;
 
 protected:
+    UFUNCTION()
+    void HandleWaveButtonClicked();
+
     UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
     UButton* PauseButton;
 
@@ -41,5 +46,14 @@ protected:
     UTextBlock* CurrencyDisplay;
 
     UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
+    UButton* WaveButton;
+
+    UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
+    UTextBlock* WaveButtonText;
+
+    UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
     UPawnManagerWidget* PawnManagerWidget;
+
+private:
+    int32 LastKnownRound = 0;
 };
