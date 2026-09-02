@@ -15,7 +15,7 @@ void UPlayerHUDWidget::NativeDestruct()
 
 void UPlayerHUDWidget::OnEventReceived_Implementation(const FName& EventName, const TArray<FAny>& Params)
 {
-    if (EventName != TEXT("UpdateHUDEvent") || !PARAMS_ARE_VALID || Params.Num() < 1) return;
+    if (EventName != TEXT("UpdateHUDEvent") || !PARAMS_ARE_VALID || Params.Num() < 2) return;
     const FName* ElemNamePtr = Params[0].Get<FName>();
     if (!ElemNamePtr) return;
     const FName ElemName = *ElemNamePtr;
@@ -38,12 +38,18 @@ void UPlayerHUDWidget::OnEventReceived_Implementation(const FName& EventName, co
         if (const int32* Amount = Params[1].Get<int32>())
             CurrencyDisplay->SetText(FText::FromString(FString::Printf(TEXT("Gold: %d"), *Amount)));
     }
-    else if (ElemName == TEXT("PlayerSelected"))
+    else if (ElemName == TEXT("PawnManager"))
     {
-        if (NumParams != 1) return;
-    }
-    else if (ElemName == TEXT("PlayerDeselected"))
-    {
-        if (NumParams != 1) return;
+        const FName* ActionPtr = Params[1].Get<FName>();
+        if (!ActionPtr) return;
+        const FName Action = *ActionPtr;
+        if (Action == TEXT("Select"))
+        {
+            if (NumParams != 3) return;
+        }
+        else if (Action == TEXT("Deselect"))
+        {
+            if (NumParams != 2) return;
+        }
     }
 }

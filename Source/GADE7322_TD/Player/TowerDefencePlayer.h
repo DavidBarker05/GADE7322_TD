@@ -43,6 +43,12 @@ public:
     UFUNCTION(BlueprintCallable)
     void SwitchBetweenSpotAndDefender();
 
+    const ADefenderSpot* GetCurrentlySelectedDefenderSpot() const { return CurrentlySelectedDefenderSpot; }
+    ADefenderSpot* GetCurrentlySelectedDefenderSpot() { return CurrentlySelectedDefenderSpot; }
+
+    const AActor* GetCurrentFocusTarget() const { return CurrentFocusTarget; }
+    AActor* GetCurrentFocusTarget() { return CurrentFocusTarget; }
+
     void DoMove(const FInputActionValue& Value);
 
     void DoRotate(const FInputActionValue& Value);
@@ -127,10 +133,10 @@ private:
     float RotationSpeed = 90.0f;
 
     UPROPERTY(BlueprintReadOnly, Category = "Selection", meta = (AllowPrivateAccess = true))
-    const ADefenderSpot* CurrentlySelectedDefenderSpot;
+    ADefenderSpot* CurrentlySelectedDefenderSpot;
 
     UPROPERTY(BlueprintReadOnly, Category = "Selection", meta = (AllowPrivateAccess = true))
-    const AActor* CurrentFocusTarget;
+    AActor* CurrentFocusTarget;
 
     UPROPERTY(BlueprintReadOnly, Category = "Selection", meta = (AllowPrivateAccess = true))
     bool bFollowTarget = false;

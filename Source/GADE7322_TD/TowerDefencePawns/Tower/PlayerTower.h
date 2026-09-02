@@ -24,6 +24,10 @@ public:
 
     virtual void StartAttack() override;
 
+    int32 GetHealAmountPerPurchase() const { return HealAmountPerPurchase; }
+
+    int32 GetHealCostPerPurchase() const { return HealCostPerPurchase; }
+
     APlayerTower& SetAttackTargets(const TArray<ATowerDefencePawn*>& Targets)
     {
         if (Targets.Num() != 3) return *this;
@@ -52,6 +56,16 @@ private:
     void OnTargetPerceptionUpdated(AActor* Actor, FAIStimulus Stimulus);
 
     void UpdateAttackTargets();
+
+    // The amount of health the tower heals by with each purchase of health
+    UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Tower",
+              meta = (AllowPrivateAccess = true, ClampMin = 0, UIMin = 0))
+    int32 HealAmountPerPurchase = 0;
+
+    // The cost to heal the tower
+    UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Tower",
+              meta = (AllowPrivateAccess = true, ClampMin = 0, UIMin = 0))
+    int32 HealCostPerPurchase = 0;
 
     UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components", meta = (AllowPrivateAccess = true))
     UStaticMeshComponent* TowerMesh;

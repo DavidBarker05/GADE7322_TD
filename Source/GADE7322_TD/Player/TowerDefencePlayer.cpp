@@ -90,17 +90,16 @@ void ATowerDefencePlayer::OnEventReceived_Implementation(const FName& EventName,
 void ATowerDefencePlayer::SwitchBetweenSpotAndDefender()
 {
     if (!IsValid(CurrentFocusTarget)) return;
-    if (const ADefenderSpot* Spot = Cast<ADefenderSpot>(CurrentFocusTarget))
+    if (ADefenderSpot* Spot = Cast<ADefenderSpot>(CurrentFocusTarget))
     {
-        if (IsValid(Spot->GetCurrentDefender())) CurrentFocusTarget = Spot->GetCurrentDefender();
-        else CurrentFocusTarget = nullptr;
+        if (!IsValid(Spot->GetCurrentDefender())) return;
+        CurrentFocusTarget = Spot->GetCurrentDefender();
     }
-    else if (const ADefender* Defender = Cast<ADefender>(CurrentFocusTarget))
+    else if (ADefender* Defender = Cast<ADefender>(CurrentFocusTarget))
     {
-        if (IsValid(Defender->GetSpawnPoint())) CurrentFocusTarget = Defender->GetSpawnPoint();
-        else CurrentFocusTarget = nullptr;
+        if (!IsValid(Defender->GetSpawnPoint())) return;
+        CurrentFocusTarget = Defender->GetSpawnPoint();
     }
-    else CurrentFocusTarget = nullptr;
 }
 
 // ReSharper disable once CppMemberFunctionMayBeConst
@@ -157,17 +156,25 @@ void ATowerDefencePlayer::DoSelect()
                                                                 true, HitResult))
             return;
 
-        if (const ADefenderSpot* Spot = Cast<ADefenderSpot>(HitResult.GetActor()))
+        if (ADefenderSpot* Spot = Cast<ADefenderSpot>(HitResult.GetActor()))
         {
             CurrentlySelectedDefenderSpot = Spot;
             CurrentFocusTarget = Spot;
             bFollowTarget = false;
+            BROADCAST_EVENT(TEXT("UpdateHUDEvent"), FName(TEXT("PawnManager")), FName(TEXT("Select")), Spot);
         }
-
-        if (const ADefender* Defender = Cast<ADefender>(HitResult.GetActor()))
+        else if (ADefender* Defender = Cast<ADefender>(HitResult.GetActor()))
         {
             CurrentlySelectedDefenderSpot = Defender->GetSpawnPoint();
             CurrentFocusTarget = Defender;
+            BROADCAST_EVENT(TEXT("UpdateHUDEvent"), FName(TEXT("PawnManager")), FName(TEXT("Select")), Defender);
+        }
+        else if (APlayerTower* Tower = Cast<APlayerTower>(HitResult.GetActor()))
+        {
+            CurrentlySelectedDefenderSpot = nullptr;
+            CurrentFocusTarget = Tower;
+            bFollowTarget = false;
+            BROADCAST_EVENT(TEXT("UpdateHUDEvent"), FName(TEXT("PawnManager")), FName(TEXT("Select")), Tower);
         }
     }
 }
@@ -178,6 +185,7 @@ void ATowerDefencePlayer::DoDeselect()
     CurrentlySelectedDefenderSpot = nullptr;
     CurrentFocusTarget = nullptr;
     bFollowTarget = false;
+    BROADCAST_EVENT(TEXT("UpdateHUDEvent"), FName(TEXT("PawnManager")), FName(TEXT("Deselect")));
 }
 
 // ReSharper disable once CppMemberFunctionMayBeConst
