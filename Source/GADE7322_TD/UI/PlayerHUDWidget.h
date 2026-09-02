@@ -8,6 +8,7 @@
 #include "PlayerHUDWidget.generated.h"
 
 class UButton;
+class UPawnManagerWidget;
 class UTextBlock;
 
 UCLASS()
@@ -38,4 +39,7 @@ protected:
 
     UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
     UTextBlock* CurrencyDisplay;
+
+    UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
+    UPawnManagerWidget* PawnManagerWidget;
 };
