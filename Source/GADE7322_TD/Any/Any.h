@@ -17,7 +17,7 @@
 // I would do something different if Unreal's GC wouldn't get upset like seen in my SDL engine here:
 // https://github.com/DavidBarker05/SDL-Game/blob/7b7faec4508d3ad18f7a164791e3fca19f9ba05c/Engine/src/Core/Events/InputEvent.h
 
-// I realised I should probably explain myself since this code is kinda complicated so I'll do my
+// I realised I should probably explain myself since this code is kinda complicated, so I'll do my
 // best to explain it
 
 // We will be using metaprogramming and specialisation to allow nearly any type to be used with
@@ -26,9 +26,9 @@
 // the only type FAny stores, we just convert types to their respective struct found in
 // CustomStructs.h
 
-// Metaprogramming, specialisation and SFINAE are all used in this. They're way to complicated to
+// Metaprogramming, specialisation and SFINAE are all used in this. They're way too complicated to
 // be explained by comment but information can be found online. Basically, C++ templates are
-// Turing complete and evaluated at compile time and we use the compiler to enable and disable
+// Turing complete and evaluated at compile time, and we use the compiler to enable and disable
 // certain parts of code based on what we provide in templates
 
 // Partial specialisation for TAnyType, used for USTRUCTS because they don't need a wrapper
@@ -86,17 +86,9 @@ struct TAnyType<FString>
 // Full specialisation for const char* (basically any string text written like
 // "Lorem Ipsum")
 template<>
-struct TAnyType<const char*>
+struct TAnyType<const ANSICHAR*>
 {
     using Type = FFStringStruct; // Use FFStringStruct instead of const char*
-};
-
-// Full specialisation for char* (basically just array of chars that is
-// modifiable)
-template<>
-struct TAnyType<char*>
-{
-    using Type = FFStringStruct; // Use FFStringStruct instead of char*
 };
 
 // Full specialisation for const WIDECHAR* (basically any string of text
@@ -107,12 +99,28 @@ struct TAnyType<const WIDECHAR*>
     using Type = FFStringStruct; // Use FFStringStruct instead of const WIDECHAR*
 };
 
-// Full specialisation for WIDECHAR* (basically just array of WIDECHARs that is
-// modifiable)
+// Full specialisation for const UTF8CHAR* (basically any string of text
+// written like u8"Lorem Ipsum")
 template<>
-struct TAnyType<WIDECHAR*>
+struct TAnyType<const UTF8CHAR*>
 {
-    using Type = FFStringStruct; // Use FFStringStruct instead of WIDECHAR*
+    using Type = FFStringStruct; // Use FFStringStruct instead of const UTF8CHAR*
+};
+
+// Full specialisation for const UCS2CHAR* (basically any string of text
+// written like u16"Lorem Ipsum")
+template<>
+struct TAnyType<const UCS2CHAR*>
+{
+    using Type = FFStringStruct; // Use FFStringStruct instead of const UCS2CHAR*
+};
+
+// Full specialisation for const UTF32CHAR* (basically any string of text
+// written like u32"Lorem Ipsum")
+template<>
+struct TAnyType<const UTF32CHAR*>
+{
+    using Type = FFStringStruct; // Use FFStringStruct instead of const UTF32CHAR*
 };
 
 // Full specialisation for FName
@@ -247,8 +255,7 @@ struct GADE7322_TD_API FAny
             if constexpr (TIsTObjectPtr_V<T>) // TObjectPtr<...>
             {
                 using PointedType = TRemoveObjectPointer<T>::Type; // The ...
-                if (!Cast<PointedType>(Wrapper->Value))
-                    return nullptr; // If can't cast to PointedType return nullptr
+                if (!Cast<PointedType>(Wrapper->Value)) return nullptr; // If can't cast to PointedType return nullptr
             }
             else // ...*
             {
@@ -256,7 +263,8 @@ struct GADE7322_TD_API FAny
                 if (!Cast<PointedType>(Wrapper->Value.Get()))
                     return nullptr; // If can't cast to PointedType return nullptr
             }
-            return reinterpret_cast<T*>(&Wrapper->Value); // Reinterpret the address to the underlying data as T* and return it
+            return reinterpret_cast<T*>(
+                &Wrapper->Value); // Reinterpret the address to the underlying data as T* and return it
         }
         else if constexpr (std::is_same_v<T, StoredType>) return Value.GetMutablePtr<T>(); // T is a USTRUCT
         else

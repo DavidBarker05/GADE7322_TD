@@ -16,12 +16,6 @@
 #define STRUCT(Prefix) F##Prefix##Struct
 #endif
 
-// Okay so I am noticing some stuff that I need to
-// check out what happens if I add some copy versions
-// on top of the move ones when I am not on my phone
-// tomorrow. I should also see what happens when I mark the moves
-// as noexcept
-
 // Expands out to boilerplate at compile time that every struct uses.
 // This makes the code shorter and I don't have to write the same stuff
 // over and over again
@@ -36,28 +30,14 @@
     /* Move Constructor */ \
     STRUCT(Prefix)(STRUCT(Prefix) &&) noexcept = default; \
 \
-    /* Constructor that takes in underlying type as an */ \
-    /* r-value reference. Move only, because copy caused */ \
-    /* issues with FUObjectStruct so other structs just */ \
-    /* implement a copy version separately */ \
-    STRUCT(Prefix)(Type && InValue) : Value(MoveTemp(InValue)) { } \
-\
     /* Copy assignment operator */ \
     inline STRUCT(Prefix) & operator=(const STRUCT(Prefix) &) = default; \
 \
     /* Move assignment operator */ \
     inline STRUCT(Prefix) & operator=(STRUCT(Prefix) &&) noexcept = default; \
 \
-    /* Assignment operator that takes in the underlying type */ \
-    /* Why is there no optional copy? Idk, need to test tomorrow */ \
-    inline STRUCT(Prefix) & operator=(Type&& OtherValue) \
-    { \
-        Value = OtherValue; \
-        return *this; \
-    } \
-\
     /* Type operator overload to allow the struct to be */ \
-    /* implicitly treates as its underlying type */ \
+    /* implicitly creates as its underlying type */ \
     inline operator Type() const { return Value; } \
 \
     /* Get the underlying data */ \
@@ -87,10 +67,30 @@
 #define EXTRA_CONSTRUCTOR_BOILERPLATE(Type, Prefix) \
     STRUCT(Prefix)(Type InValue) : Value(InValue) { }
 
+#define EXTRA_COPY_CONSTRUCTOR_BOILERPLATE(Type, Prefix) \
+    STRUCT(Prefix)(const Type& InValue) : Value(InValue) { }
+
+#define EXTRA_MOVE_CONSTRUCTOR_BOILERPLATE(Type, Prefix) \
+    STRUCT(Prefix)(Type && InValue) noexcept : Value(MoveTemp(InValue)) { }
+
 #define EXTRA_ASSIGN_BOILERPLATE(Type, Prefix) \
     inline STRUCT(Prefix) & operator=(Type OtherValue) \
     { \
         Value = OtherValue; \
+        return *this; \
+    }
+
+#define EXTRA_COPY_ASSIGN_BOILERPLATE(Type, Prefix) \
+    inline STRUCT(Prefix) & operator=(const Type& OtherValue) \
+    { \
+        Value = OtherValue; \
+        return *this; \
+    }
+
+#define EXTRA_MOVE_ASSIGN_BOILERPLATE(Type, Prefix) \
+    inline STRUCT(Prefix) & operator=(Type&& OtherValue) noexcept \
+    { \
+        Value = MoveTemp(OtherValue); \
         return *this; \
     }
 
@@ -103,11 +103,15 @@
 #endif
 
 // Create additional boilerplate for different char types
-// const char*, char*, const WIDECHAR* and WIDECHAR*
+// const ANSICHAR*, const WIDECHAR* and UTF8CHAR*
 // maybe am supposed to use ANSICHAR, need to look into it
 #ifndef CHAR_TYPES_BOILERPLATE
 #define CHAR_TYPES_BOILERPLATE(Macro, Prefix) \
-    Macro(const char*, Prefix) Macro(const WIDECHAR*, Prefix) Macro(char*, Prefix) Macro(WIDECHAR*, Prefix)
+    Macro(const ANSICHAR*, Prefix) Macro(const WIDECHAR*, Prefix) Macro(const UTF8CHAR*, Prefix)
+
+// Create additional boilerplate for other two char types
+// const UCS2CHAR* and const UTF32CHAR*
+#define ADDITIONAL_CHAR_TYPES_BOILERPLATE(Macro, Prefix) Macro(const UCS2CHAR*, Prefix) Macro(const UTF32CHAR*, Prefix)
 #endif
 
 USTRUCT(BlueprintType, meta = (DisplayName = "Boolean Struct",
@@ -122,8 +126,11 @@ struct FBoolStruct
 
     GENERATE_STRUCT_BOILERPLATE(bool, Bool)
 
-    // Copy constructor for underlying type
-    EXTRA_CONSTRUCTOR_BOILERPLATE(const bool&, Bool)
+    // Constructor for underlying type
+    EXTRA_CONSTRUCTOR_BOILERPLATE(bool, Bool)
+
+    // Assign operator for underlying type
+    EXTRA_ASSIGN_BOILERPLATE(bool, Bool)
 };
 
 USTRUCT(BlueprintType, meta = (DisplayName = "Byte Struct",
@@ -138,8 +145,11 @@ struct FUint8Struct
 
     GENERATE_STRUCT_BOILERPLATE(uint8, Uint8)
 
-    // Copy constructor for underlying type
-    EXTRA_CONSTRUCTOR_BOILERPLATE(const uint8&, Uint8)
+    // Constructor for underlying type
+    EXTRA_CONSTRUCTOR_BOILERPLATE(uint8, Uint8)
+
+    // Assign operator for underlying type
+    EXTRA_ASSIGN_BOILERPLATE(uint8, Uint8)
 };
 
 USTRUCT(BlueprintType, meta = (DisplayName = "Integer Struct",
@@ -154,8 +164,11 @@ struct FInt32Struct
 
     GENERATE_STRUCT_BOILERPLATE(int32, Int32)
 
-    // Copy constructor for underlying type
-    EXTRA_CONSTRUCTOR_BOILERPLATE(const int32&, Int32)
+    // Constructor for underlying type
+    EXTRA_CONSTRUCTOR_BOILERPLATE(int32, Int32)
+
+    // Assign operator for underlying type
+    EXTRA_ASSIGN_BOILERPLATE(int32, Int32)
 };
 
 USTRUCT(BlueprintType, meta = (DisplayName = "Integer64 Struct",
@@ -170,8 +183,11 @@ struct FInt64Struct
 
     GENERATE_STRUCT_BOILERPLATE(int64, Int64)
 
-    // Copy constructor for underlying type
-    EXTRA_CONSTRUCTOR_BOILERPLATE(const int64&, Int64)
+    // Constructor for underlying type
+    EXTRA_CONSTRUCTOR_BOILERPLATE(int64, Int64)
+
+    // Assign operator for underlying type
+    EXTRA_ASSIGN_BOILERPLATE(int64, Int64)
 };
 
 USTRUCT(BlueprintType, meta = (DisplayName = "Float Struct",
@@ -186,8 +202,11 @@ struct FFloatStruct
 
     GENERATE_STRUCT_BOILERPLATE(float, Float)
 
-    // Copy constructor for underlying type
-    EXTRA_CONSTRUCTOR_BOILERPLATE(const float&, Float)
+    // Constructor for underlying type
+    EXTRA_CONSTRUCTOR_BOILERPLATE(float, Float)
+
+    // Assign operator for underlying type
+    EXTRA_ASSIGN_BOILERPLATE(float, Float)
 };
 
 USTRUCT(BlueprintType, meta = (DisplayName = "String Struct",
@@ -203,13 +222,28 @@ struct FFStringStruct
     GENERATE_STRUCT_BOILERPLATE(FString, FString)
 
     // Copy constructor for underlying type
-    EXTRA_CONSTRUCTOR_BOILERPLATE(const FString&, FString)
+    EXTRA_COPY_CONSTRUCTOR_BOILERPLATE(FString, FString)
+
+    // Move constructor for underlying type
+    EXTRA_MOVE_CONSTRUCTOR_BOILERPLATE(FString, FString)
 
     // Extra constructors for different char types
     CHAR_TYPES_BOILERPLATE(EXTRA_CONSTRUCTOR_BOILERPLATE, FString)
 
+    // Extra constructors for other two char types
+    ADDITIONAL_CHAR_TYPES_BOILERPLATE(EXTRA_CONSTRUCTOR_BOILERPLATE, FString)
+
+    // Copy assignment operator for underlying type
+    EXTRA_COPY_ASSIGN_BOILERPLATE(FString, FString)
+
+    // Move assignment operator for underlying type
+    EXTRA_MOVE_ASSIGN_BOILERPLATE(FString, FString)
+
     // Extra assignment operators for different char types
     CHAR_TYPES_BOILERPLATE(EXTRA_ASSIGN_BOILERPLATE, FString)
+
+    // Extra assignment operators for other two char types
+    ADDITIONAL_CHAR_TYPES_BOILERPLATE(EXTRA_ASSIGN_BOILERPLATE, FString)
 };
 
 USTRUCT(BlueprintType, meta = (DisplayName = "Name Struct",
@@ -225,7 +259,16 @@ struct FFNameStruct
     GENERATE_STRUCT_BOILERPLATE(FName, FName)
 
     // Copy constructor for underlying type
-    EXTRA_CONSTRUCTOR_BOILERPLATE(const FName&, FName)
+    EXTRA_COPY_CONSTRUCTOR_BOILERPLATE(FName, FName)
+
+    // Move constructor for underlying type
+    EXTRA_MOVE_CONSTRUCTOR_BOILERPLATE(FName, FName)
+
+    // Copy assignment operator for underlying type
+    EXTRA_COPY_ASSIGN_BOILERPLATE(FName, FName)
+
+    // Move assignment operator for underlying type
+    EXTRA_MOVE_ASSIGN_BOILERPLATE(FName, FName)
 
     // Extra constructors for different char types
     CHAR_TYPES_BOILERPLATE(EXTRA_CONSTRUCTOR_BOILERPLATE, FName)
@@ -247,7 +290,16 @@ struct GADE7322_TD_API FFTextStruct
     GENERATE_STRUCT_BOILERPLATE(FText, FText)
 
     // Copy constructor for underlying type
-    EXTRA_CONSTRUCTOR_BOILERPLATE(const FText&, FText)
+    EXTRA_COPY_CONSTRUCTOR_BOILERPLATE(FText, FText)
+
+    // Move constructor for underlying type
+    EXTRA_MOVE_CONSTRUCTOR_BOILERPLATE(FText, FText)
+
+    // Copy assignment operator for underlying type
+    EXTRA_COPY_ASSIGN_BOILERPLATE(FText, FText)
+
+    // Move assignment operator for underlying type
+    EXTRA_MOVE_ASSIGN_BOILERPLATE(FText, FText)
 };
 
 USTRUCT(BlueprintType, meta = (DisplayName = "Object Struct",
@@ -262,21 +314,37 @@ struct GADE7322_TD_API FUObjectStruct
 
     GENERATE_STRUCT_BOILERPLATE(TObjectPtr<UObject>, UObject)
 
+    // Copy constructor for underlying type
+    EXTRA_COPY_CONSTRUCTOR_BOILERPLATE(TObjectPtr<UObject>, UObject)
+
+    // Move constructor for underlying type
+    EXTRA_MOVE_CONSTRUCTOR_BOILERPLATE(TObjectPtr<UObject>, UObject)
+
     // Extra constructor that takes in UObject*
     EXTRA_CONSTRUCTOR_BOILERPLATE(UObject*, UObject)
-
-    // Idk with these two, will figure out tomorrow
-    EXTRA_ASSIGN_BOILERPLATE(TObjectPtr<UObject>, UObject)
-    EXTRA_ASSIGN_BOILERPLATE(UObject*, UObject)
 
     // Extra implicit type operator overload to allow the struct to
     // be implicitly converted to a UObject*
     EXTRA_TYPE_BOILERPLATE(UObject*, return Value, const)
+
+    // Copy assignment operator for underlying type
+    EXTRA_COPY_ASSIGN_BOILERPLATE(TObjectPtr<UObject>, UObject)
+
+    // Move assignment operator for underlying type
+    EXTRA_MOVE_ASSIGN_BOILERPLATE(TObjectPtr<UObject>, UObject)
+
+    // Extra assignment operator that takes in UObject*
+    EXTRA_ASSIGN_BOILERPLATE(UObject*, UObject)
 };
 
+#undef ADDITIONAL_CHAR_TYPES_BOILERPLATE
 #undef CHAR_TYPES_BOILERPLATE
 #undef EXTRA_TYPE_BOILERPLATE
+#undef EXTRA_MOVE_ASSIGN_BOILERPLATE
+#undef EXTRA_COPY_ASSIGN_BOILERPLATE
 #undef EXTRA_ASSIGN_BOILERPLATE
+#undef EXTRA_MOVE_CONSTRUCTOR_BOILERPLATE
+#undef EXTRA_COPY_CONSTRUCTOR_BOILERPLATE
 #undef EXTRA_CONSTRUCTOR_BOILERPLATE
 #undef EXTRA_BOILERPLATE
 #undef GENERATE_STRUCT_BOILERPLATE
