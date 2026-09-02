@@ -2,7 +2,7 @@
 
 #include "CoreMinimal.h"
 
-// This exists because TIsPointer<T>::Value is uses an enum which doesn't
+// This exists because TIsPointer<T>::Value uses an enum which doesn't
 // work with C++ requires, so I added TIsPointer_V and added some other nicer
 // type traits too
 
