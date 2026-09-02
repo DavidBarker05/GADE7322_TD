@@ -37,11 +37,12 @@ void ADefenderSpot::OnEventReceived_Implementation(const FName& EventName, const
 {
     if (EVENT_MATCHES(TEXT("DeathEvent"), 1) && PARAMS_ARE_VALID && PARAMS_ARE_CORRECT_TYPES(ATowerDefencePawn*))
     {
-        if (const ATowerDefencePawn* const* DeadPawn = Params[0].Get<ATowerDefencePawn*>())
+        if (const ATowerDefencePawn* const* DeadPawnPtr = Params[0].Get<ATowerDefencePawn*>())
         {
-            if (!IsValid(*DeadPawn) || !IsValid(CurrentDefender)) return;
-            if (!(*DeadPawn)->IsA<ADefender>()) return;
-            if (*DeadPawn != CurrentDefender) return;
+            const ATowerDefencePawn* DeadPawn = *DeadPawnPtr;
+            if (!IsValid(DeadPawn) || !IsValid(CurrentDefender)) return;
+            if (!DeadPawn->IsA<ADefender>()) return;
+            if (DeadPawn != CurrentDefender) return;
             CurrentDefender->OnDeath(
                 [this]() -> void
                 {
