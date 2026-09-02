@@ -52,7 +52,7 @@ public class GADE7322_TD : ModuleRules
 			"GADE7322_TD/TowerDefencePawns/Defenders/AI/CommonTasks",
 			"GADE7322_TD/TowerDefencePawns/Defenders/Warrior",
 			"GADE7322_TD/TowerDefencePawns/Tower",
-			"GADE7322_TD/TowerDefencePawns/UI"
+			"GADE7322_TD/UI"
 		});
 
 		// Uncomment if you are using online features
