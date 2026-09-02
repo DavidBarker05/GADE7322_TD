@@ -62,6 +62,8 @@ public:
 private:
     static bool IsMouseOverUI(const APlayerController* PlayerController);
 
+    bool IsGamePaused() const;
+
 protected:
     UPROPERTY(EditAnywhere, Category = "Input")
     UInputAction* MoveAction;
@@ -132,6 +134,4 @@ private:
 
     UPROPERTY(BlueprintReadOnly, Category = "Selection", meta = (AllowPrivateAccess = true))
     bool bFollowTarget = false;
-
-    bool bPaused = false;
 };

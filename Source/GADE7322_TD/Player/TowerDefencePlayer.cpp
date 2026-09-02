@@ -106,7 +106,7 @@ void ATowerDefencePlayer::SwitchBetweenSpotAndDefender()
 // ReSharper disable once CppMemberFunctionMayBeConst
 void ATowerDefencePlayer::DoMove(const FInputActionValue& Value)
 {
-    if (bPaused) return;
+    if (IsGamePaused()) return;
     const FVector2D MovementVector = Value.Get<FVector2D>();
     const FVector RightVector = GetActorRightVector() * MovementVector.X;
     const FVector ForwardVector = GetActorForwardVector() * MovementVector.Y;
@@ -117,7 +117,7 @@ void ATowerDefencePlayer::DoMove(const FInputActionValue& Value)
 // ReSharper disable once CppMemberFunctionMayBeConst
 void ATowerDefencePlayer::DoRotate(const FInputActionValue& Value)
 {
-    if (bPaused) return;
+    if (IsGamePaused()) return;
     const float RotationInput = Value.Get<float>();
     AddActorWorldRotation(FRotator(0.0f, RotationInput * RotationSpeed * GetWorld()->GetDeltaSeconds(), 0.0f));
 }
@@ -137,11 +137,17 @@ bool ATowerDefencePlayer::IsMouseOverUI(const APlayerController* PlayerControlle
 
     return WidgetPath.IsValid() && WidgetPath.GetLastWidget() != GameViewportWidget;
 }
+bool ATowerDefencePlayer::IsGamePaused() const
+{
+    if (const ATowerDefencePlayerController* TDPC = Cast<ATowerDefencePlayerController>(GetController()))
+        return TDPC->IsGamePaused();
+    return false;
+}
 
 // ReSharper disable once CppMemberFunctionMayBeConst
 void ATowerDefencePlayer::DoSelect()
 {
-    if (bPaused) return;
+    if (IsGamePaused()) return;
     if (const APlayerController* PlayerController = Cast<APlayerController>(GetController()))
     {
         if (IsMouseOverUI(PlayerController)) return;
@@ -168,7 +174,7 @@ void ATowerDefencePlayer::DoSelect()
 
 void ATowerDefencePlayer::DoDeselect()
 {
-    if (bPaused) return;
+    if (IsGamePaused()) return;
     CurrentlySelectedDefenderSpot = nullptr;
     CurrentFocusTarget = nullptr;
     bFollowTarget = false;
@@ -177,7 +183,7 @@ void ATowerDefencePlayer::DoDeselect()
 // ReSharper disable once CppMemberFunctionMayBeConst
 void ATowerDefencePlayer::DoZoom(const FInputActionValue& Value)
 {
-    if (bPaused) return;
+    if (IsGamePaused()) return;
     const float ScrollAmount = Value.Get<float>();
     SpringArmComponent->TargetArmLength = FMath::Clamp(SpringArmComponent->TargetArmLength - ScrollAmount * ZoomSpeed,
                                                        ClosestCameraDistance, FurthestCameraDistance);
@@ -185,7 +191,7 @@ void ATowerDefencePlayer::DoZoom(const FInputActionValue& Value)
 
 void ATowerDefencePlayer::DoFocus()
 {
-    if (bPaused || !IsValid(CurrentFocusTarget)) return;
+    if (IsGamePaused() || !IsValid(CurrentFocusTarget)) return;
     FVector DesiredLocation = CurrentFocusTarget->GetActorLocation();
     DesiredLocation.Z = GetActorLocation().Z;
     SetActorLocation(DesiredLocation);
@@ -195,7 +201,7 @@ void ATowerDefencePlayer::DoFocus()
 
 void ATowerDefencePlayer::DoReset()
 {
-    if (bPaused) return;
+    if (IsGamePaused()) return;
     SetActorLocationAndRotation(FVector {}, FQuat {}, false, nullptr);
     SpringArmComponent->TargetArmLength = FurthestCameraDistance;
 }
