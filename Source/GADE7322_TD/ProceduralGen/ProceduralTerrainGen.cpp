@@ -3,7 +3,11 @@
 
 #include "DrawDebugHelpers.h"
 #include "KismetProceduralMeshLibrary.h"
+#include "PhysicsEngine/BodySetup.h"
 #include "ProceduralMeshComponent.h"
+#include "ProceduralMeshConversion.h"
+#include "StaticMeshAttributes.h"
+#include "StaticMeshDescription.h"
 #include "TowerDefencePawns/Defenders/DefenderSpot.h"
 
 AProceduralTerrainGen::AProceduralTerrainGen()
@@ -14,6 +18,13 @@ AProceduralTerrainGen::AProceduralTerrainGen()
     SetRootComponent(TerrainMesh);
     TerrainMesh->SetMobility(EComponentMobility::Static); // Never moves after BeginPlay, lets the engine optimise it
     TerrainMesh->bUseAsyncCooking = true; // Collision cooking for a mesh this size would be slow if not async
+
+    // Starts hidden/non-colliding with no mesh assigned - BakeMesh() fills it in and swaps it for TerrainMesh
+    BakedTerrainMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("BakedTerrainMesh"));
+    BakedTerrainMesh->SetupAttachment(TerrainMesh);
+    BakedTerrainMesh->SetMobility(EComponentMobility::Static);
+    BakedTerrainMesh->SetVisibility(false);
+    BakedTerrainMesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 }
 
 void AProceduralTerrainGen::BeginPlay()
@@ -22,6 +33,7 @@ void AProceduralTerrainGen::BeginPlay()
     GeneratePaths();
     GenerateTerrain();
     GenerateDefenderSpots();
+    BakeMesh();
 }
 
 void AProceduralTerrainGen::GeneratePaths()
@@ -68,7 +80,8 @@ FTerrainPath AProceduralTerrainGen::BuildPath(float EntryAngleDegrees, const FRa
     return Path;
 }
 
-TArray<FVector> AProceduralTerrainGen::BuildPathControlPoints(float EntryAngleDegrees, const FRandomStream& Stream) const
+TArray<FVector> AProceduralTerrainGen::BuildPathControlPoints(float EntryAngleDegrees,
+                                                              const FRandomStream& Stream) const
 {
     TArray<FVector> ControlPoints;
     ControlPoints.Reserve(PathSegments + 1);
@@ -257,9 +270,9 @@ void AProceduralTerrainGen::GenerateTerrain() const
     UKismetProceduralMeshLibrary::CalculateTangentsForMesh(Vertices, Triangles, UVs, Normals, Tangents);
 
     TerrainMesh->CreateMeshSection_LinearColor(0, Vertices, Triangles, Normals, UVs, VertexColors, Tangents, true);
-    TerrainMesh->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
+    // TerrainMesh->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
 
-    if (TerrainMaterial) TerrainMesh->SetMaterial(0, TerrainMaterial);
+    // if (TerrainMaterial) TerrainMesh->SetMaterial(0, TerrainMaterial);
 }
 
 float AProceduralTerrainGen::GetTerrainHeight(const FVector2D& WorldXY) const
@@ -273,7 +286,8 @@ void AProceduralTerrainGen::SampleTerrainPoint(const FVector2D& WorldXY, float& 
                                                float& OutTextureBlendAlpha) const
 {
     const float NoiseHeight = SampleNoiseHeight(WorldXY); // What the height would be with no paths at all
-    const float EdgeDistance = DistanceToNearestPathEdge(WorldXY); // Negative = inside a path, shared by both blends below
+    const float EdgeDistance =
+        DistanceToNearestPathEdge(WorldXY); // Negative = inside a path, shared by both blends below
 
     // Subtracting PathFlatZoneWidth first means the ramp doesn't even begin until past that buffer -
     // SmoothStep clamps negative input to 0, so everything inside the flat zone stays pinned flat
@@ -398,6 +412,44 @@ void AProceduralTerrainGen::GenerateDefenderSpots()
     }
 
     if (bDrawDebugDefenderSpots) DrawDebugForDefenderSpots();
+}
+
+void AProceduralTerrainGen::BakeMesh()
+{
+    if (!IsValid(TerrainMesh) || !IsValid(BakedTerrainMesh)) return;
+
+    UStaticMesh* StaticMesh = NewObject<UStaticMesh>(this, NAME_None, RF_Transient);
+    StaticMesh->bAllowCPUAccess = true;
+    StaticMesh->NeverStream = true;
+    StaticMesh->SetLightingGuid();
+    StaticMesh->AddSourceModel();
+
+    const FMeshDescription MeshDescription = BuildMeshDescription(TerrainMesh);
+    UStaticMeshDescription* SMDesc = StaticMesh->CreateStaticMeshDescription();
+    SMDesc->SetMeshDescription(MeshDescription);
+
+    if (TerrainMaterial) StaticMesh->GetStaticMaterials().Add(FStaticMaterial(TerrainMaterial));
+
+    StaticMesh->BuildFromStaticMeshDescriptions({SMDesc}, false);
+
+    if (TerrainMaterial) StaticMesh->SetMaterial(0, TerrainMaterial);
+
+    if (UBodySetup* BodySetup = StaticMesh->GetBodySetup())
+    {
+        BodySetup->CollisionTraceFlag = CTF_UseComplexAsSimple;
+        BodySetup->InvalidatePhysicsData();
+        BodySetup->CreatePhysicsMeshes();
+    }
+
+    BakedTerrainMesh->SetStaticMesh(StaticMesh);
+    BakedTerrainMesh->SetCollisionObjectType(TerrainMesh->GetCollisionObjectType());
+    BakedTerrainMesh->SetCollisionEnabled(TerrainMesh->GetCollisionEnabled());
+    BakedTerrainMesh->SetCollisionResponseToChannels(TerrainMesh->GetCollisionResponseToChannels());
+    BakedTerrainMesh->SetVisibility(true);
+
+    TerrainMesh->ClearAllMeshSections();
+    TerrainMesh->SetVisibility(false);
+    TerrainMesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 }
 
 void AProceduralTerrainGen::TrySpawnDefenderSpot(const FVector& CandidateLocation, TArray<FVector>& PlacedLocations)

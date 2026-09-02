@@ -25,7 +25,9 @@ public class GADE7322_TD : ModuleRules
 			"GameplayStateTreeModule",
 			"AIModule",
 			"UMG",
-			"Slate"
+			"Slate",
+			"MeshDescription",
+			"StaticMeshDescription"
 		});
 
 		PrivateDependencyModuleNames.AddRange(new string[] { "Slate", "SlateCore" });

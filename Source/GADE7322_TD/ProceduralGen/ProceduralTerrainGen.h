@@ -58,12 +58,21 @@ public:
     UFUNCTION(BlueprintCallable, Category = "Defender Spots")
     void GenerateDefenderSpots();
 
+    // Bake the procedural mesh into a more optimised static mesh
+    UFUNCTION(BlueprintCallable, Category = "Terrain Generation")
+    void BakeMesh();
+
     UFUNCTION(BlueprintPure, Category = "Defender Spots")
     const TArray<ADefenderSpot*>& GetDefenderSpots() const { return DefenderSpots; }
 
 protected:
+    UPROPERTY()
+    UProceduralMeshComponent* TerrainMesh;
+
+    // Final baked version of UProceduralMeshComponent converted to a UStaticMeshConmponent
+    // which is better for performance
     UPROPERTY(VisibleAnywhere, Category = "Components")
-    TObjectPtr<UProceduralMeshComponent> TerrainMesh;
+    UStaticMeshComponent* BakedTerrainMesh;
 
     // Radius of the terrain from the tower (0,0) out to the edge spawn points
     UPROPERTY(EditAnywhere, Category = "Terrain Generation", meta = (ClampMin = 500.0))
