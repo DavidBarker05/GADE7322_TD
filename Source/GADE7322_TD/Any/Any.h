@@ -3,10 +3,9 @@
 
 #include "CoreMinimal.h"
 
-#include <type_traits>
-
 #include "CustomStructs.h"
 #include "StructUtils/InstancedStruct.h"
+#include "TDTypeTraits.h"
 
 #include "Any.generated.h"
 
@@ -17,31 +16,27 @@
 // I would do something different if Unreal's GC wouldn't get upset like seen in my SDL engine here:
 // https://github.com/DavidBarker05/SDL-Game/blob/7b7faec4508d3ad18f7a164791e3fca19f9ba05c/Engine/src/Core/Events/InputEvent.h
 
-// I realised I should probably explain myself since this code is kinda complicated, so I'll do my
-// best to explain it
+// I realised I should probably explain myself since this code is kinda complicated, so I'll do my best to explain it
 
-// We will be using metaprogramming and specialisation to allow nearly any type to be used with
-// FAny. Specialisation, basically just allows you to write a base template and then override that
-// for specific types. This allows me to work with more than just USTRUCTs which are technically
-// the only type FAny stores, we just convert types to their respective struct found in
-// CustomStructs.h
+// We will be using metaprogramming and specialisation to allow nearly any type to be used with FAny. Specialisation,
+// basically just allows you to write a base template and then override that for specific types. This allows me to work
+// with more than just USTRUCTs which are technically the only type FAny stores, we just convert types to their
+// respective struct found in CustomStructs.h
 
-// Metaprogramming, specialisation and SFINAE are all used in this. They're way too complicated to
-// be explained by comment but information can be found online. Basically, C++ templates are
-// Turing complete and evaluated at compile time, and we use the compiler to enable and disable
-// certain parts of code based on what we provide in templates
+// Metaprogramming, specialisation and the requires clause (introduced in C++20) are all used in this. They're way too
+// complicated to be explained by comment but information can be found online. Basically, C++ templates are Turing
+// complete and evaluated at compile time, and we use the compiler to enable and disable certain parts of code based on
+// what we provide in templates
 
 // Partial specialisation for TAnyType, used for USTRUCTS because they don't need a wrapper
-// Enable will be used later to only allow certain raw pointers and TObjectPtrs to be used
-template<typename T, typename Enable = void>
+template<typename T>
 struct TAnyType
 {
     using Type = T; // T is a USTRUCT so Type is just T
 };
 
 // Full specialisation for bool
-// Basically if bool is ever passed as a template argument to TAnyType it will use this
-// instead
+// Basically if bool is ever passed as a template argument to TAnyType it will use this instead
 template<>
 struct TAnyType<bool>
 {
@@ -138,24 +133,25 @@ struct TAnyType<FText>
 };
 
 // Specialisation for T = TObjectPtr<...>
-// TEnableIf only enables the code if the TObjectPtr points to a
-// UObject or a type that derives from UObject. Hides it otherwise
+// Requires ... to derive from UObject
 template<typename T>
-struct TAnyType<T, typename TEnableIf<TIsTObjectPtr_V<T> &&
-                                      TIsDerivedFrom<typename TRemoveObjectPointer<T>::Type, UObject>::IsDerived>::Type>
+requires TIsTObjectPtr_V<T> && TIsDerivedFrom_V<TRemoveObjectPointer_T<T>, UObject>
+struct TAnyType<T>
 {
     using Type = FUObjectStruct; // Use FUObjectStruct instead of TObjectPtr<...>
 };
 
 // Specialisation of ...*
-// TEnableIf only enables the code if T = UObject* or what it
-// points to derives from UObject. Hides it otherwise
+// Requires ... to derive from UObject
 template<typename T>
-struct TAnyType<T, typename TEnableIf<TIsPointer<T>::Value &&
-                                      TIsDerivedFrom<typename TRemovePointer<T>::Type, UObject>::IsDerived>::Type>
+requires TIsPointer_V<T> && TIsDerivedFrom_V<TRemovePointer_T<T>, UObject>
+struct TAnyType<T>
 {
     using Type = FUObjectStruct; // Use FUObjectStruct instead of ...*
 };
+
+template<typename T>
+using TAnyType_T = typename TAnyType<T>::Type;
 
 /*
   Store any type inside similar to std::any in C++ standard library. This allows to store and pass around
@@ -195,24 +191,23 @@ struct GADE7322_TD_API FAny
 
     FAny(FInstancedStruct&& InValue) : Value(MoveTemp(InValue)) { }
 
-    // Copy constructor. Stores InValue in Value. Uses T if it's as struct or the struct
-    // equivalent if not
+    // Copy constructor. Stores InValue in Value. Uses T if it's as struct or the struct equivalent if not
     template<typename T>
-    FAny(const T& InValue) : Value(FInstancedStruct::Make<typename TAnyType<T>::Type>(InValue))
+    FAny(const T& InValue) : Value(FInstancedStruct::Make<TAnyType_T<T>>(InValue))
     {
     }
 
-    // Move constructor. Moves InValue into Value. Uses T if it's as struct or the struct
-    // equivalent if not. Don't enable if T is FAny
-    template<typename T, TEnableIf<!std::is_same_v<TDecay<T>, FAny>>>
-    FAny(T&& InValue) : Value(FInstancedStruct::Make<typename TAnyType<TDecay<T>>::Type>(Forward<T>(InValue)))
+    // Move constructor. Moves InValue into Value. Uses T if it's as struct or the struct equivalent if not
+    template<typename T>
+    requires(!TIsSame_V<TDecay_T<T>, FAny>) // T can't be variation of FAny
+    FAny(T&& InValue) noexcept : Value(FInstancedStruct::Make<TAnyType_T<TDecay_T<T>>>(Forward<T>(InValue)))
     {
     }
 
     // Forwarding constructor. Makes Value store Type if it is a struct, or the struct
     // equivalent if not. Forwards the params into the constructor for the struct
     template<typename Type, typename... Args>
-    FAny(Args&&... Params) : Value(FInstancedStruct::Make<typename TAnyType<Type>::Type>(Forward<Args>(Params)...))
+    FAny(Args&&... Params) : Value(FInstancedStruct::Make<TAnyType_T<Type>>(Forward<Args>(Params)...))
     {
     }
 
@@ -229,94 +224,118 @@ struct GADE7322_TD_API FAny
     template<typename T>
     FAny& operator=(const T& InValue)
     {
-        Value = FInstancedStruct::Make<typename TAnyType<T>::Type>(InValue);
+        Value = FInstancedStruct::Make<TAnyType_T<T>>(InValue);
         return *this;
     }
 
     // Move assignment operator. See move constructor for how it works
-    template<typename T, TEnableIf<!std::is_same_v<TDecay<T>, FAny>>>
+    template<typename T>
+    requires(!TIsSame_V<TDecay_T<T>, FAny>) // T can't be variation of FAny
     FAny& operator=(T&& InValue)
     {
-        Value = FInstancedStruct::Make<typename TAnyType<TDecay<T>>::Type>(Forward<T>(InValue));
+        Value = FInstancedStruct::Make<TAnyType_T<TDecay_T<T>>>(Forward<T>(InValue));
         return *this;
     }
 
     bool IsValid() const { return Value.IsValid(); }
 
-    // Get a mutable pointer to the underlying data
+    // Get a mutable pointer to the underlying data as a TObjectPtr<...> that derives from UObject
     template<typename T>
+    requires TIsSame_V<TAnyType_T<T>, FUObjectStruct> && TIsTObjectPtr_V<T>
     T* Get()
     {
-        using StoredType = TAnyType<T>::Type; // The struct type
-        if constexpr (std::is_same_v<StoredType, FUObjectStruct>) // Data is UObject ptr
-        {
-            FUObjectStruct* Wrapper = Value.GetMutablePtr<FUObjectStruct>();
-            if (!Wrapper) return nullptr; // Value does not hold a FUObjectStruct
-            if constexpr (TIsTObjectPtr_V<T>) // TObjectPtr<...>
-            {
-                using PointedType = TRemoveObjectPointer<T>::Type; // The ...
-                if (!Cast<PointedType>(Wrapper->Value)) return nullptr; // If can't cast to PointedType return nullptr
-            }
-            else // ...*
-            {
-                using PointedType = TRemovePointer<T>::Type; // ...
-                if (!Cast<PointedType>(Wrapper->Value.Get()))
-                    return nullptr; // If can't cast to PointedType return nullptr
-            }
-            return reinterpret_cast<T*>(
-                &Wrapper->Value); // Reinterpret the address to the underlying data as T* and return it
-        }
-        else if constexpr (std::is_same_v<T, StoredType>) return Value.GetMutablePtr<T>(); // T is a USTRUCT
-        else
-        {
-            StoredType* Wrapper = Value.GetMutablePtr<StoredType>();
-            return Wrapper ? &Wrapper->Value : nullptr; // T was wrapped (e.g. int32 -> FInt32Struct)
-        }
+        FUObjectStruct* Wrapper = Value.GetMutablePtr<FUObjectStruct>();
+        if (!Wrapper) return nullptr; // Value doesn't hold an FUObjectStruct
+        using PointedType = TRemoveObjectPointer_T<T>;
+        if (!Cast<PointedType>(Wrapper->Value)) return nullptr; // Can't cast to desired type
+        return reinterpret_cast<T*>(&Wrapper->Value);
     }
 
-    // Get an immutable pointer to the underlying data
+    // Get a mutable pointer to the underlying data as a raw pointer that derives from UObject
     template<typename T>
+    requires TIsSame_V<TAnyType_T<T>, FUObjectStruct> && TIsPointer_V<T>
+    T* Get()
+    {
+        FUObjectStruct* Wrapper = Value.GetMutablePtr<FUObjectStruct>();
+        if (!Wrapper) return nullptr; // Value doesn't hold an FUObjectStruct
+        using PointedType = TRemovePointer_T<T>;
+        if (!Cast<PointedType>(Wrapper->Value)) return nullptr; // Can't cast to desired type
+        return reinterpret_cast<T*>(&Wrapper->Value);
+    }
+
+    // Get a mutable pointer to the underlying data as a USTRUCT
+    template<typename T>
+    requires TIsSame_V<TAnyType_T<T>, T> // Only same if T is a USTRUCT
+    T* Get()
+    {
+        return Value.GetMutablePtr<T>();
+    }
+
+    // Get a mutable pointer to the underlying data as a non-UObject or USTRUCT
+    template<typename T>
+    requires(!TIsSame_V<TAnyType_T<T>, T> && !TIsSame_V<TAnyType_T<T>, FUObjectStruct>)
+    T* Get()
+    {
+        using StoredType = TAnyType_T<T>;
+        StoredType* Wrapper = Value.GetMutablePtr<StoredType>();
+        return Wrapper ? &Wrapper->Value : nullptr;
+    }
+
+    // Get an immutable pointer to the underlying data as a TObjectPtr<...> that derives from UObject
+    template<typename T>
+    requires TIsSame_V<TAnyType_T<T>, FUObjectStruct> && TIsTObjectPtr_V<T>
     const T* Get() const
     {
-        // See the mutable Get for how this works. It's the same
-        using StoredType = TAnyType<T>::Type;
-        if constexpr (std::is_same_v<StoredType, FUObjectStruct>)
-        {
-            const FUObjectStruct* Wrapper = Value.GetPtr<FUObjectStruct>();
-            if (!Wrapper) return nullptr;
-            if constexpr (TIsTObjectPtr_V<T>)
-            {
-                using PointedType = TRemoveObjectPointer<T>::Type;
-                if (!Cast<PointedType>(Wrapper->Value)) return nullptr;
-            }
-            else
-            {
-                using PointedType = TRemovePointer<T>::Type;
-                if (!Cast<PointedType>(Wrapper->Value.Get())) return nullptr;
-            }
-            return reinterpret_cast<const T*>(&Wrapper->Value);
-        }
-        else if constexpr (std::is_same_v<T, StoredType>) return Value.GetPtr<T>();
-        else
-        {
-            const StoredType* Wrapper = Value.GetPtr<StoredType>();
-            return Wrapper ? &Wrapper->Value : nullptr;
-        }
+        const FUObjectStruct* Wrapper = Value.GetPtr<FUObjectStruct>();
+        if (!Wrapper) return nullptr; // Value doesn't hold an FUObjectStruct
+        using PointedType = TRemoveObjectPointer_T<T>;
+        if (!Cast<PointedType>(Wrapper->Value)) return nullptr; // Can't cast to desired type
+        return reinterpret_cast<const T*>(&Wrapper->Value);
+    }
+
+    // Get an immutable pointer to the underlying data as a raw pointer that derives from UObject
+    template<typename T>
+    requires TIsSame_V<TAnyType_T<T>, FUObjectStruct> && TIsPointer_V<T>
+    const T* Get() const
+    {
+        const FUObjectStruct* Wrapper = Value.GetPtr<FUObjectStruct>();
+        if (!Wrapper) return nullptr; // Value doesn't hold an FUObjectStruct
+        using PointedType = TRemovePointer_T<T>;
+        if (!Cast<PointedType>(Wrapper->Value)) return nullptr; // Can't cast to desired type
+        return reinterpret_cast<const T*>(&Wrapper->Value);
+    }
+
+    // Get an immutable pointer to the underlying data as a USTRUCT
+    template<typename T>
+    requires TIsSame_V<TAnyType_T<T>, T> // Only same if T is a USTRUCT
+    const T* Get() const
+    {
+        return Value.GetPtr<T>();
+    }
+
+    // Get an immutable pointer to the underlying data as a non-UObject or USTRUCT
+    template<typename T>
+    requires(!TIsSame_V<TAnyType_T<T>, T> && !TIsSame_V<TAnyType_T<T>, FUObjectStruct>)
+    const T* Get() const
+    {
+        using StoredType = TAnyType_T<T>;
+        const StoredType* Wrapper = Value.GetPtr<StoredType>();
+        return Wrapper ? &Wrapper->Value : nullptr;
     }
 
     // Copy Set. See copy constructor for how it works
     template<typename T>
     FAny& Set(const T& InValue)
     {
-        Value = FInstancedStruct::Make<typename TAnyType<T>::Type>(InValue);
+        Value = FInstancedStruct::Make<TAnyType_T<T>>(InValue);
         return *this;
     }
 
     // Move Set. See move constructor for how it works
     template<typename T>
-    FAny& Set(T&& InValue)
+    FAny& Set(T&& InValue) noexcept
     {
-        Value = FInstancedStruct::Make<typename TAnyType<TDecay<T>>::Type>(Forward<T>(InValue));
+        Value = FInstancedStruct::Make<TAnyType_T<TDecay_T<T>>>(Forward<T>(InValue));
         return *this;
     }
 };
