@@ -2,6 +2,7 @@
 
 #include "CoreMinimal.h"
 
+#include "Engine.h"
 #include "Subsystems/GameInstanceSubsystem.h"
 #include "UObject/StrongObjectPtr.h"
 
@@ -11,7 +12,8 @@
 #define POSSESS_TOWER_DEFENCE_PAWN(TowerDefencePawn) \
     do \
     { \
-        if (const UWorld* World = this->GetWorld(); const UGameInstance* GameInstance = World->GetGameInstance()) \
+        if (const UWorld* World = GEngine->GetWorldFromContextObject(this, EGetWorldErrorMode::LogAndReturnNull); \
+            const UGameInstance* GameInstance = World->GetGameInstance()) \
         { \
             if (UTowerDefencePawnAIControllerFactory* TowerDefencePawnAIControllerFactory = \
                     GameInstance->GetSubsystem<UTowerDefencePawnAIControllerFactory>()) \
@@ -24,7 +26,8 @@
 #define UNPOSSESS_TOWER_DEFENCE_PAWN(TowerDefencePawn) \
     do \
     { \
-        if (const UWorld* World = this->GetWorld(); const UGameInstance* GameInstance = World->GetGameInstance()) \
+        if (const UWorld* World = GEngine->GetWorldFromContextObject(this, EGetWorldErrorMode::LogAndReturnNull); \
+            const UGameInstance* GameInstance = World->GetGameInstance()) \
         { \
             if (UTowerDefencePawnAIControllerFactory* TowerDefencePawnAIControllerFactory = \
                     GameInstance->GetSubsystem<UTowerDefencePawnAIControllerFactory>()) \

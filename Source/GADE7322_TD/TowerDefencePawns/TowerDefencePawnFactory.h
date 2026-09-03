@@ -2,6 +2,7 @@
 
 #include "CoreMinimal.h"
 
+#include "Engine.h"
 #include "Subsystems/GameInstanceSubsystem.h"
 #include "UObject/StrongObjectPtr.h"
 
@@ -14,7 +15,7 @@
         if (World; const UGameInstance* GameInstance = World->GetGameInstance()) \
             return GameInstance->GetSubsystem<UTowerDefencePawnFactory>(); \
         return nullptr; \
-    }(this->GetWorld())
+    }(GEngine->GetWorldFromContextObject(this, EGetWorldErrorMode::LogAndReturnNull))
 #endif
 // ^ This is very hacky way around of not being able to do:
 // ---

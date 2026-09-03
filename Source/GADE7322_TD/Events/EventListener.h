@@ -3,6 +3,7 @@
 #include "CoreMinimal.h"
 
 #include "Any/Any.h"
+#include "Engine.h"
 #include "Events/EventBus.h"
 #include "UObject/Interface.h"
 
@@ -10,7 +11,7 @@
 
 #ifndef EVENTS_TO_LISTEN_TO
 // Write this in the header file
-#define EVENTS_TO_LISTEN_TO(...) TArray<FString> EventNames = {__VA_ARGS__};
+#define EVENTS_TO_LISTEN_TO(...) TArray<FName> EventNames = {__VA_ARGS__};
 #endif
 
 #ifndef SUBSCRIBE_TO_EVENTS
@@ -22,7 +23,7 @@
         { \
             if (UEventBus* EventBus = GameInstance->GetSubsystem<UEventBus>()) \
             { \
-                for (const FString& EventName : EventNames) EventBus->AddListener(FName(EventName), this); \
+                for (const FName& EventName : EventNames) EventBus->AddListener(EventName, this); \
             } \
         } \
     } while (0)
@@ -37,12 +38,12 @@
         { \
             if (UEventBus* EventBus = GameInstance->GetSubsystem<UEventBus>()) \
             { \
-                FString TempNames[] = {__VA_ARGS__}; \
-                for (const FString& Name : TempNames) \
+                FName TempNames[] = {__VA_ARGS__}; \
+                for (const FName& Name : TempNames) \
                 { \
                     if (EventNames.Contains(Name)) continue; \
                     (void)EventNames.Add(Name); \
-                    EventBus->AddListener(FName(Name), this); \
+                    EventBus->AddListener(Name, this); \
                 } \
             } \
         } \
@@ -58,7 +59,7 @@
         { \
             if (UEventBus* EventBus = GameInstance->GetSubsystem<UEventBus>()) \
             { \
-                for (const FString& EventName : EventNames) EventBus->RemoveListener(FName(EventName), this); \
+                for (const FName& EventName : EventNames) EventBus->RemoveListener(EventName, this); \
             } \
         } \
     } while (0)
@@ -69,16 +70,17 @@
 #define UNSUBSCRIBE_FROM_EVENTS_RUNTIME(...) \
     do \
     { \
-        if (const UWorld* World = this->GetWorld(); const UGameInstance* GameInstance = World->GetGameInstance()) \
+        if (const UWorld* World = GEngine->GetWorldFromContextObject(this, EGetWorldErrorMode::LogAndReturnNull); \
+            const UGameInstance* GameInstance = World->GetGameInstance()) \
         { \
             if (UEventBus* EventBus = GameInstance->GetSubsystem<UEventBus>()) \
             { \
-                FString TempNames[] = {__VA_ARGS__}; \
+                FName TempNames[] = {__VA_ARGS__}; \
                 for (const FString& Name : TempNames) \
                 { \
                     if (!EventNames.Contains(Name)) continue; \
                     (void)EventNames.Remove(Name); \
-                    EventBus->RemoveListener(FName(Name), this); \
+                    EventBus->RemoveListener(Name, this); \
                 } \
             } \
         } \

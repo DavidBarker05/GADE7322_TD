@@ -3,6 +3,7 @@
 #include "CoreMinimal.h"
 
 #include "Any/Any.h"
+#include "Engine.h"
 #include "Engine/GameInstance.h"
 #include "Engine/World.h"
 #include "Subsystems/GameInstanceSubsystem.h"
@@ -13,7 +14,8 @@
 #define BROADCAST_EVENT(EventName, ...) \
     do \
     { \
-        if (const UWorld* World = this->GetWorld(); const UGameInstance* GameInstance = World->GetGameInstance()) \
+        if (const UWorld* World = GEngine->GetWorldFromContextObject(this, EGetWorldErrorMode::LogAndReturnNull); \
+            const UGameInstance* GameInstance = World->GetGameInstance()) \
         { \
             if (UEventBus* EventBus = GameInstance->GetSubsystem<UEventBus>()) \
                 EventBus->Broadcast(FName(EventName), {__VA_ARGS__}); \
