@@ -15,3 +15,6 @@ Saved
 *.xcodeproj
 *.xcworkspace
 *.code-workspace
+
+# This was made by Rider when I debugged
+*.uproject.DotSettings.user
