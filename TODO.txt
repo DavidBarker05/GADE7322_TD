@@ -1,4 +1,4 @@
-enemy wave spawning
+ui
 
 navmesh or whatever it is called in unreal
 
@@ -6,4 +6,8 @@ health and damage for all pawns
 
 playtest
 
-models and materials
+models and materials (defender spot, player circle, sword for skeleton, vegetation if have time)
+
+health bars
+
+damage flash
