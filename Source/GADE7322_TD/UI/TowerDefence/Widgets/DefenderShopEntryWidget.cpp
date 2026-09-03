@@ -1,4 +1,4 @@
-#include "UI/DefenderShopEntryWidget.h"
+#include "UI/TowerDefence/Widgets/DefenderShopEntryWidget.h"
 
 #include "Components/Button.h"
 #include "Components/TextBlock.h"

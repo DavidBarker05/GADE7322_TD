@@ -9,7 +9,9 @@
 class UTextBlock;
 class UButton;
 
-UCLASS()
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnBackClicked);
+
+UCLASS(Abstract)
 class GADE7322_TD_API UControlsWidget : public UUserWidget
 {
     GENERATED_BODY()
@@ -17,9 +19,12 @@ class GADE7322_TD_API UControlsWidget : public UUserWidget
 public:
     virtual bool Initialize() override;
 
+    UPROPERTY(BlueprintAssignable)
+    FOnBackClicked OnBackClicked;
+
 protected:
     UFUNCTION()
-    virtual void ReturnToPauseScreen() const;
+    virtual void ReturnToPreviousScreen() const;
 
     UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
     UTextBlock* ControlsText;

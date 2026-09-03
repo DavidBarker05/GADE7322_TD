@@ -1,4 +1,4 @@
-#include "UI/PlayerHUDWidget.h"
+#include "UI/TowerDefence/Widgets/PlayerHUDWidget.h"
 
 #include "Components/Button.h"
 #include "Components/TextBlock.h"

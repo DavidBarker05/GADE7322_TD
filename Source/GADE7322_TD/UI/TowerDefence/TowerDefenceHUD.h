@@ -2,16 +2,15 @@
 
 #include "CoreMinimal.h"
 
-#include "GameFramework/PlayerController.h"
+#include "GameFramework/HUD.h"
 
-#include "TowerDefencePlayerController.generated.h"
+#include "TowerDefenceHUD.generated.h"
 
-class UInputMappingContext;
 class UPauseScreenWidget;
 class UPlayerHUDWidget;
 
-UCLASS()
-class GADE7322_TD_API ATowerDefencePlayerController : public APlayerController
+UCLASS(Abstract)
+class GADE7322_TD_API ATowerDefenceHUD : public AHUD
 {
     GENERATED_BODY()
 
@@ -19,15 +18,17 @@ protected:
     virtual void BeginPlay() override;
 
 public:
-    void TogglePause();
+    UFUNCTION(BlueprintCallable, Category = "UI")
+    void ShowPlayerHUD() const;
 
-    bool IsGamePaused() const { return bIsPaused; }
+    UFUNCTION(BlueprintCallable, Category = "UI")
+    void HidePlayerHUD() const;
 
-protected:
-    virtual void SetupInputComponent() override;
+    UFUNCTION(BlueprintCallable, Category = "UI")
+    void ShowPauseScreen() const;
 
-    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Input", meta = (AllowPrivateAccess = true))
-    TArray<UInputMappingContext*> DefaultMappingContexts;
+    UFUNCTION(BlueprintCallable, Category = "UI")
+    void HidePauseScreen() const;
 
 private:
     UPROPERTY(EditDefaultsOnly, Category = "UI", meta = (AllowPrivateAccess = true))
@@ -41,7 +42,4 @@ private:
 
     UPROPERTY(BlueprintReadOnly, Category = "UI", meta = (AllowPrivateAccess = true))
     UPlayerHUDWidget* PlayerHUDWidgetInstance;
-
-    UPROPERTY(BlueprintReadOnly, Category = "Game", meta = (AllowPrivateAccess = true))
-    bool bIsPaused = false;
 };

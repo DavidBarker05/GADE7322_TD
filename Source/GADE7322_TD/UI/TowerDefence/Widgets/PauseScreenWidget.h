@@ -10,12 +10,13 @@ class UButton;
 class UCheckBox;
 class UControlsWidget;
 
-UCLASS()
+UCLASS(Abstract)
 class GADE7322_TD_API UPauseScreenWidget : public UUserWidget
 {
     GENERATED_BODY()
 
 public:
+    UFUNCTION()
     void ShowMainPanel() const;
 
     virtual bool Initialize() override;

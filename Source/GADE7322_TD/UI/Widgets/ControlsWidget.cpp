@@ -1,8 +1,8 @@
-#include "UI/ControlsWidget.h"
+#include "UI/Widgets/ControlsWidget.h"
 
 #include "Components/Button.h"
 #include "Components/TextBlock.h"
-#include "UI/PauseScreenWidget.h"
+#include "UI/TowerDefence/Widgets/PauseScreenWidget.h"
 
 bool UControlsWidget::Initialize()
 {
@@ -19,15 +19,13 @@ bool UControlsWidget::Initialize()
         "Escape = Pause"
     );
     // clang-format on
+    // ^ Toggled clang-format so that the strings looked nicer
 #if WITH_EDITOR
     Str.Append(TEXT("\nP = Editor Pause"));
 #endif
     ControlsText->SetText(FText::FromString(Str));
-    BackButton->OnClicked.AddDynamic(this, &UControlsWidget::ReturnToPauseScreen);
+    BackButton->OnClicked.AddDynamic(this, &UControlsWidget::ReturnToPreviousScreen);
     return true;
 }
 
-void UControlsWidget::ReturnToPauseScreen() const
-{
-    if (UPauseScreenWidget* OwningPauseScreen = GetTypedOuter<UPauseScreenWidget>()) OwningPauseScreen->ShowMainPanel();
-}
+void UControlsWidget::ReturnToPreviousScreen() const { OnBackClicked.Broadcast(); }

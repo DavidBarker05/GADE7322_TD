@@ -1,16 +1,16 @@
-#include "UI/PawnManagerWidget.h"
+#include "UI/TowerDefence/Widgets/PawnManagerWidget.h"
 
 #include "Components/Button.h"
 #include "Components/ScrollBox.h"
 #include "Components/TextBlock.h"
 #include "Components/Widget.h"
-#include "Player/TowerDefencePlayer.h"
+#include "Player/TowerDefence/TowerDefencePlayer.h"
 #include "TowerDefencePawns/Components/DamageComponent.h"
 #include "TowerDefencePawns/Components/HealthComponent.h"
 #include "TowerDefencePawns/Defenders/Defender.h"
 #include "TowerDefencePawns/Defenders/DefenderSpot.h"
 #include "TowerDefencePawns/Tower/PlayerTower.h"
-#include "UI/DefenderShopEntryWidget.h"
+#include "UI/TowerDefence/Widgets/DefenderShopEntryWidget.h"
 
 bool UPawnManagerWidget::Initialize()
 {

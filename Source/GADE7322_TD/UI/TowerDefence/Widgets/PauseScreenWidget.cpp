@@ -1,12 +1,12 @@
-#include "UI/PauseScreenWidget.h"
+#include "UI/TowerDefence/Widgets/PauseScreenWidget.h"
 
 #include "Components/Button.h"
 #include "Components/CheckBox.h"
 #include "Kismet/GameplayStatics.h"
 #include "Kismet/KismetSystemLibrary.h"
+#include "Player/TowerDefence/TowerDefencePlayerController.h"
 #include "Settings/GameSettingsSubsystem.h"
-#include "TowerDefencePlayerController.h"
-#include "UI/ControlsWidget.h"
+#include "UI/Widgets/ControlsWidget.h"
 
 bool UPauseScreenWidget::Initialize()
 {
@@ -17,9 +17,11 @@ bool UPauseScreenWidget::Initialize()
     ControlsButton->OnClicked.AddDynamic(this, &UPauseScreenWidget::OpenControls);
     QuitButton->OnClicked.AddDynamic(this, &UPauseScreenWidget::QuitGame);
     AutoPlayToggle->OnCheckStateChanged.AddDynamic(this, &UPauseScreenWidget::HandleAutoPlayChanged);
-    if (const UWorld* World = GetWorld(); const UGameInstance* GameInstance = World ? World->GetGameInstance() : nullptr)
+    if (const UWorld* World = GetWorld();
+        const UGameInstance* GameInstance = World ? World->GetGameInstance() : nullptr)
         if (const UGameSettingsSubsystem* Settings = GameInstance->GetSubsystem<UGameSettingsSubsystem>())
             AutoPlayToggle->SetIsChecked(Settings->IsAutoPlay());
+    ControlsWidget->OnBackClicked.AddDynamic(this, &UPauseScreenWidget::ShowMainPanel);
     ShowMainPanel();
     return true;
 }
@@ -36,7 +38,7 @@ void UPauseScreenWidget::ShowMainPanel() const
 
 void UPauseScreenWidget::ResumeGame() const
 {
-    if (ATowerDefencePlayerController* TDPC = GetOwningPlayer<ATowerDefencePlayerController>()) TDPC->TogglePause();
+    if (ATowerDefencePlayerController* TD_PC = GetOwningPlayer<ATowerDefencePlayerController>()) TD_PC->TogglePause();
 }
 
 void UPauseScreenWidget::RestartGame() const
@@ -62,7 +64,8 @@ void UPauseScreenWidget::QuitGame() const
 
 void UPauseScreenWidget::HandleAutoPlayChanged(bool bIsChecked) const
 {
-    if (const UWorld* World = GetWorld(); UGameInstance* GameInstance = World ? World->GetGameInstance() : nullptr)
+    if (const UWorld* World = GetWorld();
+        const UGameInstance* GameInstance = World ? World->GetGameInstance() : nullptr)
         if (UGameSettingsSubsystem* Settings = GameInstance->GetSubsystem<UGameSettingsSubsystem>())
             Settings->SetAutoPlay(bIsChecked);
 }

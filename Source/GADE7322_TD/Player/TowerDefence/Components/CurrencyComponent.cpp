@@ -1,5 +1,5 @@
 // ReSharper disable CppParameterMayBeConst
-#include "Player/Components/CurrencyComponent.h"
+#include "Player/TowerDefence/Components/CurrencyComponent.h"
 
 UCurrencyComponent::UCurrencyComponent() { PrimaryComponentTick.bCanEverTick = false; }
 

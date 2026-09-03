@@ -1,5 +1,5 @@
 // ReSharper disable CppParameterMayBeConst
-#include "Player/TowerDefencePlayer.h"
+#include "Player/TowerDefence/TowerDefencePlayer.h"
 
 #include "Camera/CameraComponent.h"
 #include "CustomLog.h"
@@ -9,8 +9,8 @@
 #include "GameFramework/PlayerController.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "InputActionValue.h"
-#include "Player/Components/CurrencyComponent.h"
-#include "Player/TowerDefencePlayerController.h"
+#include "Player/TowerDefence/Components/CurrencyComponent.h"
+#include "Player/TowerDefence/TowerDefencePlayerController.h"
 #include "TowerDefencePawns/Defenders/Defender.h"
 #include "TowerDefencePawns/Defenders/DefenderSpot.h"
 #include "TowerDefencePawns/Tower/PlayerTower.h"
@@ -136,10 +136,10 @@ bool ATowerDefencePlayer::IsMouseOverUI(const APlayerController* PlayerControlle
 
     return WidgetPath.IsValid() && WidgetPath.GetLastWidget() != GameViewportWidget;
 }
+
 bool ATowerDefencePlayer::IsGamePaused() const
 {
-    if (const ATowerDefencePlayerController* TDPC = Cast<ATowerDefencePlayerController>(GetController()))
-        return TDPC->IsGamePaused();
+    if (const APlayerController* PC = GetController<APlayerController>()) return PC->IsPaused();
     return false;
 }
 
@@ -147,7 +147,7 @@ bool ATowerDefencePlayer::IsGamePaused() const
 void ATowerDefencePlayer::DoSelect()
 {
     if (IsGamePaused()) return;
-    if (const APlayerController* PlayerController = Cast<APlayerController>(GetController()))
+    if (const APlayerController* PlayerController = GetController<APlayerController>())
     {
         if (IsMouseOverUI(PlayerController)) return;
 
@@ -217,5 +217,5 @@ void ATowerDefencePlayer::DoReset()
 // ReSharper disable once CppMemberFunctionMayBeConst
 void ATowerDefencePlayer::DoPause()
 {
-    if (ATowerDefencePlayerController* TDPC = Cast<ATowerDefencePlayerController>(GetController())) TDPC->TogglePause();
+    if (ATowerDefencePlayerController* TD_PC = GetController<ATowerDefencePlayerController>()) TD_PC->TogglePause();
 }

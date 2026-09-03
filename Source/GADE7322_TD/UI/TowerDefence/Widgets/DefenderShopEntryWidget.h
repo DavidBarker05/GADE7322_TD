@@ -13,7 +13,7 @@ class UTextBlock;
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnDefenderBuyClicked, TSubclassOf<ADefender>, DefenderClass);
 
 // A single buyable defender entry in a PawnManagerWidget's shop list
-UCLASS()
+UCLASS(Abstract)
 class GADE7322_TD_API UDefenderShopEntryWidget : public UUserWidget
 {
     GENERATED_BODY()

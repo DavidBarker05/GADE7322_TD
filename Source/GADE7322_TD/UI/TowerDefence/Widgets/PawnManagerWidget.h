@@ -18,7 +18,7 @@ class UWidget;
 
 // Part of the HUD. Hidden until the player selects a DefenderSpot, Defender or the PlayerTower, then shows
 // buy/sell/heal/switch controls and stats for whatever is selected
-UCLASS()
+UCLASS(Abstract)
 class GADE7322_TD_API UPawnManagerWidget : public UUserWidget,
                                            public IEventListener
 {

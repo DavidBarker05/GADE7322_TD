@@ -11,7 +11,7 @@ class UButton;
 class UPawnManagerWidget;
 class UTextBlock;
 
-UCLASS()
+UCLASS(Abstract)
 class GADE7322_TD_API UPlayerHUDWidget : public UUserWidget,
                                          public IEventListener
 {
@@ -19,9 +19,10 @@ class GADE7322_TD_API UPlayerHUDWidget : public UUserWidget,
 
     EVENTS_TO_LISTEN_TO(TEXT("UpdateHUDEvent"))
 
-protected:
+public:
     virtual bool Initialize() override;
 
+protected:
     virtual void NativeOnInitialized() override;
 
     virtual void NativeDestruct() override;
