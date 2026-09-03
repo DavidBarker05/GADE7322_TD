@@ -45,7 +45,4 @@ private:
 
     UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components", meta = (AllowPrivateAccess = true))
     UBoxComponent* BoxCollider = nullptr;
-
-    UPROPERTY(EditDefaultsOnly, Category = "Collision", meta = (AllowPrivateAccess = true))
-    FVector ColliderHalfExtents {50.0f, 50.0f, 50.0f};
 };

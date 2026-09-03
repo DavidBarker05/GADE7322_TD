@@ -1,8 +1,9 @@
 #include "TowerDefencePawns/Tower/PlayerTower.h"
 
-#include "DamageComponent.h"
+#include "Components/BoxComponent.h"
 #include "Perception/AIPerceptionComponent.h"
 #include "Perception/AIPerceptionTypes.h"
+#include "TDCollisionChannels.h"
 #include "TowerDefencePawns/AI/ProximityPerception/AISenseConfig_Proximity.h"
 
 APlayerTower::APlayerTower()
@@ -19,6 +20,12 @@ APlayerTower::APlayerTower()
     PerceptionComponent->ConfigureSense(*ProximityConfig);
     PerceptionComponent->SetDominantSense(ProximityConfig->GetSenseImplementation());
     PerceptionComponent->OnTargetPerceptionUpdated.AddDynamic(this, &APlayerTower::OnTargetPerceptionUpdated);
+    BoxCollider = CreateDefaultSubobject<UBoxComponent>(TEXT("Box Collider"));
+    BoxCollider->SetupAttachment(RootComponent);
+    BoxCollider->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
+    BoxCollider->SetCollisionObjectType(ECC_WorldDynamic);
+    BoxCollider->SetCollisionResponseToAllChannels(ECR_Ignore);
+    BoxCollider->SetCollisionResponseToChannel(MouseClickTraceChannel, ECR_Block);
 }
 
 void APlayerTower::Tick(float DeltaTime)

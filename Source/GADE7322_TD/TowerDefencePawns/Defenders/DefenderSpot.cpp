@@ -2,8 +2,8 @@
 
 #include "Components/BoxComponent.h"
 #include "Events/EventBus.h"
+#include "TDCollisionChannels.h"
 #include "TowerDefencePawnAIControllerFactory.h"
-#include "TowerDefencePawns/AI/TowerDefencePawnAIControllerFactory.h"
 #include "TowerDefencePawns/Defenders/Defender.h"
 #include "TowerDefencePawns/TowerDefencePawnFactory.h"
 
@@ -14,11 +14,10 @@ ADefenderSpot::ADefenderSpot()
     SetRootComponent(Root);
     BoxCollider = CreateDefaultSubobject<UBoxComponent>(TEXT("Box Collider"));
     BoxCollider->SetupAttachment(RootComponent);
-    BoxCollider->SetBoxExtent(ColliderHalfExtents);
     BoxCollider->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
     BoxCollider->SetCollisionObjectType(ECC_WorldDynamic);
     BoxCollider->SetCollisionResponseToAllChannels(ECR_Ignore);
-    BoxCollider->SetCollisionResponseToChannel(ECC_GameTraceChannel1 /* = MouseClick */, ECR_Block);
+    BoxCollider->SetCollisionResponseToChannel(MouseClickTraceChannel, ECR_Block);
 }
 
 void ADefenderSpot::BeginPlay()

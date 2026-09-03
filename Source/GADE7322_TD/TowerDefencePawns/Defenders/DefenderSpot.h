@@ -51,7 +51,4 @@ private:
 
     UPROPERTY(BlueprintReadOnly, Category = "Defender", meta = (AllowPrivateAccess = true))
     ADefender* CurrentDefender = nullptr;
-
-    UPROPERTY(EditDefaultsOnly, Category = "Collision", meta = (AllowPrivateAccess = true))
-    FVector ColliderHalfExtents {50.0f, 50.0f, 50.0f};
 };

@@ -7,10 +7,11 @@
 
 #include "PlayerTower.generated.h"
 
-class UStaticMeshComponent;
+struct FAIStimulus;
+class UBoxComponent;
 class UAIPerceptionComponent;
 class UAISenseConfig_Proximity;
-struct FAIStimulus;
+class UStaticMeshComponent;
 
 UCLASS(Abstract)
 class GADE7322_TD_API APlayerTower : public ATowerDefencePawn
@@ -78,6 +79,9 @@ private:
 
     UPROPERTY(BlueprintReadWrite, Category = "Components", meta = (AllowPrivateAccess = true))
     TArray<ATowerDefencePawn*> AttackTargets;
+
+    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components", meta = (AllowPrivateAccess = true))
+    UBoxComponent* BoxCollider = nullptr;
 
     UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "AI",
               meta = (AllowPrivateAccess = true, ClampMin = 0.0, UIMin = 0.0, Units = "Centimeters"))
