@@ -295,7 +295,7 @@ DEFINE_FUNCTION(UAnyFunctionLibrary::execSetAny)
         }
         else if (CastField<FTextProperty>(ValueProp))
         {
-            InAny.Set<FText>(*static_cast<const FText*>(ValuePtr));
+            InAny.Set(*static_cast<const FText*>(ValuePtr));
             bSuccess = true;
         }
         else if (const FObjectProperty* ObjectProp = CastField<FObjectProperty>(ValueProp))

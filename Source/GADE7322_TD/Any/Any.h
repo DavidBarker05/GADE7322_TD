@@ -191,21 +191,16 @@ struct GADE7322_TD_API FAny
 
     FAny(FInstancedStruct&& InValue) : Value(MoveTemp(InValue)) { }
 
-    // Copy constructor. Stores InValue in Value. Uses T if it's as struct or the struct equivalent if not
-    template<typename T>
-    FAny(const T& InValue) : Value(FInstancedStruct::Make<TAnyType_T<T>>(InValue))
-    {
-    }
-
-    // Move constructor. Moves InValue into Value. Uses T if it's as struct or the struct equivalent if not
+    // Forwarding constructor. Constructs FAny by perfectly forwarding InValue into Value, wrapping it as T (or the
+    // struct-equivalent of T if T isn't already a struct)
     template<typename T>
     requires(!TIsSame_V<TDecay_T<T>, FAny>) // T can't be variation of FAny
-    FAny(T&& InValue) noexcept : Value(FInstancedStruct::Make<TAnyType_T<TDecay_T<T>>>(Forward<T>(InValue)))
+    FAny(T&& InValue) : Value(FInstancedStruct::Make<TAnyType_T<TDecay_T<T>>>(Forward<T>(InValue)))
     {
     }
 
-    // Forwarding constructor. Makes Value store Type if it is a struct, or the struct
-    // equivalent if not. Forwards the params into the constructor for the struct
+    // In-place (emplace) constructor. Constructs the wrapped value as Type if it is a struct or its struct-equivalent,
+    // directly from the forwarded Params, without requiring an existing Type instance to move or copy from
     template<typename Type, typename... Args>
     FAny(Args&&... Params) : Value(FInstancedStruct::Make<TAnyType_T<Type>>(Forward<Args>(Params)...))
     {
@@ -220,15 +215,8 @@ struct GADE7322_TD_API FAny
         return *this;
     }
 
-    // Copy assignment operator. See copy constructor for how it works
-    template<typename T>
-    FAny& operator=(const T& InValue)
-    {
-        Value = FInstancedStruct::Make<TAnyType_T<T>>(InValue);
-        return *this;
-    }
-
-    // Move assignment operator. See move constructor for how it works
+    // Forwarding assignment operator. Assigns to FAny by perfectly forwarding InValue into Value, wrapping it as T (or
+    // the struct-equivalent of T if T isn't already a struct)
     template<typename T>
     requires(!TIsSame_V<TDecay_T<T>, FAny>) // T can't be variation of FAny
     FAny& operator=(T&& InValue)
@@ -323,17 +311,10 @@ struct GADE7322_TD_API FAny
         return Wrapper ? &Wrapper->Value : nullptr;
     }
 
-    // Copy Set. See copy constructor for how it works
+    // Forwarding Set. Sets the value of FAny by perfectly forwarding InValue into Value, wrapping it as T (or the
+    // struct-equivalent of T if T isn't already a struct)
     template<typename T>
-    FAny& Set(const T& InValue)
-    {
-        Value = FInstancedStruct::Make<TAnyType_T<T>>(InValue);
-        return *this;
-    }
-
-    // Move Set. See move constructor for how it works
-    template<typename T>
-    FAny& Set(T&& InValue) noexcept
+    FAny& Set(T&& InValue)
     {
         Value = FInstancedStruct::Make<TAnyType_T<TDecay_T<T>>>(Forward<T>(InValue));
         return *this;
