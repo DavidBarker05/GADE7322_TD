@@ -1,5 +1,5 @@
 // ReSharper disable CppParameterMayBeConst
-#include "TowerDefencePawns/Defenders/Warrior/WarriorAIController.h"
+#include "TowerDefencePawns/Defenders/Warrior/AI/WarriorAIController.h"
 
 #include "Perception/AIPerceptionTypes.h"
 #include "TargetSelectionFunctions.h"
