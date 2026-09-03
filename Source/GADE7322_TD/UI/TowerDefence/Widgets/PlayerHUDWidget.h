@@ -34,6 +34,8 @@ protected:
     UFUNCTION()
     void HandleWaveButtonClicked();
 
+    void RefreshWaveButton(bool bInProgress);
+
     UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
     UButton* PauseButton;
 

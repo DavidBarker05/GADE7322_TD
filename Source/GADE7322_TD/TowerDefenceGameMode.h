@@ -38,6 +38,8 @@ public:
 
     int32 GetCurrentWave() const { return CurrentWave; }
 
+    int32 GetEnemiesRemaining() const { return EnemiesLeftToSpawnThisWave + EnemiesAliveThisWave; }
+
     static ETeamAttitude::Type GetAttitude(FGenericTeamId TeamA, FGenericTeamId TeamB);
 
 protected:
@@ -48,8 +50,6 @@ protected:
 
     void HandleEnemyDeath(AAttacker* Enemy);
 
-    // Checks whether the wave has been fully spawned and cleared, and if so starts the next wave
-    // (autoplay) or waits for the player (StartNextWave). Only ever called right after an enemy dies
     void CheckWaveComplete();
 
     int32 GetEnemyCountForWave(int32 Wave) const;

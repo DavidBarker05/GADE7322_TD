@@ -22,9 +22,9 @@ void ATowerDefenceGameMode::EndPlay(const EEndPlayReason::Type EndPlayReason)
 
 void ATowerDefenceGameMode::StartPlay()
 {
+    Super::StartPlay(); // <- Don't forget to call this, worst mistake, it makes everything else's BeginPlay happen
     TerrainGen = Cast<AProceduralTerrainGen>(
         UGameplayStatics::GetActorOfClass(GetWorld(), AProceduralTerrainGen::StaticClass()));
-    // Will these even call?
     BROADCAST_EVENT(TEXT("UpdateHUDEvent"), FName(TEXT("Round")), CurrentWave);
     BROADCAST_EVENT(TEXT("UpdateHUDEvent"), FName(TEXT("WaveState")), FName(TEXT("AwaitingStart")));
     BroadcastEnemyCount();

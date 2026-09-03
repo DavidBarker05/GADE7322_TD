@@ -6,7 +6,6 @@
 #include "PhysicsEngine/BodySetup.h"
 #include "ProceduralMeshComponent.h"
 #include "ProceduralMeshConversion.h"
-#include "StaticMeshAttributes.h"
 #include "StaticMeshDescription.h"
 #include "TowerDefencePawns/Defenders/DefenderSpot.h"
 
@@ -189,6 +188,8 @@ TArray<FVector> AProceduralTerrainGen::SmoothPathControlPoints(const TArray<FVec
 
 void AProceduralTerrainGen::GenerateTerrain() const
 {
+    if (!IsValid(TerrainMesh)) return;
+
     TerrainMesh->ClearAllMeshSections();
 
     // Extend the mesh past TerrainRadius so path wander/width/blend never runs off the edge of the grid
@@ -301,7 +302,7 @@ float AProceduralTerrainGen::SampleNoiseHeight(const FVector2D& WorldXY) const
     return AmplitudeSum > 0.0f ? Total / AmplitudeSum * HeightAmplitude : 0.0f;
 }
 
-// Checked against every path, not just the nearest one geographically, because two paths can run
+// Checked against every path, not just the nearest one, because two paths can run
 // close together and a point can be outside path A's corridor but still inside path B's
 float AProceduralTerrainGen::DistanceToNearestPathEdge(const FVector2D& Point) const
 {

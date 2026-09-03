@@ -16,7 +16,17 @@ void UPlayerHUDWidget::NativeOnInitialized()
 {
     Super::NativeOnInitialized();
     SUBSCRIBE_TO_EVENTS();
+    if (const ATowerDefenceGameMode* GameMode =
+            GetWorld() ? GetWorld()->GetAuthGameMode<ATowerDefenceGameMode>() : nullptr)
+    {
+        LastKnownRound = GameMode->GetCurrentWave();
+        RoundDisplay->SetText(FText::FromString(FString::Printf(TEXT("Round: %d"), LastKnownRound)));
+        EnemyCountDisplay->SetText(
+            FText::FromString(FString::Printf(TEXT("Enemies Remaining: %d"), GameMode->GetEnemiesRemaining())));
+        RefreshWaveButton(GameMode->IsWaveInProgress());
+    }
 }
+
 void UPlayerHUDWidget::NativeDestruct()
 {
     UNSUBSCRIBE_FROM_EVENTS();
@@ -27,6 +37,17 @@ void UPlayerHUDWidget::HandleWaveButtonClicked()
 {
     if (ATowerDefenceGameMode* GameMode = GetWorld() ? GetWorld()->GetAuthGameMode<ATowerDefenceGameMode>() : nullptr)
         GameMode->StartNextWave();
+}
+
+void UPlayerHUDWidget::RefreshWaveButton(bool bInProgress)
+{
+    if (bInProgress)
+    {
+        WaveButton->SetVisibility(ESlateVisibility::Collapsed);
+        return;
+    }
+    WaveButtonText->SetText(FText::FromString(LastKnownRound == 0 ? TEXT("Start") : TEXT("Next Wave")));
+    WaveButton->SetVisibility(ESlateVisibility::Visible);
 }
 
 void UPlayerHUDWidget::OnEventReceived_Implementation(const FName& EventName, const TArray<FAny>& Params)
@@ -50,12 +71,8 @@ void UPlayerHUDWidget::OnEventReceived_Implementation(const FName& EventName, co
         if (NumParams != 2) return;
         if (const FName* StatePtr = Params[1].Get<FName>())
         {
-            if (*StatePtr == TEXT("AwaitingStart"))
-            {
-                WaveButtonText->SetText(FText::FromString(LastKnownRound == 0 ? TEXT("Start") : TEXT("Next Wave")));
-                WaveButton->SetVisibility(ESlateVisibility::Visible);
-            }
-            else if (*StatePtr == TEXT("InProgress")) WaveButton->SetVisibility(ESlateVisibility::Collapsed);
+            if (*StatePtr == TEXT("AwaitingStart")) RefreshWaveButton(false);
+            else if (*StatePtr == TEXT("InProgress")) RefreshWaveButton(true);
         }
     }
     else if (ElemName == TEXT("EnemyCount"))
