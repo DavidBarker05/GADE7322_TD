@@ -6,8 +6,9 @@
 
 #include "ControlsWidget.generated.h"
 
-class UTextBlock;
 class UButton;
+class UDataTable;
+class URichTextBlock;
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnBackClicked);
 
@@ -26,8 +27,11 @@ protected:
     UFUNCTION()
     virtual void ReturnToPreviousScreen() const;
 
+    UPROPERTY(EditAnywhere, BlueprintReadOnly)
+    UDataTable* TextStyleDataTable;
+
     UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-    UTextBlock* ControlsText;
+    URichTextBlock* ControlsText;
 
     UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
     UButton* BackButton;
