@@ -25,9 +25,10 @@ void AWarriorAIController::Tick(float DeltaTime)
     {
         if (!WPawn->IsPawnActive()) return;
         if (const ATowerDefencePawn* AttackTarget = WPawn->GetAttackTarget();
-            IsValid(AttackTarget) && FVector::Dist2D(WPawn->GetActorLocation(), AttackTarget->GetActorLocation()) -
-                                             AttackTarget->GetOccupiedRadius() <=
-                                         WPawn->GetAttackRadius() + KINDA_SMALL_NUMBER)
+            IsValid(AttackTarget) && AttackTarget->IsPawnActive() && AttackTarget->GetHealthComponent()->IsAlive() &&
+            FVector::Dist2D(WPawn->GetActorLocation(), AttackTarget->GetActorLocation()) -
+                    AttackTarget->GetOccupiedRadius() <=
+                WPawn->GetAttackRadius() + KINDA_SMALL_NUMBER)
             return;
         if (TimeSinceLastVisionUpdate < 1.0f / VisionUpdateFrequency + KINDA_SMALL_NUMBER)
         {

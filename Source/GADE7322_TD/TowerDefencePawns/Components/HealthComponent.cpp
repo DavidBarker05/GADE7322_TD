@@ -5,6 +5,7 @@
 
 void UHealthComponent::TakeDamage(int32 Damage)
 {
+    if (CurrentHealth == 0) return; // Don't keep taking damage and broadcasting events when dead
     CurrentHealth = FMath::Max(0, CurrentHealth - Damage);
     if (CurrentHealth == 0) BROADCAST_EVENT(TEXT("DeathEvent"), GetOwner());
 }

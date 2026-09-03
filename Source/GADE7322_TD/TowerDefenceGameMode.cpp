@@ -12,17 +12,23 @@ void ATowerDefenceGameMode::BeginPlay()
 {
     Super::BeginPlay();
     SUBSCRIBE_TO_EVENTS();
-    TerrainGen = Cast<AProceduralTerrainGen>(
-        UGameplayStatics::GetActorOfClass(GetWorld(), AProceduralTerrainGen::StaticClass()));
-    BROADCAST_EVENT(TEXT("UpdateHUDEvent"), FName(TEXT("Round")), CurrentWave);
-    BROADCAST_EVENT(TEXT("UpdateHUDEvent"), FName(TEXT("WaveState")), FName(TEXT("AwaitingStart")));
-    BroadcastEnemyCount();
 }
 
 void ATowerDefenceGameMode::EndPlay(const EEndPlayReason::Type EndPlayReason)
 {
     UNSUBSCRIBE_FROM_EVENTS();
     Super::EndPlay(EndPlayReason);
+}
+
+void ATowerDefenceGameMode::StartPlay()
+{
+    TerrainGen = Cast<AProceduralTerrainGen>(
+        UGameplayStatics::GetActorOfClass(GetWorld(), AProceduralTerrainGen::StaticClass()));
+    // Will these even call?
+    BROADCAST_EVENT(TEXT("UpdateHUDEvent"), FName(TEXT("Round")), CurrentWave);
+    BROADCAST_EVENT(TEXT("UpdateHUDEvent"), FName(TEXT("WaveState")), FName(TEXT("AwaitingStart")));
+    BroadcastEnemyCount();
+    FGenericTeamId::SetAttitudeSolver(&ATowerDefenceGameMode::GetAttitude);
 }
 
 void ATowerDefenceGameMode::OnEventReceived_Implementation(const FName& EventName, const TArray<FAny>& Params)
@@ -45,6 +51,11 @@ void ATowerDefenceGameMode::StartNextWave()
     BROADCAST_EVENT(TEXT("UpdateHUDEvent"), FName(TEXT("WaveState")), FName(TEXT("InProgress")));
     BroadcastEnemyCount();
     SpawnBurst();
+}
+
+ETeamAttitude::Type ATowerDefenceGameMode::GetAttitude(FGenericTeamId TeamA, FGenericTeamId TeamB)
+{
+    return TeamA == TeamB ? ETeamAttitude::Friendly : ETeamAttitude::Hostile;
 }
 
 void ATowerDefenceGameMode::SpawnBurst()
@@ -79,8 +90,7 @@ void ATowerDefenceGameMode::SpawnEnemyOnRandomPath()
 
 void ATowerDefenceGameMode::HandleEnemyDeath(AAttacker* Enemy)
 {
-    if (!IsValid(Enemy) || DyingEnemies.Contains(Enemy)) return;
-    DyingEnemies.Add(Enemy);
+    if (!IsValid(Enemy)) return;
 
     const int32 Reward = Enemy->GetCurrencyOnDeath();
     Enemy->OnDeath(
@@ -91,7 +101,6 @@ void ATowerDefenceGameMode::HandleEnemyDeath(AAttacker* Enemy)
                 if (Enemy->UseAIController()) UNPOSSESS_TOWER_DEFENCE_PAWN(Enemy);
                 Enemy->SetPawnActive(false);
                 DESTROY_PAWN(Enemy);
-                DyingEnemies.Remove(Enemy);
 
                 EnemiesAliveThisWave = FMath::Max(0, EnemiesAliveThisWave - 1);
                 if (Reward > 0) BROADCAST_EVENT(TEXT("MoneyEarnedEvent"), Reward);

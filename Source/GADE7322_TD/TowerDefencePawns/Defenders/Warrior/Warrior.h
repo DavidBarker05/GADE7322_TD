@@ -28,6 +28,8 @@ public:
 protected:
     virtual void DoOnSetActive(bool bActive) override;
 
+    virtual void DoUpdatePerceptionOnTeamChange() override;
+
 public:
     const USkeletalMeshComponent* GetMesh() const { return SkeletalMesh; }
     USkeletalMeshComponent* GetMesh() { return SkeletalMesh; }

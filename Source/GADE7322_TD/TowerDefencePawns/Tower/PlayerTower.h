@@ -52,6 +52,9 @@ public:
 
     const ATowerDefencePawn* GetAttackTarget(uint32 Index) { return Index < 3 ? AttackTargets[Index] : nullptr; }
 
+protected:
+    virtual void DoUpdatePerceptionOnTeamChange() override;
+
 private:
     UFUNCTION()
     void OnTargetPerceptionUpdated(AActor* Actor, FAIStimulus Stimulus);

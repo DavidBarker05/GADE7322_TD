@@ -1,10 +1,12 @@
 #include "TowerDefencePawns/Tower/PlayerTower.h"
 
 #include "Components/BoxComponent.h"
+#include "HealthComponent.h"
 #include "Perception/AIPerceptionComponent.h"
 #include "Perception/AIPerceptionTypes.h"
 #include "TDCollisionChannels.h"
 #include "TowerDefencePawns/AI/ProximityPerception/AISenseConfig_Proximity.h"
+#include "TowerDefencePawns/AI/TargetSelectionFunctions.h"
 
 APlayerTower::APlayerTower()
 {
@@ -26,6 +28,7 @@ APlayerTower::APlayerTower()
     BoxCollider->SetCollisionObjectType(ECC_WorldDynamic);
     BoxCollider->SetCollisionResponseToAllChannels(ECR_Ignore);
     BoxCollider->SetCollisionResponseToChannel(MouseClickTraceChannel, ECR_Block);
+    CurrentTeam = EAITeam::Defender;
 }
 
 void APlayerTower::Tick(float DeltaTime)
@@ -55,13 +58,22 @@ void APlayerTower::StartAttack()
     }
 }
 
+void APlayerTower::DoUpdatePerceptionOnTeamChange()
+{
+    if (UAIPerceptionSystem* PerceptionSys = UAIPerceptionSystem::GetCurrent(GetWorld()))
+        PerceptionSys->UpdateListener(*PerceptionComponent);
+    PerceptionComponent->ForgetAll();
+    VisiblePawns.Empty();
+    AttackTargets.Empty();
+}
+
 void APlayerTower::OnTargetPerceptionUpdated(AActor* Actor, FAIStimulus Stimulus)
 {
     if (!IsValid(Actor)) return;
     if (ATowerDefencePawn* TDPawn = Cast<ATowerDefencePawn>(Actor))
     {
         if (!Stimulus.WasSuccessfullySensed()) VisiblePawns.Remove(TDPawn);
-        else if (TDPawn->IsPawnActive()) VisiblePawns.AddUnique(TDPawn);
+        else if (TDPawn->IsPawnActive() && TDPawn->GetHealthComponent()->IsAlive()) VisiblePawns.AddUnique(TDPawn);
     }
 }
 
@@ -69,34 +81,12 @@ void APlayerTower::UpdateAttackTargets()
 {
     for (int32 i = 0; i < 3; ++i)
     {
-        const ATowerDefencePawn* Current = AttackTargets[i];
-        if (IsValid(Current) && Current->IsPawnActive() &&
+        if (const ATowerDefencePawn* Current = AttackTargets[i];
+            IsValid(Current) && Current->IsPawnActive() && Current->GetHealthComponent()->IsAlive() &&
             FVector::Dist2D(GetActorLocation(), Current->GetActorLocation()) - Current->GetOccupiedRadius() <=
                 AttackRadius + KINDA_SMALL_NUMBER)
             continue;
-
-        ATowerDefencePawn* NewTarget = nullptr;
-        float ClosestDistSqr = TNumericLimits<float>::Max();
-
-        for (int32 j = VisiblePawns.Num() - 1; j >= 0; --j)
-        {
-            ATowerDefencePawn* Candidate = VisiblePawns[j];
-            if (!IsValid(Candidate) || !Candidate->IsPawnActive())
-            {
-                VisiblePawns.RemoveAtSwap(j, EAllowShrinking::No);
-                continue;
-            }
-            if (AttackTargets.Contains(Candidate)) continue;
-
-            const float DistSqr = FVector::DistSquared2D(GetActorLocation(), Candidate->GetActorLocation());
-            if (DistSqr < ClosestDistSqr)
-            {
-                ClosestDistSqr = DistSqr;
-                NewTarget = Candidate;
-            }
-        }
-
-        if (NewTarget) SetAttackTarget(i, NewTarget);
+        if (ATowerDefencePawn* NewTarget = SelectClosestTarget(VisiblePawns, this)) SetAttackTarget(i, NewTarget);
         else AttackTargets[i] = nullptr;
     }
 }

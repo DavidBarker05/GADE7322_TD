@@ -32,6 +32,12 @@ public:
     UFUNCTION(BlueprintCallable, Category = "Health")
     void ResetHealth() { CurrentHealth = MaxHealth; }
 
+    UFUNCTION(BlueprintPure, Category = "Health")
+    bool IsAlive() const { return CurrentHealth > 0; }
+
+    UFUNCTION(BlueprintPure, Category = "Health")
+    bool IsDead() const { return CurrentHealth == 0; }
+
 private:
     UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Health",
               meta = (AllowPrivateAccess = true, UIMin = 0, ClampMin = 0))

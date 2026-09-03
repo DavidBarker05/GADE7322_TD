@@ -4,6 +4,7 @@
 
 #include "Events/EventListener.h"
 #include "GameFramework/GameModeBase.h"
+#include "GenericTeamAgentInterface.h"
 
 #include "TowerDefenceGameMode.generated.h"
 
@@ -18,10 +19,13 @@ class GADE7322_TD_API ATowerDefenceGameMode : public AGameModeBase,
 
     EVENTS_TO_LISTEN_TO(TEXT("DeathEvent"))
 
-public:
+protected:
     virtual void BeginPlay() override;
 
     virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
+
+public:
+    virtual void StartPlay() override;
 
     UFUNCTION(BlueprintCallable)
     virtual void OnEventReceived_Implementation(const FName& EventName, const TArray<FAny>& Params) override;
@@ -33,6 +37,8 @@ public:
     bool IsWaveInProgress() const { return bWaveInProgress; }
 
     int32 GetCurrentWave() const { return CurrentWave; }
+
+    static ETeamAttitude::Type GetAttitude(FGenericTeamId TeamA, FGenericTeamId TeamB);
 
 protected:
     // Spawns one burst of enemies, then (if there are more left to spawn this wave) schedules the next burst
@@ -89,11 +95,6 @@ private:
     int32 EnemiesLeftToSpawnThisWave = 0;
     int32 EnemiesAliveThisWave = 0;
     bool bWaveInProgress = false;
-
-    // Guards against HealthComponent broadcasting DeathEvent more than once for the same enemy (it
-    // can, if the enemy takes further damage while its death animation is still playing)
-    UPROPERTY()
-    TSet<AAttacker*> DyingEnemies;
 
     FTimerHandle SpawnBurstTimerHandle;
 };

@@ -26,10 +26,11 @@ void ASkeletonAIController::Tick(float DeltaTime)
     {
         if (!SKPawn->IsPawnActive()) return;
         if (const ATowerDefencePawn* AttackTarget = SKPawn->GetAttackTarget();
-            IsValid(AttackTarget) && (AttackTarget->IsA<APlayerTower>() ||
-                                      FVector::Dist2D(SKPawn->GetActorLocation(), AttackTarget->GetActorLocation()) -
-                                              AttackTarget->GetOccupiedRadius() <=
-                                          SKPawn->GetAttackRadius() + KINDA_SMALL_NUMBER))
+            IsValid(AttackTarget) && AttackTarget->IsPawnActive() && AttackTarget->GetHealthComponent()->IsAlive() &&
+            (AttackTarget->IsA<APlayerTower>() ||
+             FVector::Dist2D(SKPawn->GetActorLocation(), AttackTarget->GetActorLocation()) -
+                     AttackTarget->GetOccupiedRadius() <=
+                 SKPawn->GetAttackRadius() + KINDA_SMALL_NUMBER))
             return;
         if (TimeSinceLastVisionUpdate < 1.0f / VisionUpdateFrequency + KINDA_SMALL_NUMBER)
         {

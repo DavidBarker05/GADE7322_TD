@@ -6,6 +6,7 @@
 #include "Perception/AIPerceptionTypes.h"
 #include "TowerDefencePawn.h"
 #include "TowerDefencePawns/AI/ProximityPerception/AISenseConfig_Proximity.h"
+#include "TowerDefencePawns/Components/HealthComponent.h"
 
 ATowerDefencePawnAIController::ATowerDefencePawnAIController()
 {
@@ -51,6 +52,6 @@ void ATowerDefencePawnAIController::OnTargetPerceptionUpdated(AActor* Actor, FAI
     if (ATowerDefencePawn* TDPawn = Cast<ATowerDefencePawn>(Actor))
     {
         if (!Stimulus.WasSuccessfullySensed()) VisiblePawns.Remove(TDPawn);
-        else if (TDPawn->IsPawnActive()) VisiblePawns.AddUnique(TDPawn);
+        else if (TDPawn->IsPawnActive() && TDPawn->GetHealthComponent()->IsAlive()) VisiblePawns.AddUnique(TDPawn);
     }
 }
