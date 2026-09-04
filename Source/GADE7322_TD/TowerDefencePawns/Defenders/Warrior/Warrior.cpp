@@ -48,6 +48,7 @@ void AWarrior::DoOnSetActive(bool bActive)
         SkeletalMesh->SetAnimInstanceClass(bIsFemale ? FemaleAnimationBlueprint : MaleAnimationBlueprint);
         if (Sword) Sword->AttachToSkeleton(SkeletalMesh);
     }
+    else if (Sword) Sword->AttachToComponent(Weapon, FAttachmentTransformRules::SnapToTargetNotIncludingScale);
     SkeletalMesh->SetVisibility(bActive);
     SkeletalMesh->SetComponentTickEnabled(bActive);
     SkeletalMesh->SetCollisionEnabled(bActive ? ECollisionEnabled::QueryAndPhysics : ECollisionEnabled::NoCollision);
