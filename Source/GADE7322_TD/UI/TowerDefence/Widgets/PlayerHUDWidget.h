@@ -32,6 +32,9 @@ public:
 
 protected:
     UFUNCTION()
+    void HandlePauseButtonClicked() const;
+
+    UFUNCTION()
     void HandleWaveButtonClicked();
 
     void RefreshWaveButton(bool bInProgress);

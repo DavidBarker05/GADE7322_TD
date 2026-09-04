@@ -2,6 +2,7 @@
 
 #include "Components/Button.h"
 #include "Components/TextBlock.h"
+#include "Player/TowerDefence/TowerDefencePlayerController.h"
 #include "TowerDefenceGameMode.h"
 #include "UI/TowerDefence/Widgets/PawnManagerWidget.h"
 
@@ -9,6 +10,7 @@ bool UPlayerHUDWidget::Initialize()
 {
     if (!Super::Initialize()) return false;
     if (!(WaveButton && WaveButtonText && PawnManagerWidget)) return false;
+    PauseButton->OnClicked.AddDynamic(this, &UPlayerHUDWidget::HandlePauseButtonClicked);
     WaveButton->OnClicked.AddDynamic(this, &UPlayerHUDWidget::HandleWaveButtonClicked);
     PawnManagerWidget->SetVisibility(ESlateVisibility::Collapsed); // Hidden until something is selected
     return true;
@@ -112,4 +114,9 @@ void UPlayerHUDWidget::OnEventReceived_Implementation(const FName& EventName, co
             PawnManagerWidget->SetVisibility(ESlateVisibility::Collapsed);
         }
     }
+}
+
+void UPlayerHUDWidget::HandlePauseButtonClicked() const
+{
+    if (ATowerDefencePlayerController* TD_PC = GetOwningPlayer<ATowerDefencePlayerController>()) TD_PC->TogglePause();
 }
