@@ -28,5 +28,7 @@ bool AWeapon::AttachToSkeleton(USkeletalMeshComponent* Skeleton, EWeaponHand Han
     }();
     if (SocketName.IsNone() || !Skeleton || !Skeleton->GetSocketByName(SocketName)) return false;
     this->AttachToComponent(Skeleton, FAttachmentTransformRules::SnapToTargetNotIncludingScale, SocketName);
+    SetActorRelativeRotation(AttachmentRotationOffset);
+    SetActorRelativeLocation(AttachmentLocationOffset);
     return true;
 }

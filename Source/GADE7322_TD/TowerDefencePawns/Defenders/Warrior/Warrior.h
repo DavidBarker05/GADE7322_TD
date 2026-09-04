@@ -8,6 +8,7 @@
 
 class AWeapon;
 class UAnimInstance;
+class UChildActorComponent;
 class USkeletalMesh;
 class USkeletalMeshComponent;
 
@@ -44,8 +45,8 @@ public:
 
     float GetAttackRadius() const { return AttackRadius; }
 
-    const AWeapon* GetSword() const { return Sword; }
-    AWeapon* GetSword() { return Sword; }
+    const AWeapon* GetWeapon() const;
+    AWeapon* GetWeapon();
 
 private:
     UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Mesh", meta = (AllowPrivateAccess = true))
@@ -76,7 +77,7 @@ private:
     USkeletalMeshComponent* SkeletalMesh = nullptr;
 
     UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Weapon", meta = (AllowPrivateAccess = true))
-    AWeapon* Sword;
+    UChildActorComponent* Weapon;
 
     UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "AI", meta = (AllowPrivateAccess = true))
     ATowerDefencePawn* CurrentAttackTarget;

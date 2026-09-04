@@ -1,6 +1,7 @@
 // ReSharper disable CppParameterMayBeConst
 #include "TowerDefencePawns/Attackers/Skeleton/SkeletonPawn.h"
 
+#include "Components/ChildActorComponent.h"
 #include "Perception/AIPerceptionComponent.h"
 #include "Perception/AIPerceptionSystem.h"
 #include "TowerDefencePawns/Attackers/Skeleton/AI/SkeletonAIController.h"
@@ -11,9 +12,14 @@ ASkeletonPawn::ASkeletonPawn()
     PawnDisplayName = TEXT("Skeleton");
     SkeletalMesh = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("Skeletal Mesh"));
     SkeletalMesh->SetupAttachment(RootComponent);
-    Sword = CreateDefaultSubobject<AWeapon>(TEXT("Sword"));
+    Weapon = CreateDefaultSubobject<UChildActorComponent>(TEXT("Weapon"));
+    Weapon->SetupAttachment(RootComponent);
     CurrentTeam = EAITeam::Attacker;
 }
+
+const AWeapon* ASkeletonPawn::GetWeapon() const { return Cast<AWeapon>(Weapon ? Weapon->GetChildActor() : nullptr); }
+
+AWeapon* ASkeletonPawn::GetWeapon() { return Cast<AWeapon>(Weapon ? Weapon->GetChildActor() : nullptr); }
 
 void ASkeletonPawn::BeginPlay() { Super::BeginPlay(); }
 
@@ -37,13 +43,17 @@ void ASkeletonPawn::OnDeath(TFunction<void()>&& Func)
 
 void ASkeletonPawn::DoOnSetActive(bool bActive)
 {
-    if (bActive) Sword->AttachToSkeleton(SkeletalMesh);
+    AWeapon* Sword = GetWeapon();
+    if (bActive && Sword) Sword->AttachToSkeleton(SkeletalMesh);
     SkeletalMesh->SetVisibility(bActive);
     SkeletalMesh->SetComponentTickEnabled(bActive);
     SkeletalMesh->SetCollisionEnabled(bActive ? ECollisionEnabled::QueryAndPhysics : ECollisionEnabled::NoCollision);
     SkeletalMesh->SetCollisionResponseToAllChannels(bActive ? ECR_Block : ECR_Ignore);
-    Sword->GetMesh()->SetVisibility(bActive);
-    Sword->GetMesh()->SetComponentTickEnabled(bActive && Sword->DoesMeshTick());
+    if (Sword)
+    {
+        Sword->GetMesh()->SetVisibility(bActive);
+        Sword->GetMesh()->SetComponentTickEnabled(bActive && Sword->DoesMeshTick());
+    }
     bCanAttack = bActive;
 }
 

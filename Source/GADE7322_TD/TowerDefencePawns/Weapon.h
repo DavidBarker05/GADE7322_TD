@@ -32,12 +32,17 @@ public:
     bool AttachToSkeleton(USkeletalMeshComponent* Skeleton, EWeaponHand Hand = EWeaponHand::Right);
 
 private:
-    // Pivot point for weapon
     UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = true))
     USceneComponent* Root;
 
     UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = true))
     UStaticMeshComponent* WeaponMesh;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon", meta = (AllowPrivateAccess = true))
+    FRotator AttachmentRotationOffset = FRotator::ZeroRotator;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon", meta = (AllowPrivateAccess = true))
+    FVector AttachmentLocationOffset = FVector::ZeroVector;
 
     bool bMeshTicks;
 };

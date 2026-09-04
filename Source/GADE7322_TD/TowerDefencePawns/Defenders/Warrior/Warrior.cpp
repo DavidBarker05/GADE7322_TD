@@ -1,6 +1,7 @@
 // ReSharper disable CppParameterMayBeConst
 #include "TowerDefencePawns/Defenders/Warrior/Warrior.h"
 
+#include "Components/ChildActorComponent.h"
 #include "Perception/AIPerceptionComponent.h"
 #include "TowerDefencePawns/Defenders/Warrior/AI/WarriorAIController.h"
 #include "TowerDefencePawns/Weapon.h"
@@ -10,9 +11,14 @@ AWarrior::AWarrior()
     PawnDisplayName = TEXT("Warrior");
     SkeletalMesh = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("Skeletal Mesh"));
     SkeletalMesh->SetupAttachment(RootComponent);
-    Sword = CreateDefaultSubobject<AWeapon>(TEXT("Sword"));
+    Weapon = CreateDefaultSubobject<UChildActorComponent>(TEXT("Weapon"));
+    Weapon->SetupAttachment(RootComponent);
     CurrentTeam = EAITeam::Defender;
 }
+
+const AWeapon* AWarrior::GetWeapon() const { return Cast<AWeapon>(Weapon ? Weapon->GetChildActor() : nullptr); }
+
+AWeapon* AWarrior::GetWeapon() { return Cast<AWeapon>(Weapon ? Weapon->GetChildActor() : nullptr); }
 
 void AWarrior::StartAttack()
 {
@@ -34,19 +40,23 @@ void AWarrior::OnDeath(TFunction<void()>&& Func)
 
 void AWarrior::DoOnSetActive(bool bActive)
 {
+    AWeapon* Sword = GetWeapon();
     if (bActive)
     {
         bIsFemale = FMath::RandBool();
         SkeletalMesh->SetSkeletalMesh(bIsFemale ? FemaleMesh : MaleMesh);
         SkeletalMesh->SetAnimInstanceClass(bIsFemale ? FemaleAnimationBlueprint : MaleAnimationBlueprint);
-        Sword->AttachToSkeleton(SkeletalMesh);
+        if (Sword) Sword->AttachToSkeleton(SkeletalMesh);
     }
     SkeletalMesh->SetVisibility(bActive);
     SkeletalMesh->SetComponentTickEnabled(bActive);
     SkeletalMesh->SetCollisionEnabled(bActive ? ECollisionEnabled::QueryAndPhysics : ECollisionEnabled::NoCollision);
     SkeletalMesh->SetCollisionResponseToAllChannels(bActive ? ECR_Block : ECR_Ignore);
-    Sword->GetMesh()->SetVisibility(bActive);
-    Sword->GetMesh()->SetComponentTickEnabled(bActive && Sword->DoesMeshTick());
+    if (Sword)
+    {
+        Sword->GetMesh()->SetVisibility(bActive);
+        Sword->GetMesh()->SetComponentTickEnabled(bActive && Sword->DoesMeshTick());
+    }
     bCanAttack = bActive;
 }
 
