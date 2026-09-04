@@ -1,7 +1,3 @@
-ui
-
-navmesh or whatever it is called in unreal
-
 health and damage for all pawns
 
 playtest

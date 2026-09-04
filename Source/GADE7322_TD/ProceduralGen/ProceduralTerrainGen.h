@@ -61,6 +61,9 @@ public:
     UFUNCTION(BlueprintCallable, Category = "Terrain Generation")
     void BakeMesh();
 
+    UFUNCTION(BlueprintCallable, Category = "Terrain Generation")
+    void RebuildNavMesh() const;
+
     UFUNCTION(BlueprintPure, Category = "Defender Spots")
     const TArray<ADefenderSpot*>& GetDefenderSpots() const { return DefenderSpots; }
 

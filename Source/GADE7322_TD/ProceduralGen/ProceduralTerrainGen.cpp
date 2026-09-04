@@ -3,6 +3,7 @@
 
 #include "DrawDebugHelpers.h"
 #include "KismetProceduralMeshLibrary.h"
+#include "NavigationSystem.h"
 #include "PhysicsEngine/BodySetup.h"
 #include "ProceduralMeshComponent.h"
 #include "ProceduralMeshConversion.h"
@@ -34,6 +35,7 @@ void AProceduralTerrainGen::BeginPlay()
     GenerateTerrain();
     SpawnDefenderSpots();
     BakeMesh();
+    RebuildNavMesh(); // After baking, not before - geometry's identical either way, but this only needs doing once
 }
 
 void AProceduralTerrainGen::GeneratePaths()
@@ -510,6 +512,11 @@ void AProceduralTerrainGen::BakeMesh()
     TerrainMesh->ClearAllMeshSections();
     TerrainMesh->SetVisibility(false);
     TerrainMesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+}
+
+void AProceduralTerrainGen::RebuildNavMesh() const
+{
+    if (UWorld* World = GetWorld()) FNavigationSystem::Build(*World);
 }
 
 void AProceduralTerrainGen::DrawDebugForDefenderSpots() const
