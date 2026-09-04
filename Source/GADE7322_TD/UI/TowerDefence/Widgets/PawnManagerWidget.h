@@ -3,7 +3,6 @@
 #include "CoreMinimal.h"
 
 #include "Blueprint/UserWidget.h"
-#include "Events/EventListener.h"
 
 #include "PawnManagerWidget.generated.h"
 
@@ -14,37 +13,30 @@ class UButton;
 class UDefenderShopEntryWidget;
 class UScrollBox;
 class UTextBlock;
+class UVerticalBox;
 class UWidget;
 
-// Part of the HUD. Hidden until the player selects a DefenderSpot, Defender or the PlayerTower, then shows
-// buy/sell/heal/switch controls and stats for whatever is selected
 UCLASS(Abstract)
-class GADE7322_TD_API UPawnManagerWidget : public UUserWidget,
-                                           public IEventListener
+class GADE7322_TD_API UPawnManagerWidget : public UUserWidget
 {
     GENERATED_BODY()
-
-    EVENTS_TO_LISTEN_TO(TEXT("UpdateHUDEvent"))
 
 public:
     virtual bool Initialize() override;
 
 protected:
-    virtual void NativeOnInitialized() override;
-
-    virtual void NativeDestruct() override;
-
     virtual void NativeTick(const FGeometry& MyGeometry, float DeltaTime) override;
 
 public:
-    UFUNCTION(BlueprintCallable)
-    virtual void OnEventReceived_Implementation(const FName& EventName, const TArray<FAny>& Params) override;
-
-protected:
     void SetTarget(AActor* NewTarget);
 
+    // Also self-hides (unlike SetTarget, which leaves visibility to the caller) - covers both an
+    // explicit Deselect and RefreshDisplay() finding the current target has gone invalid on its own
     void ClearTarget();
 
+    void UpdateGold(int32 NewGold);
+
+protected:
     void RefreshDisplay();
 
     void ShowDefenderInfo(ADefender* Defender);
@@ -102,8 +94,12 @@ protected:
     UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
     UWidget* ShopPanel;
 
+    // Just the scrollable outer frame
     UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
     UScrollBox* DefenderShopScrollBox;
+
+    UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
+    UVerticalBox* DefenderShopEntriesBox;
 
     // Shown when the PlayerTower is selected
     UPROPERTY(BlueprintReadOnly, meta = (BindWidget))

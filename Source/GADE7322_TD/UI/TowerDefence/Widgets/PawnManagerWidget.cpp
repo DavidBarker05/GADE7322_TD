@@ -3,7 +3,9 @@
 #include "Components/Button.h"
 #include "Components/ScrollBox.h"
 #include "Components/TextBlock.h"
+#include "Components/VerticalBox.h"
 #include "Components/Widget.h"
+#include "Events/EventBus.h"
 #include "Player/TowerDefence/TowerDefencePlayer.h"
 #include "TowerDefencePawns/Components/DamageComponent.h"
 #include "TowerDefencePawns/Components/HealthComponent.h"
@@ -16,8 +18,8 @@ bool UPawnManagerWidget::Initialize()
 {
     if (!Super::Initialize()) return false;
     if (!(DefenderInfoPanel && DefenderNameText && DefenderHealthText && DefenderDamageText && SellButton &&
-          SellAmountText && SwitchButton && ShopPanel && DefenderShopScrollBox && TowerPanel && TowerNameText &&
-          TowerHealthText && TowerDamageText && HealButton && HealButtonText))
+          SellAmountText && SwitchButton && ShopPanel && DefenderShopScrollBox && DefenderShopEntriesBox &&
+          TowerPanel && TowerNameText && TowerHealthText && TowerDamageText && HealButton && HealButtonText))
         return false;
     SellButton->OnClicked.AddDynamic(this, &UPawnManagerWidget::HandleSellDefender);
     SwitchButton->OnClicked.AddDynamic(this, &UPawnManagerWidget::HandleSwitchTarget);
@@ -26,56 +28,10 @@ bool UPawnManagerWidget::Initialize()
     return true;
 }
 
-void UPawnManagerWidget::NativeOnInitialized()
-{
-    Super::NativeOnInitialized();
-    SUBSCRIBE_TO_EVENTS();
-}
-
-void UPawnManagerWidget::NativeDestruct()
-{
-    UNSUBSCRIBE_FROM_EVENTS();
-    Super::NativeDestruct();
-}
-
 void UPawnManagerWidget::NativeTick(const FGeometry& MyGeometry, float DeltaTime)
 {
     Super::NativeTick(MyGeometry, DeltaTime);
     if (CurrentTarget.IsValid()) RefreshDisplay();
-}
-
-void UPawnManagerWidget::OnEventReceived_Implementation(const FName& EventName, const TArray<FAny>& Params)
-{
-    if (EventName != TEXT("UpdateHUDEvent") || !PARAMS_ARE_VALID || Params.Num() < 1) return;
-    const FName* ElemNamePtr = Params[0].Get<FName>();
-    if (!ElemNamePtr) return;
-    const FName ElemName = *ElemNamePtr;
-    const int32 NumParams = Params.Num();
-    if (ElemName == TEXT("Currency"))
-    {
-        if (NumParams != 2) return;
-        if (const int32* Amount = Params[1].Get<int32>())
-        {
-            CachedGold = *Amount;
-            RefreshShopAffordability();
-        }
-    }
-    else if (ElemName == TEXT("PawnManager"))
-    {
-        if (NumParams < 2) return;
-        const FName* ActionPtr = Params[1].Get<FName>();
-        if (!ActionPtr) return;
-        if (*ActionPtr == TEXT("Select"))
-        {
-            if (NumParams != 3) return;
-            if (AActor* const* ActorPtr = Params[2].Get<AActor*>()) SetTarget(*ActorPtr);
-        }
-        else if (*ActionPtr == TEXT("Deselect"))
-        {
-            if (NumParams != 2) return;
-            ClearTarget();
-        }
-    }
 }
 
 void UPawnManagerWidget::SetTarget(AActor* NewTarget)
@@ -86,7 +42,6 @@ void UPawnManagerWidget::SetTarget(AActor* NewTarget)
         return;
     }
     CurrentTarget = NewTarget;
-    SetVisibility(ESlateVisibility::Visible);
     RefreshDisplay();
 }
 
@@ -97,6 +52,14 @@ void UPawnManagerWidget::ClearTarget()
     CurrentDisplayedTower = nullptr;
     CurrentShopSpot = nullptr;
     SetVisibility(ESlateVisibility::Collapsed);
+}
+
+void UPawnManagerWidget::UpdateGold(int32 NewGold)
+{
+    CachedGold = NewGold;
+    RefreshShopAffordability();
+    if (IsValid(CurrentDisplayedTower))
+        HealButton->SetIsEnabled(CachedGold >= CurrentDisplayedTower->GetHealCostPerPurchase());
 }
 
 void UPawnManagerWidget::RefreshDisplay()
@@ -199,8 +162,8 @@ void UPawnManagerWidget::ShowShop(ADefenderSpot* Spot)
 
 void UPawnManagerWidget::PopulateShop()
 {
-    if (!DefenderShopScrollBox || !DefenderShopEntryWidgetClass) return;
-    DefenderShopScrollBox->ClearChildren();
+    if (!DefenderShopEntriesBox || !DefenderShopEntryWidgetClass) return;
+    DefenderShopEntriesBox->ClearChildren();
     ShopEntries.Reset();
     for (const TSubclassOf<ADefender>& DefenderClass : AvailableDefenders)
     {
@@ -209,9 +172,10 @@ void UPawnManagerWidget::PopulateShop()
         if (!Entry) continue;
         Entry->Setup(DefenderClass, CachedGold);
         Entry->OnBuyClicked.AddDynamic(this, &UPawnManagerWidget::HandleBuyDefender);
-        DefenderShopScrollBox->AddChild(Entry);
+        DefenderShopEntriesBox->AddChildToVerticalBox(Entry);
         ShopEntries.Add(Entry);
     }
+    if (DefenderShopScrollBox) DefenderShopScrollBox->ScrollToStart();
 }
 
 void UPawnManagerWidget::RefreshShopAffordability()

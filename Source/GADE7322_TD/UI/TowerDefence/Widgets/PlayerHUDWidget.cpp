@@ -3,12 +3,14 @@
 #include "Components/Button.h"
 #include "Components/TextBlock.h"
 #include "TowerDefenceGameMode.h"
+#include "UI/TowerDefence/Widgets/PawnManagerWidget.h"
 
 bool UPlayerHUDWidget::Initialize()
 {
     if (!Super::Initialize()) return false;
-    if (!(WaveButton && WaveButtonText)) return false;
+    if (!(WaveButton && WaveButtonText && PawnManagerWidget)) return false;
     WaveButton->OnClicked.AddDynamic(this, &UPlayerHUDWidget::HandleWaveButtonClicked);
+    PawnManagerWidget->SetVisibility(ESlateVisibility::Collapsed); // Hidden until something is selected
     return true;
 }
 
@@ -85,7 +87,10 @@ void UPlayerHUDWidget::OnEventReceived_Implementation(const FName& EventName, co
     {
         if (NumParams != 2) return;
         if (const int32* Amount = Params[1].Get<int32>())
+        {
             CurrencyDisplay->SetText(FText::FromString(FString::Printf(TEXT("Gold: %d"), *Amount)));
+            PawnManagerWidget->UpdateGold(*Amount);
+        }
     }
     else if (ElemName == TEXT("PawnManager"))
     {
@@ -95,10 +100,16 @@ void UPlayerHUDWidget::OnEventReceived_Implementation(const FName& EventName, co
         if (Action == TEXT("Select"))
         {
             if (NumParams != 3) return;
+            AActor* const* ActorPtr = Params[2].Get<AActor*>();
+            if (!ActorPtr || !IsValid(*ActorPtr)) return;
+            PawnManagerWidget->SetVisibility(ESlateVisibility::Visible);
+            PawnManagerWidget->SetTarget(*ActorPtr);
         }
         else if (Action == TEXT("Deselect"))
         {
             if (NumParams != 2) return;
+            PawnManagerWidget->ClearTarget();
+            PawnManagerWidget->SetVisibility(ESlateVisibility::Collapsed);
         }
     }
 }
