@@ -19,6 +19,9 @@ AProceduralTerrainGen::AProceduralTerrainGen()
     SetRootComponent(TerrainMesh);
     TerrainMesh->SetMobility(EComponentMobility::Static); // Never moves after BeginPlay, lets the engine optimise it
     TerrainMesh->bUseAsyncCooking = false;
+    TerrainMesh->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
+    TerrainMesh->SetCollisionObjectType(ECC_WorldStatic);
+    TerrainMesh->SetCollisionResponseToAllChannels(ECR_Block);
 
     // Starts hidden/non-colliding with no mesh assigned, BakeMesh() fills it in and swaps it for TerrainMesh
     BakedTerrainMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("BakedTerrainMesh"));
@@ -270,6 +273,8 @@ void AProceduralTerrainGen::GenerateTerrain() const
     UKismetProceduralMeshLibrary::CalculateTangentsForMesh(Vertices, Triangles, UVs, Normals, Tangents);
 
     TerrainMesh->CreateMeshSection_LinearColor(0, Vertices, Triangles, Normals, UVs, VertexColors, Tangents, true);
+
+    if (TerrainMaterial) TerrainMesh->SetMaterial(0, TerrainMaterial);
 
     UE_LOG(LogCustom, Display, TEXT("Generated Terrain"));
 }
@@ -546,7 +551,8 @@ void AProceduralTerrainGen::BakeMesh()
 #else
 void AProceduralTerrainGen::BakeMesh()
 {
-    TD_LOG_WARN(TEXT("AProceduralTerrainGen::BakeMesh -> disabled outside the editor (uses editor-only UStaticMesh APIs), terrain stays as the raw procedural mesh"));
+    TD_LOG_WARN(TEXT(
+        "AProceduralTerrainGen::BakeMesh -> disabled outside the editor (uses editor-only UStaticMesh APIs), terrain stays as the raw procedural mesh"));
 }
 #endif
 
