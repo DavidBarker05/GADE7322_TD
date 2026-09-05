@@ -1,5 +1,3 @@
-models and materials (defender spot, player circle, vegetation if have time)
-
 tower beam
 
 lose screen
