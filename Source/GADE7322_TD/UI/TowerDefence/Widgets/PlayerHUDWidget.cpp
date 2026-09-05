@@ -2,6 +2,8 @@
 
 #include "Components/Button.h"
 #include "Components/TextBlock.h"
+#include "Player/TowerDefence/Components/CurrencyComponent.h"
+#include "Player/TowerDefence/TowerDefencePlayer.h"
 #include "Player/TowerDefence/TowerDefencePlayerController.h"
 #include "TowerDefenceGameMode.h"
 #include "UI/TowerDefence/Widgets/PawnManagerWidget.h"
@@ -20,6 +22,12 @@ void UPlayerHUDWidget::NativeOnInitialized()
 {
     Super::NativeOnInitialized();
     SUBSCRIBE_TO_EVENTS();
+    if (const ATowerDefencePlayer* TDP = GetOwningPlayerPawn<ATowerDefencePlayer>())
+    {
+        const int32 Amount = TDP->GetCurrencyComponent()->GetStartingCurrency();
+        CurrencyDisplay->SetText(FText::FromString(FString::Printf(TEXT("Gold: %d"), Amount)));
+        PawnManagerWidget->UpdateGold(Amount);
+    }
     if (const ATowerDefenceGameMode* GameMode =
             GetWorld() ? GetWorld()->GetAuthGameMode<ATowerDefenceGameMode>() : nullptr)
     {

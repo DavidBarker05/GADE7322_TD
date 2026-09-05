@@ -40,6 +40,9 @@ public:
     const AActor* GetCurrentFocusTarget() const { return CurrentFocusTarget; }
     AActor* GetCurrentFocusTarget() { return CurrentFocusTarget; }
 
+    const UCurrencyComponent* GetCurrencyComponent() const { return CurrencyComponent; }
+    UCurrencyComponent* GetCurrencyComponent() { return CurrencyComponent; }
+
     void DoMove(const FInputActionValue& Value);
 
     void DoRotate(const FInputActionValue& Value);
