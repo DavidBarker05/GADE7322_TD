@@ -9,6 +9,7 @@
 #include "TowerDefenceGameMode.generated.h"
 
 class AAttacker;
+class APlayerTower;
 class AProceduralTerrainGen;
 
 UCLASS()
@@ -49,6 +50,8 @@ protected:
     void SpawnEnemyOnRandomPath();
 
     void HandleEnemyDeath(AAttacker* Enemy);
+
+    void HandleTowerDeath(APlayerTower* Tower);
 
     void CheckWaveComplete();
 

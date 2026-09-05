@@ -6,6 +6,7 @@
 #include "Kismet/KismetSystemLibrary.h"
 #include "Player/TowerDefence/TowerDefencePlayerController.h"
 #include "Settings/GameSettingsSubsystem.h"
+#include "TowerDefencePawns/TowerDefencePawnFactory.h"
 #include "UI/Widgets/ControlsWidget.h"
 
 bool UPauseScreenWidget::Initialize()
@@ -43,6 +44,7 @@ void UPauseScreenWidget::ResumeGame() const
 
 void UPauseScreenWidget::RestartGame() const
 {
+    if (TOWER_DEFENCE_PAWN_FACTORY_EXISTS) CLEAR_PAWN_POOLS();
     const FString CurrentMapName = UGameplayStatics::GetCurrentLevelName(this, true);
     UGameplayStatics::OpenLevel(this, FName(*CurrentMapName));
 }

@@ -6,6 +6,7 @@
 
 #include "TowerDefenceHUD.generated.h"
 
+class ULoseScreenWidget;
 class UPauseScreenWidget;
 class UPlayerHUDWidget;
 
@@ -30,6 +31,9 @@ public:
     UFUNCTION(BlueprintCallable, Category = "UI")
     void HidePauseScreen() const;
 
+    UFUNCTION(BlueprintCallable, Category = "UI")
+    void ShowLoseScreen() const;
+
 private:
     UPROPERTY(EditDefaultsOnly, Category = "UI", meta = (AllowPrivateAccess = true))
     TSubclassOf<UPauseScreenWidget> PauseScreenWidgetClass;
@@ -42,4 +46,10 @@ private:
 
     UPROPERTY(BlueprintReadOnly, Category = "UI", meta = (AllowPrivateAccess = true))
     UPlayerHUDWidget* PlayerHUDWidgetInstance;
+
+    UPROPERTY(EditDefaultsOnly, Category = "UI", meta = (AllowPrivateAccess = true))
+    TSubclassOf<ULoseScreenWidget> LoseScreenWidgetClass;
+
+    UPROPERTY(BlueprintReadOnly, Category = "UI", meta = (AllowPrivateAccess = true))
+    ULoseScreenWidget* LoseScreenWidgetInstance;
 };

@@ -4,8 +4,10 @@
 #include "ProceduralGen/ProceduralTerrainGen.h"
 #include "Settings/GameSettingsSubsystem.h"
 #include "TowerDefencePawns/Attackers/Attacker.h"
+#include "TowerDefencePawns/Tower/PlayerTower.h"
 #include "TowerDefencePawns/TowerDefencePawn.h"
 #include "TowerDefencePawns/TowerDefencePawnFactory.h"
+#include "UI/TowerDefence/TowerDefenceHUD.h"
 
 void ATowerDefenceGameMode::BeginPlay()
 {
@@ -37,6 +39,7 @@ void ATowerDefenceGameMode::OnEventReceived_Implementation(const FName& EventNam
     ATowerDefencePawn* const* DeadPawnPtr = Params[0].Get<ATowerDefencePawn*>();
     if (!DeadPawnPtr) return;
     if (AAttacker* Enemy = Cast<AAttacker>(*DeadPawnPtr)) HandleEnemyDeath(Enemy);
+    else if (APlayerTower* Tower = Cast<APlayerTower>(*DeadPawnPtr)) HandleTowerDeath(Tower);
 }
 
 void ATowerDefenceGameMode::StartNextWave()
@@ -108,6 +111,16 @@ void ATowerDefenceGameMode::HandleEnemyDeath(AAttacker* Enemy)
                 CheckWaveComplete();
             }
         });
+}
+
+void ATowerDefenceGameMode::HandleTowerDeath(APlayerTower* Tower)
+{
+    if (!IsValid(Tower)) return;
+    if (APlayerController* PC = UGameplayStatics::GetPlayerController(this, 0))
+    {
+        PC->SetPause(true);
+        if (ATowerDefenceHUD* HUD = Cast<ATowerDefenceHUD>(PC->GetHUD())) HUD->ShowLoseScreen();
+    }
 }
 
 void ATowerDefenceGameMode::CheckWaveComplete()

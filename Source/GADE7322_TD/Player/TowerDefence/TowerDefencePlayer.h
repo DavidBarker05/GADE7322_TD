@@ -2,7 +2,6 @@
 
 #include "CoreMinimal.h"
 
-#include "Events/EventListener.h"
 #include "GameFramework/Pawn.h"
 
 #include "TowerDefencePlayer.generated.h"
@@ -17,19 +16,14 @@ class UInputAction;
 class USpringArmComponent;
 
 UCLASS(Abstract)
-class GADE7322_TD_API ATowerDefencePlayer : public APawn,
-                                            public IEventListener
+class GADE7322_TD_API ATowerDefencePlayer : public APawn
 {
     GENERATED_BODY()
-
-    EVENTS_TO_LISTEN_TO(TEXT("DeathEvent"))
 
 public:
     ATowerDefencePlayer();
 
     virtual void BeginPlay() override;
-
-    virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
 
     virtual void Tick(float DeltaTime) override;
 
@@ -37,9 +31,6 @@ protected:
     virtual void SetupPlayerInputComponent(UInputComponent* PlayerInputComponent) override;
 
 public:
-    UFUNCTION(BlueprintCallable)
-    virtual void OnEventReceived_Implementation(const FName& EventName, const TArray<FAny>& Params) override;
-
     UFUNCTION(BlueprintCallable)
     void SwitchBetweenSpotAndDefender();
 

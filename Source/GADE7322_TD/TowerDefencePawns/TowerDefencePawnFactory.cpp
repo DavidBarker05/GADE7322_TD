@@ -7,9 +7,14 @@
 
 void UTowerDefencePawnFactory::Deinitialize()
 {
+    ClearAllPools();
+    Super::Deinitialize();
+}
+
+void UTowerDefencePawnFactory::ClearAllPools()
+{
     AvailablePawnPools.Empty();
     UnavailablePawnPools.Empty();
-    Super::Deinitialize();
 }
 
 ATowerDefencePawn* UTowerDefencePawnFactory::CreatePawn(const TSubclassOf<ATowerDefencePawn>& TowerDefencePawnBlueprint,

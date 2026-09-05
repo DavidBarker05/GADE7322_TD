@@ -33,6 +33,10 @@
 #define DESTROY_PAWN(TowerDefencePawn) TowerDefencePawnFactory->DestroyPawn(TowerDefencePawn)
 #endif
 
+#ifndef CLEAR_PAWN_POOLS
+#define CLEAR_PAWN_POOLS() TowerDefencePawnFactory->ClearAllPools()
+#endif
+
 class ATowerDefencePawn;
 
 UCLASS()
@@ -49,6 +53,9 @@ public:
 
     UFUNCTION(BlueprintCallable)
     void DestroyPawn(ATowerDefencePawn* TowerDefencePawn);
+
+    UFUNCTION(BlueprintCallable)
+    void ClearAllPools();
 
 private:
     void CreatePool(const TSubclassOf<ATowerDefencePawn>& TowerDefencePawnBlueprint);

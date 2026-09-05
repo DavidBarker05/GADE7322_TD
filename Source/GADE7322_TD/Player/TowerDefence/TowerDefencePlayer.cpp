@@ -34,14 +34,7 @@ ATowerDefencePlayer::ATowerDefencePlayer()
 void ATowerDefencePlayer::BeginPlay()
 {
     Super::BeginPlay();
-    SUBSCRIBE_TO_EVENTS();
     CurrencyComponent->ResetCurrency();
-}
-
-void ATowerDefencePlayer::EndPlay(const EEndPlayReason::Type EndPlayReason)
-{
-    UNSUBSCRIBE_FROM_EVENTS();
-    Super::EndPlay(EndPlayReason);
 }
 
 void ATowerDefencePlayer::Tick(float DeltaTime)
@@ -79,12 +72,6 @@ void ATowerDefencePlayer::SetupPlayerInputComponent(UInputComponent* PlayerInput
         EnhancedInputComponent->BindAction(PauseAction, ETriggerEvent::Started, this, &ATowerDefencePlayer::DoPause);
 #endif
     }
-}
-
-void ATowerDefencePlayer::OnEventReceived_Implementation(const FName& EventName, const TArray<FAny>& Params)
-{
-    if (EVENT_MATCHES(TEXT("DeathEvent"), 1) && PARAMS_ARE_VALID && PARAMS_ARE_CORRECT_TYPES(APlayerTower*))
-        TD_LOG_INFO(TEXT("Player is dead"));
 }
 
 void ATowerDefencePlayer::SwitchBetweenSpotAndDefender()

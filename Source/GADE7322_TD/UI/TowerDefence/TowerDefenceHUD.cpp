@@ -1,6 +1,7 @@
 #include "UI/TowerDefence/TowerDefenceHUD.h"
 
 #include "Blueprint/UserWidget.h"
+#include "UI/TowerDefence/Widgets/LoseScreenWidget.h"
 #include "UI/TowerDefence/Widgets/PauseScreenWidget.h"
 #include "UI/TowerDefence/Widgets/PlayerHUDWidget.h"
 
@@ -15,6 +16,7 @@ void ATowerDefenceHUD::BeginPlay()
     PC->bShowMouseCursor = true;
     PlayerHUDWidgetInstance = CreateWidget<UPlayerHUDWidget>(PC, PlayerHUDWidgetClass);
     PauseScreenWidgetInstance = CreateWidget<UPauseScreenWidget>(PC, PauseScreenWidgetClass);
+    LoseScreenWidgetInstance = CreateWidget<ULoseScreenWidget>(PC, LoseScreenWidgetClass);
     ShowPlayerHUD();
 }
 
@@ -40,4 +42,10 @@ void ATowerDefenceHUD::HidePauseScreen() const
 {
     if (!PauseScreenWidgetInstance) return;
     if (PauseScreenWidgetInstance->IsInViewport()) PauseScreenWidgetInstance->RemoveFromParent();
+}
+
+void ATowerDefenceHUD::ShowLoseScreen() const
+{
+    if (!LoseScreenWidgetInstance) return;
+    if (!LoseScreenWidgetInstance->IsInViewport()) LoseScreenWidgetInstance->AddToViewport();
 }
