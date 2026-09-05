@@ -58,7 +58,15 @@ void ASkeletonPawn::OnDeath(TFunction<void()>&& Func)
 
 void ASkeletonPawn::DoOnSetActive(bool bActive)
 {
-    if (bActive) CurrentAttackTarget = nullptr;
+    if (bActive)
+    {
+        CurrentAttackTarget = nullptr;
+        if (UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance())
+        {
+            AnimInstance->StopAllMontages(0.0f);
+            AnimInstance->InitializeAnimation();
+        }
+    }
     AWeapon* Sword = GetWeapon();
     if (bActive && Sword) Sword->AttachToSkeleton(GetMesh());
     GetMesh()->SetVisibility(bActive);

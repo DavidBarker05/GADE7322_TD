@@ -1,9 +1,5 @@
-health and damage for all pawns
+models and materials (defender spot, player circle, vegetation if have time)
 
-playtest
+tower beam
 
-models and materials (defender spot, player circle, sword for skeleton, vegetation if have time)
-
-health bars
-
-damage flash
+lose screen

@@ -19,11 +19,7 @@ EStateTreeRunStatus FMaintainDistanceToTargetTask::EnterState(FStateTreeExecutio
         TD_LOG_ERROR(TEXT("FMaintainDistanceToTargetTask::EnterState -> Actor context is nullptr"));
         return EStateTreeRunStatus::Failed;
     }
-    if (!IsValid(Target))
-    {
-        TD_LOG_INFO(TEXT("FMaintainDistanceToTargetTask::EnterState -> %s has no valid Target"), *Actor->GetName());
-        return EStateTreeRunStatus::Failed;
-    }
+    if (!IsValid(Target)) return EStateTreeRunStatus::Failed;
     const float CurrentEdgeDist =
         FVector::Dist2D(Actor->GetActorLocation(), Target->GetActorLocation()) - TargetOccupiedRadius;
     constexpr float RangeTolerance = 10.0f;

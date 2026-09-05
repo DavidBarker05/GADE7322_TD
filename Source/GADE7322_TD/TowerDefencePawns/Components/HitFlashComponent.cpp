@@ -11,6 +11,7 @@ void UHitFlashComponent::BindMaterials()
     {
         UMeshComponent* MC = Cast<UMeshComponent>(Ref.GetComponent(Owner));
         if (!IsValid(MC)) continue;
+        MC->EmptyOverrideMaterials();
         for (int32 i = 0; i < MC->GetNumMaterials(); ++i)
         {
             UMaterialInterface* MI = MC->GetMaterial(i);
@@ -24,6 +25,7 @@ void UHitFlashComponent::BindMaterials()
 
 void UHitFlashComponent::UnbindMaterials()
 {
+    EndFlash();
     if (const UWorld* World = GetWorld()) World->GetTimerManager().ClearTimer(FlashHandle);
     FlashMaterials.Empty();
 }

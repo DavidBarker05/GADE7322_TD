@@ -60,6 +60,11 @@ void AWarrior::DoOnSetActive(bool bActive)
         bIsFemale = FMath::RandBool();
         GetMesh()->SetSkeletalMesh(bIsFemale ? FemaleMesh : MaleMesh);
         GetMesh()->SetAnimInstanceClass(bIsFemale ? FemaleAnimationBlueprint : MaleAnimationBlueprint);
+        if (UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance())
+        {
+            AnimInstance->StopAllMontages(0.0f);
+            AnimInstance->InitializeAnimation();
+        }
         if (Sword) Sword->AttachToSkeleton(GetMesh());
         HitFlashComponent->BindMaterials();
     }

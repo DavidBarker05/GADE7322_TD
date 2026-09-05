@@ -45,7 +45,7 @@ public:
 
 protected:
     UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Currency",
-              meta = (AllowPrivateAccess = true, ClampMin = 0, ClampMax = 0))
+              meta = (AllowPrivateAccess = true, ClampMin = 0, UIMin = 0))
     int32 CurrencyOnDeath;
 
     UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "AI", meta = (AllowPrivateAccess = true))

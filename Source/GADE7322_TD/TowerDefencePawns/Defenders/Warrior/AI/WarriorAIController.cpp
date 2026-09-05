@@ -1,7 +1,6 @@
 // ReSharper disable CppParameterMayBeConst
 #include "TowerDefencePawns/Defenders/Warrior/AI/WarriorAIController.h"
 
-#include "CustomLog.h"
 #include "Perception/AIPerceptionTypes.h"
 #include "TargetSelectionFunctions.h"
 #include "TowerDefencePawns/AI/ProximityPerception/AISenseConfig_Proximity.h"
@@ -43,8 +42,6 @@ void AWarriorAIController::Tick(float DeltaTime)
         }
         TimeSinceLastVisionUpdate = 0.0f;
         ATowerDefencePawn* Closest = SelectClosestTarget(GetVisiblePawns(), WPawn);
-        TD_LOG_INFO(TEXT("AWarriorAIController::Tick -> %s VisiblePawns.Num() = %d, selected target = %s"),
-                    *WPawn->GetName(), GetVisiblePawns().Num(), Closest ? *Closest->GetName() : TEXT("nullptr"));
         WPawn->SetAttackTarget(Closest);
     }
 }
