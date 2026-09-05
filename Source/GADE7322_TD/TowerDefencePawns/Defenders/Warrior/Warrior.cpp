@@ -10,6 +10,7 @@
 AWarrior::AWarrior()
 {
     PawnDisplayName = TEXT("Warrior");
+    OccupiedRadius = 40.0f;
     Weapon = CreateDefaultSubobject<UChildActorComponent>(TEXT("Weapon"));
     Weapon->SetupAttachment(RootComponent);
     CurrentTeam = EAITeam::Defender;

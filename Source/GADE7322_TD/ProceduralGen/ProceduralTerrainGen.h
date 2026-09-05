@@ -126,7 +126,7 @@ protected:
     int32 Seed = 0;
 
     UPROPERTY(EditAnywhere, Category = "Terrain Generation|Debug")
-    bool bDrawDebugPaths = true;
+    bool bDrawDebugPaths = false;
 
     UPROPERTY(EditAnywhere, Category = "Terrain Generation|Debug", meta = (EditCondition = "bDrawDebugPaths"))
     float DebugDrawDuration = 30.0f;
@@ -137,7 +137,7 @@ protected:
 
     // World units of vertical relief added by noise, before path flattening
     UPROPERTY(EditAnywhere, Category = "Terrain Mesh", meta = (ClampMin = 0.0, UIMin = 0.0))
-    float HeightAmplitude = 600.0f;
+    float HeightAmplitude = 250.0f;
 
     // Larger = more gradual hills (lower frequency noise)
     UPROPERTY(EditAnywhere, Category = "Terrain Mesh", meta = (ClampMin = 100.0, UIMin = 100.0))
@@ -145,17 +145,17 @@ protected:
 
     // Number of fractal noise layers combined together (higher = rougher/more detailed terrain)
     UPROPERTY(EditAnywhere, Category = "Terrain Mesh", meta = (ClampMin = 1, UIMin = 1, ClampMax = 6, UIMax = 6))
-    int32 NoiseOctaves = 4;
+    int32 NoiseOctaves = 2;
 
     // Extra distance beyond each path's Width that stays completely flat (same PathHeight as the
     // corridor itself) before the height blend below even starts
     UPROPERTY(EditAnywhere, Category = "Terrain Mesh", meta = (ClampMin = 0.0, UIMin = 0.0, Units = "Centimeters"))
-    float PathFlatZoneWidth = 100.0f;
+    float PathFlatZoneWidth = 500.0f;
 
     // Distance beyond PathFlatZoneWidth over which terrain HEIGHT ramps from flat up to full noise
     // height, creating a "gradually bumpier farther out" transition
     UPROPERTY(EditAnywhere, Category = "Terrain Mesh", meta = (ClampMin = 0.0, UIMin = 0.0, Units = "Centimeters"))
-    float PathHeightBlendWidth = 500.0f;
+    float PathHeightBlendWidth = 700.0f;
 
     // Extra distance beyond each path's Width over which the vertex-colour mask (and so the material's
     // path/terrain blend) transitions from path look to terrain look. Independent of
@@ -216,7 +216,7 @@ protected:
     float DefenderSpotHeightBlendWidth = 400.0f;
 
     UPROPERTY(EditAnywhere, Category = "Terrain Generation|Debug")
-    bool bDrawDebugDefenderSpots = true;
+    bool bDrawDebugDefenderSpots = false;
 
 private:
     // Fractal (multi-octave) Perlin height sample at a world X/Y, before any path flattening

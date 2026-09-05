@@ -67,7 +67,7 @@ private:
 
     UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "AI",
               meta = (AllowPrivateAccess = true, ClampMin = 0.0, UIMin = 0.0, Units = "Seconds"))
-    float AttackCooldown = 0.5f;
+    float AttackCooldown = 0.6f;
 
     FTimerHandle AttackCooldownHandle;
 };

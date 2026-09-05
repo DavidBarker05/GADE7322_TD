@@ -12,6 +12,7 @@
 APlayerTower::APlayerTower()
 {
     PawnDisplayName = TEXT("Main Tower");
+    OccupiedRadius = 200.0f;
     TowerMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Tower Mesh"));
     TowerMesh->SetupAttachment(RootComponent);
     AttackTargets.Init(nullptr, 3);
