@@ -19,8 +19,6 @@ class GADE7322_TD_API ASkeletonPawn : public AAttacker
 public:
     ASkeletonPawn();
 
-    virtual void BeginPlay() override;
-
     virtual void StartAttack() override;
 
     virtual void EndAttack() override;
@@ -33,9 +31,6 @@ protected:
     virtual void DoUpdatePerceptionOnTeamChange() override;
 
 public:
-    USkeletalMeshComponent* GetMesh() { return SkeletalMesh; }
-    const USkeletalMeshComponent* GetMesh() const { return SkeletalMesh; }
-
     ASkeletonPawn& SetAttackTarget(ATowerDefencePawn* Target)
     {
         CurrentAttackTarget = Target;
@@ -50,8 +45,9 @@ public:
     AWeapon* GetWeapon();
 
 private:
-    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components", meta = (AllowPrivateAccess = true))
-    USkeletalMeshComponent* SkeletalMesh;
+    void OnAttackMontageEnded(UAnimMontage* Montage, bool bInterrupted);
+
+    void OnDeathMontageEnded(UAnimMontage* Montage, bool bInterrupted);
 
     UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Animation", meta = (AllowPrivateAccess = true))
     UAnimMontage* AttackMontage;

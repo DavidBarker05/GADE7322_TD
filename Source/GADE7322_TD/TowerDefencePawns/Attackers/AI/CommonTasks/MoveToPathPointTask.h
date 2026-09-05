@@ -18,6 +18,15 @@ struct FMoveToPathPointTaskInstanceData
 
     UPROPERTY(EditAnywhere, Category = Context)
     TObjectPtr<AAttacker> Actor = nullptr;
+
+    UPROPERTY(Transient)
+    FVector StuckCheckLocation = FVector::ZeroVector;
+
+    UPROPERTY(Transient)
+    float StuckCheckTime = 0.0f;
+
+    UPROPERTY(Transient)
+    int32 ConsecutiveStuckNudges = 0;
 };
 
 // Moves Actor towards its current path point, advancing to the next one first if already there.

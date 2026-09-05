@@ -12,7 +12,11 @@ EStateTreeRunStatus FTryAttackTask::EnterState(FStateTreeExecutionContext& Conte
         TD_LOG_ERROR(TEXT("FTryAttackTask::EnterState -> Actor context is nullptr"));
         return EStateTreeRunStatus::Failed;
     }
-    if (!Actor->CanAttack()) return EStateTreeRunStatus::Failed;
+    if (!Actor->CanAttack())
+    {
+        TD_LOG_INFO(TEXT("FTryAttackTask::EnterState -> %s can't attack right now (cooldown)"), *Actor->GetName());
+        return EStateTreeRunStatus::Failed;
+    }
     Actor->StartAttack();
     return EStateTreeRunStatus::Succeeded;
 }

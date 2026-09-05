@@ -2,11 +2,13 @@
 #include "TowerDefencePawns/AI/TowerDefencePawnAIController.h"
 
 #include "Components/StateTreeAIComponent.h"
+#include "GameFramework/CharacterMovementComponent.h"
+#include "Navigation/PathFollowingComponent.h"
 #include "Perception/AIPerceptionComponent.h"
 #include "Perception/AIPerceptionTypes.h"
-#include "TowerDefencePawn.h"
 #include "TowerDefencePawns/AI/ProximityPerception/AISenseConfig_Proximity.h"
 #include "TowerDefencePawns/Components/HealthComponent.h"
+#include "TowerDefencePawns/TowerDefencePawn.h"
 
 ATowerDefencePawnAIController::ATowerDefencePawnAIController()
 {
@@ -17,19 +19,8 @@ ATowerDefencePawnAIController::ATowerDefencePawnAIController()
     StateTree = CreateDefaultSubobject<UStateTreeAIComponent>(TEXT("State Tree"));
     PerceptionComponent->OnTargetPerceptionUpdated.AddDynamic(
         this, &ATowerDefencePawnAIController::OnTargetPerceptionUpdated);
+    if (UPathFollowingComponent* PFC = GetPathFollowingComponent()) PFC->SetBlockDetection(25.0f, 0.5f, 10);
 }
-void ATowerDefencePawnAIController::OnPossess(APawn* InPawn)
-{
-    Super::OnPossess(InPawn);
-    SetControllerActive(true);
-}
-
-void ATowerDefencePawnAIController::OnUnPossess()
-{
-    SetControllerActive(false);
-    Super::OnUnPossess();
-}
-
 void ATowerDefencePawnAIController::SetControllerActive(bool bActive)
 {
     if (!bActive)
@@ -38,12 +29,25 @@ void ATowerDefencePawnAIController::SetControllerActive(bool bActive)
         VisiblePawns.Empty();
     }
     PerceptionComponent->SetActive(bActive);
-    StateTree->SetActive(bActive);
+    if (bActive) StateTree->RestartLogic();
+    else StateTree->StopLogic(TEXT("Controller deactivated"));
 }
 
 const ATowerDefencePawn* ATowerDefencePawnAIController::GetTowerDefensePawn() const
 {
-    return Cast<ATowerDefencePawn>(GetPawn());
+    return GetPawn<ATowerDefencePawn>();
+}
+
+FGenericTeamId ATowerDefencePawnAIController::GetGenericTeamId() const
+{
+    const ATowerDefencePawn* TDPawn = GetTowerDefensePawn();
+    return TDPawn ? TDPawn->GetGenericTeamId() : FGenericTeamId::NoTeam;
+}
+
+const FNavAgentProperties& ATowerDefencePawnAIController::GetNavAgentPropertiesRef() const
+{
+    const ATowerDefencePawn* TDPawn = GetTowerDefensePawn();
+    return TDPawn ? TDPawn->GetCharacterMovement()->GetNavAgentPropertiesRef() : NavAgentProps;
 }
 
 void ATowerDefencePawnAIController::OnTargetPerceptionUpdated(AActor* Actor, FAIStimulus Stimulus)

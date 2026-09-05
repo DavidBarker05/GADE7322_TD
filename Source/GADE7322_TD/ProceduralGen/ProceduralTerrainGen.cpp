@@ -1,6 +1,7 @@
 // ReSharper disable CppParameterMayBeConst
 #include "ProceduralGen/ProceduralTerrainGen.h"
 
+#include "CustomLog.h"
 #include "DrawDebugHelpers.h"
 #include "KismetProceduralMeshLibrary.h"
 #include "NavigationSystem.h"
@@ -35,12 +36,17 @@ void AProceduralTerrainGen::BeginPlay()
     GenerateTerrain();
     SpawnDefenderSpots();
     BakeMesh();
-    RebuildNavMesh(); // After baking, not before - geometry's identical either way, but this only needs doing once
+    RebuildNavMesh();
+    TD_LOG_INFO(TEXT("Level is finished generating :)"));
 }
 
 void AProceduralTerrainGen::GeneratePaths()
 {
     if (bRandomSeedEachGame) Seed = FMath::Rand();
+
+    TD_LOG_INFO(TEXT("Current Seed: %d"), Seed);
+
+    UE_LOG(LogCustom, Display, TEXT("Generating Paths..."));
 
     const FRandomStream Stream(Seed);
 
@@ -49,6 +55,8 @@ void AProceduralTerrainGen::GeneratePaths()
     // ReSharper disable once CppTooWideScopeInitStatement
     const TArray<float> EntryAngles = GenerateEntryAngles(Stream);
     for (const float Angle : EntryAngles) Paths.Add(BuildPath(Angle, Stream));
+
+    UE_LOG(LogCustom, Display, TEXT("Generated Paths"));
 
     if (bDrawDebugPaths) DrawDebugForPaths();
 }
@@ -79,6 +87,7 @@ FTerrainPath AProceduralTerrainGen::BuildPath(float EntryAngleDegrees, const FRa
     FTerrainPath Path;
     Path.Width = PathWidth;
     Path.Points = SmoothPathControlPoints(BuildPathControlPoints(EntryAngleDegrees, Stream));
+    for (FVector& Point : Path.Points) Point.Z = GetTerrainHeight(FVector2D(Point));
     return Path;
 }
 
@@ -192,6 +201,8 @@ void AProceduralTerrainGen::GenerateTerrain() const
 {
     if (!IsValid(TerrainMesh)) return;
 
+    UE_LOG(LogCustom, Display, TEXT("Generating Terrain..."));
+
     TerrainMesh->ClearAllMeshSections();
 
     // Extend the mesh past TerrainRadius so path wander/width/blend never runs off the edge of the grid
@@ -257,6 +268,8 @@ void AProceduralTerrainGen::GenerateTerrain() const
     UKismetProceduralMeshLibrary::CalculateTangentsForMesh(Vertices, Triangles, UVs, Normals, Tangents);
 
     TerrainMesh->CreateMeshSection_LinearColor(0, Vertices, Triangles, Normals, UVs, VertexColors, Tangents, true);
+
+    UE_LOG(LogCustom, Display, TEXT("Generated Terrain"));
 }
 
 float AProceduralTerrainGen::GetTerrainHeight(const FVector2D& WorldXY) const
@@ -360,8 +373,10 @@ void AProceduralTerrainGen::DrawDebugForPaths() const
 
 void AProceduralTerrainGen::GenerateDefenderSpots()
 {
+    UE_LOG(LogCustom, Display, TEXT("Generating Defender Spots..."));
     ComputeDefenderSpotLocations();
     SpawnDefenderSpots();
+    UE_LOG(LogCustom, Display, TEXT("Generated Defender Spots"));
 }
 
 void AProceduralTerrainGen::ComputeDefenderSpotLocations()
@@ -441,6 +456,7 @@ bool AProceduralTerrainGen::TryAddDefenderSpotLocation(const FVector2D& Candidat
 
 void AProceduralTerrainGen::SpawnDefenderSpots()
 {
+    UE_LOG(LogCustom, Display, TEXT("Spawning Defender Spots..."));
     for (ADefenderSpot* Spot : DefenderSpots)
     {
         if (IsValid(Spot)) Spot->Destroy();
@@ -462,6 +478,7 @@ void AProceduralTerrainGen::SpawnDefenderSpots()
     }
 
     if (bDrawDebugDefenderSpots) DrawDebugForDefenderSpots();
+    UE_LOG(LogCustom, Display, TEXT("Spawned Defender Spots"));
 }
 
 // This was very hard to figure out, because not much information about how to do this, but I managed to get
@@ -469,6 +486,8 @@ void AProceduralTerrainGen::SpawnDefenderSpots()
 void AProceduralTerrainGen::BakeMesh()
 {
     if (!IsValid(TerrainMesh) || !IsValid(BakedTerrainMesh)) return;
+
+    UE_LOG(LogCustom, Display, TEXT("Baking Mesh..."));
 
     UStaticMesh* StaticMesh =
         NewObject<UStaticMesh>(this /* = Owner/Holder */, NAME_None, RF_Transient /* = Don't save mesh */);
@@ -512,11 +531,21 @@ void AProceduralTerrainGen::BakeMesh()
     TerrainMesh->ClearAllMeshSections();
     TerrainMesh->SetVisibility(false);
     TerrainMesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+
+    UNavigationSystemV1::UpdateComponentInNavOctree(*TerrainMesh);
+    UNavigationSystemV1::UpdateComponentInNavOctree(*BakedTerrainMesh);
+
+    UE_LOG(LogCustom, Display, TEXT("Baked Mesh"));
 }
 
 void AProceduralTerrainGen::RebuildNavMesh() const
 {
-    if (UWorld* World = GetWorld()) FNavigationSystem::Build(*World);
+    if (UWorld* World = GetWorld())
+    {
+        UE_LOG(LogCustom, Display, TEXT("Rebuilding Nav Mesh..."));
+        FNavigationSystem::Build(*World);
+        UE_LOG(LogCustom, Display, TEXT("Rebuilt Nav Mesh"));
+    }
 }
 
 void AProceduralTerrainGen::DrawDebugForDefenderSpots() const

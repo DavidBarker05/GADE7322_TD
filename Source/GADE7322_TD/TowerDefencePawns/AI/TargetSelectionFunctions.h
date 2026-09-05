@@ -17,9 +17,6 @@ ATowerDefencePawn* SelectTarget(TArray<ATowerDefencePawn*>& Array, T BaseLine,
         ATowerDefencePawn* Enemy = Array[i];
         if (!IsValid(Enemy) || !Enemy->IsPawnActive() || Enemy->GetHealthComponent()->IsDead())
         {
-            // Faster erase, because move last element to current element and then pops
-            // and since we already checked last element it's safe to just continue,
-            // and we don't care about the order the elements are
             Array.RemoveAtSwap(i, EAllowShrinking::No);
             continue;
         }

@@ -26,6 +26,8 @@ public:
 
     int32 GetCurrentPathIndex() const { return CurrentPathIndex; }
 
+    void SetCurrentPathIndex(int32 NewIndex) { CurrentPathIndex = FMath::Max(CurrentPathIndex, NewIndex); }
+
     UFUNCTION(BlueprintCallable, Category = "AI")
     FVector GetCurrentPathPoint() const
     {
@@ -57,5 +59,5 @@ private:
     // I can't think of better name :/
     UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "AI",
               meta = (AllowPrivateAccess = true, ClampMin = 0.0, UIMin = 0.0, Units = "Centimeters"))
-    float PathTargetAcceptanceDistance = 50.0f;
+    float PathTargetAcceptanceDistance = 10.0f;
 };

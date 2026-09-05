@@ -19,14 +19,21 @@ EStateTreeRunStatus FMaintainDistanceToTargetTask::EnterState(FStateTreeExecutio
         TD_LOG_ERROR(TEXT("FMaintainDistanceToTargetTask::EnterState -> Actor context is nullptr"));
         return EStateTreeRunStatus::Failed;
     }
-    if (!IsValid(Target)) return EStateTreeRunStatus::Failed;
-    if (FVector::Dist2D(Actor->GetActorLocation(), Target->GetActorLocation()) - TargetOccupiedRadius <
-        RadiusToKeepTargetWithin - KINDA_SMALL_NUMBER) // Rather be slightly closer
-        return EStateTreeRunStatus::Succeeded;
+    if (!IsValid(Target))
+    {
+        TD_LOG_INFO(TEXT("FMaintainDistanceToTargetTask::EnterState -> %s has no valid Target"), *Actor->GetName());
+        return EStateTreeRunStatus::Failed;
+    }
+    const float CurrentEdgeDist =
+        FVector::Dist2D(Actor->GetActorLocation(), Target->GetActorLocation()) - TargetOccupiedRadius;
+    constexpr float RangeTolerance = 10.0f;
+    if (CurrentEdgeDist < RadiusToKeepTargetWithin + RangeTolerance) return EStateTreeRunStatus::Succeeded;
+
+    if (AIController->GetMoveStatus() == EPathFollowingStatus::Moving) return EStateTreeRunStatus::Running;
     const float StopEdgeDistance = (OccupiedRadius + RadiusToKeepTargetWithin) / 2.0f;
     // ReSharper disable once CppTooWideScopeInitStatement
     const float AcceptanceRadius = TargetOccupiedRadius + StopEdgeDistance;
-    switch (AIController->MoveToActor(Target, AcceptanceRadius, false))
+    switch (AIController->MoveToActor(Target, AcceptanceRadius, false, false))
     {
         case EPathFollowingRequestResult::AlreadyAtGoal:
             return EStateTreeRunStatus::Succeeded;
@@ -50,6 +57,7 @@ EStateTreeRunStatus FMaintainDistanceToTargetTask::Tick(FStateTreeExecutionConte
 void FMaintainDistanceToTargetTask::ExitState(FStateTreeExecutionContext& Context,
                                               const FStateTreeTransitionResult& Transition) const
 {
-    if (const FMaintainDistanceToTargetTaskInstanceData& Data = Context.GetInstanceData(*this); Data.AIController)
+    if (const FMaintainDistanceToTargetTaskInstanceData& Data = Context.GetInstanceData(*this);
+        Data.AIController && !IsValid(Data.Target))
         Data.AIController->StopMovement();
 }

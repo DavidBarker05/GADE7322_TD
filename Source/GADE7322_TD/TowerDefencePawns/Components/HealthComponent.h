@@ -30,13 +30,18 @@ public:
     void ReceiveHealth(int32 Health);
 
     UFUNCTION(BlueprintCallable, Category = "Health")
-    void ResetHealth() { CurrentHealth = MaxHealth; }
+    void ResetHealth()
+    {
+        CurrentHealth = MaxHealth;
+        bAlive = true;
+        bDead = false;
+    }
 
     UFUNCTION(BlueprintPure, Category = "Health")
-    bool IsAlive() const { return CurrentHealth > 0; }
+    bool IsAlive() const { return bAlive; }
 
     UFUNCTION(BlueprintPure, Category = "Health")
-    bool IsDead() const { return CurrentHealth == 0; }
+    bool IsDead() const { return bDead; }
 
 private:
     UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Health",
@@ -46,4 +51,10 @@ private:
     UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Health",
               meta = (AllowPrivateAccess = true, UIMin = 0, ClampMin = 0))
     int32 CurrentHealth = 0;
+
+    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Health", meta = (AllowPrivateAccess = true))
+    bool bAlive = true;
+
+    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Health", meta = (AllowPrivateAccess = true))
+    bool bDead = false;
 };

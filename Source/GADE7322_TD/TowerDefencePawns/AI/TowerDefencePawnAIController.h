@@ -2,6 +2,7 @@
 
 #include "CoreMinimal.h"
 
+#include "AI/Navigation/NavigationTypes.h"
 #include "AIController.h"
 
 #include "TowerDefencePawnAIController.generated.h"
@@ -19,14 +20,6 @@ class GADE7322_TD_API ATowerDefencePawnAIController : public AAIController
 public:
     ATowerDefencePawnAIController();
 
-protected:
-    // Controllers are pooled and reused across many possess/unpossess cycles, unlike BeginPlay
-    // (which only ever runs once, right after the controller is first spawned into the pool, long
-    // before it has a pawn). These are what actually turn perception/StateTree on and off each time.
-    virtual void OnPossess(APawn* InPawn) override;
-    virtual void OnUnPossess() override;
-
-public:
     virtual void SetControllerActive(bool bActive);
 
     const TArray<ATowerDefencePawn*>& GetVisiblePawns() const { return VisiblePawns; }
@@ -39,6 +32,10 @@ public:
     UStateTreeAIComponent* GetStateTree() { return StateTree; }
 
     const ATowerDefencePawn* GetTowerDefensePawn() const;
+
+    virtual FGenericTeamId GetGenericTeamId() const override;
+
+    virtual const FNavAgentProperties& GetNavAgentPropertiesRef() const override;
 
 protected:
     UFUNCTION()
@@ -53,4 +50,6 @@ private:
 
     UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "AI", meta = (AllowPrivateAccess = true))
     UStateTreeAIComponent* StateTree;
+
+    FNavAgentProperties NavAgentProps = FNavAgentProperties(35.0f, 144.0f);
 };

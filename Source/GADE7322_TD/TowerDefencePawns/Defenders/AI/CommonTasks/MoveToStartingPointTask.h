@@ -21,9 +21,17 @@ struct FMoveToStartingPointTaskInstanceData
 
     UPROPERTY(EditAnywhere, Category = Parameter)
     float AcceptanceRadius = 10.0f;
+
+    UPROPERTY(Transient)
+    FVector StuckCheckLocation = FVector::ZeroVector;
+
+    UPROPERTY(Transient)
+    float StuckCheckTime = 0.0f;
+
+    UPROPERTY(Transient)
+    int32 ConsecutiveStuckNudges = 0;
 };
 
-// Moves Actor back to its DefenderSpot
 USTRUCT(meta = (DisplayName = "Move To Starting Point", Category = "AI|Defender|CommonTask"))
 struct GADE7322_TD_API FMoveToStartingPointTask : public FStateTreeAIActionTaskBase
 {

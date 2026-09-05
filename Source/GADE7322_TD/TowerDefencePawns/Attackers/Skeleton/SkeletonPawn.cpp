@@ -1,6 +1,7 @@
 // ReSharper disable CppParameterMayBeConst
 #include "TowerDefencePawns/Attackers/Skeleton/SkeletonPawn.h"
 
+#include "Animation/AnimInstance.h"
 #include "Components/ChildActorComponent.h"
 #include "Perception/AIPerceptionComponent.h"
 #include "Perception/AIPerceptionSystem.h"
@@ -10,8 +11,6 @@
 ASkeletonPawn::ASkeletonPawn()
 {
     PawnDisplayName = TEXT("Skeleton");
-    SkeletalMesh = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("Skeletal Mesh"));
-    SkeletalMesh->SetupAttachment(RootComponent);
     Weapon = CreateDefaultSubobject<UChildActorComponent>(TEXT("Weapon"));
     Weapon->SetupAttachment(RootComponent);
     CurrentTeam = EAITeam::Attacker;
@@ -21,12 +20,14 @@ const AWeapon* ASkeletonPawn::GetWeapon() const { return Cast<AWeapon>(Weapon ? 
 
 AWeapon* ASkeletonPawn::GetWeapon() { return Cast<AWeapon>(Weapon ? Weapon->GetChildActor() : nullptr); }
 
-void ASkeletonPawn::BeginPlay() { Super::BeginPlay(); }
-
 void ASkeletonPawn::StartAttack()
 {
     bCanAttack = false;
-    SkeletalMesh->GetAnimInstance()->Montage_Play(AttackMontage, 1.0f);
+    UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
+    AnimInstance->Montage_Play(AttackMontage, 1.0f);
+    FOnMontageEnded EndDelegate;
+    EndDelegate.BindUObject(this, &ASkeletonPawn::OnAttackMontageEnded);
+    AnimInstance->Montage_SetEndDelegate(EndDelegate, AttackMontage);
 }
 
 void ASkeletonPawn::EndAttack()
@@ -37,18 +38,30 @@ void ASkeletonPawn::EndAttack()
 
 void ASkeletonPawn::OnDeath(TFunction<void()>&& Func)
 {
+    if (bDeathStarted) return;
+    bDeathStarted = true;
     DestroyDelegate = MoveTemp(Func);
-    SkeletalMesh->GetAnimInstance()->Montage_Play(DeathMontage, 1.0f);
+    UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
+    AnimInstance->Montage_Play(DeathMontage, 1.0f);
+    FOnMontageBlendingOutStarted BlendingOutDelegate;
+    BlendingOutDelegate.BindUObject(this, &ASkeletonPawn::OnDeathMontageEnded);
+    AnimInstance->Montage_SetBlendingOutDelegate(BlendingOutDelegate, DeathMontage);
 }
 
 void ASkeletonPawn::DoOnSetActive(bool bActive)
 {
+    if (bActive) CurrentAttackTarget = nullptr;
     AWeapon* Sword = GetWeapon();
-    if (bActive && Sword) Sword->AttachToSkeleton(SkeletalMesh);
-    SkeletalMesh->SetVisibility(bActive);
-    SkeletalMesh->SetComponentTickEnabled(bActive);
-    SkeletalMesh->SetCollisionEnabled(bActive ? ECollisionEnabled::QueryAndPhysics : ECollisionEnabled::NoCollision);
-    SkeletalMesh->SetCollisionResponseToAllChannels(bActive ? ECR_Block : ECR_Ignore);
+    if (bActive && Sword) Sword->AttachToSkeleton(GetMesh());
+    GetMesh()->SetVisibility(bActive);
+    GetMesh()->SetComponentTickEnabled(bActive);
+    GetMesh()->SetCollisionEnabled(bActive ? ECollisionEnabled::QueryAndPhysics : ECollisionEnabled::NoCollision);
+    GetMesh()->SetCollisionResponseToAllChannels(bActive ? ECR_Block : ECR_Ignore);
+    if (bActive)
+    {
+        GetMesh()->SetCollisionResponseToChannel(ECC_WorldStatic, ECR_Ignore);
+        GetMesh()->SetCollisionResponseToChannel(ECC_Pawn, ECR_Overlap);
+    }
     if (Sword)
     {
         Sword->GetMesh()->SetVisibility(bActive);
@@ -68,3 +81,7 @@ void ASkeletonPawn::DoUpdatePerceptionOnTeamChange()
         CurrentAttackTarget = nullptr;
     }
 }
+
+void ASkeletonPawn::OnAttackMontageEnded(UAnimMontage*, bool) { EndAttack(); }
+
+void ASkeletonPawn::OnDeathMontageEnded(UAnimMontage*, bool) { OnDeathComplete(); }

@@ -3,7 +3,6 @@
 #include "Kismet/GameplayStatics.h"
 #include "ProceduralGen/ProceduralTerrainGen.h"
 #include "Settings/GameSettingsSubsystem.h"
-#include "TowerDefencePawns/AI/TowerDefencePawnAIControllerFactory.h"
 #include "TowerDefencePawns/Attackers/Attacker.h"
 #include "TowerDefencePawns/TowerDefencePawn.h"
 #include "TowerDefencePawns/TowerDefencePawnFactory.h"
@@ -79,10 +78,13 @@ void ATowerDefenceGameMode::SpawnEnemyOnRandomPath()
     if (!EnemyClass) return;
     if (TOWER_DEFENCE_PAWN_FACTORY_EXISTS)
     {
-        AAttacker* Enemy = Cast<AAttacker>(CREATE_PAWN(EnemyClass, FTransform(Path.Points[0])));
+        FVector SpawnLocation = Path.Points[0];
+        const FVector2D Jitter = FMath::RandPointInCircle(75.0f);
+        SpawnLocation.X += Jitter.X;
+        SpawnLocation.Y += Jitter.Y;
+        AAttacker* Enemy = Cast<AAttacker>(CREATE_PAWN(EnemyClass, FTransform(SpawnLocation)));
         if (!IsValid(Enemy)) return;
         Enemy->SetPathPoints(Path.Points);
-        if (Enemy->UseAIController()) POSSESS_TOWER_DEFENCE_PAWN(Enemy);
         Enemy->SetPawnActive(true);
         ++EnemiesAliveThisWave;
     }
@@ -98,14 +100,11 @@ void ATowerDefenceGameMode::HandleEnemyDeath(AAttacker* Enemy)
         {
             if (TOWER_DEFENCE_PAWN_FACTORY_EXISTS)
             {
-                if (Enemy->UseAIController()) UNPOSSESS_TOWER_DEFENCE_PAWN(Enemy);
                 Enemy->SetPawnActive(false);
                 DESTROY_PAWN(Enemy);
-
                 EnemiesAliveThisWave = FMath::Max(0, EnemiesAliveThisWave - 1);
                 if (Reward > 0) BROADCAST_EVENT(TEXT("MoneyEarnedEvent"), Reward);
                 BroadcastEnemyCount();
-
                 CheckWaveComplete();
             }
         });

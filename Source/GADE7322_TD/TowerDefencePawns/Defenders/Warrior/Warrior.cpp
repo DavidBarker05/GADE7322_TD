@@ -1,6 +1,7 @@
 // ReSharper disable CppParameterMayBeConst
 #include "TowerDefencePawns/Defenders/Warrior/Warrior.h"
 
+#include "Animation/AnimInstance.h"
 #include "Components/ChildActorComponent.h"
 #include "Perception/AIPerceptionComponent.h"
 #include "TowerDefencePawns/Defenders/Warrior/AI/WarriorAIController.h"
@@ -9,8 +10,6 @@
 AWarrior::AWarrior()
 {
     PawnDisplayName = TEXT("Warrior");
-    SkeletalMesh = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("Skeletal Mesh"));
-    SkeletalMesh->SetupAttachment(RootComponent);
     Weapon = CreateDefaultSubobject<UChildActorComponent>(TEXT("Weapon"));
     Weapon->SetupAttachment(RootComponent);
     CurrentTeam = EAITeam::Defender;
@@ -23,7 +22,12 @@ AWeapon* AWarrior::GetWeapon() { return Cast<AWeapon>(Weapon ? Weapon->GetChildA
 void AWarrior::StartAttack()
 {
     bCanAttack = false;
-    SkeletalMesh->GetAnimInstance()->Montage_Play(bIsFemale ? FemaleAttackMontage : MaleAttackMontage, 1.0f);
+    UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
+    UAnimMontage* AttackMontage = bIsFemale ? FemaleAttackMontage : MaleAttackMontage;
+    AnimInstance->Montage_Play(AttackMontage, 1.0f);
+    FOnMontageEnded EndDelegate;
+    EndDelegate.BindUObject(this, &AWarrior::OnAttackMontageEnded);
+    AnimInstance->Montage_SetEndDelegate(EndDelegate, AttackMontage);
 }
 
 void AWarrior::EndAttack()
@@ -34,25 +38,38 @@ void AWarrior::EndAttack()
 
 void AWarrior::OnDeath(TFunction<void()>&& Func)
 {
+    if (bDeathStarted) return;
+    bDeathStarted = true;
     DestroyDelegate = MoveTemp(Func);
-    SkeletalMesh->GetAnimInstance()->Montage_Play(bIsFemale ? FemaleDeathMontage : MaleDeathMontage, 1.0f);
+    UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
+    UAnimMontage* DeathMontage = bIsFemale ? FemaleDeathMontage : MaleDeathMontage;
+    AnimInstance->Montage_Play(DeathMontage, 1.0f);
+    FOnMontageBlendingOutStarted EndDelegate;
+    EndDelegate.BindUObject(this, &AWarrior::OnDeathMontageEnded);
+    AnimInstance->Montage_SetBlendingOutDelegate(EndDelegate, DeathMontage);
 }
 
 void AWarrior::DoOnSetActive(bool bActive)
 {
+    if (bActive) CurrentAttackTarget = nullptr;
     AWeapon* Sword = GetWeapon();
     if (bActive)
     {
         bIsFemale = FMath::RandBool();
-        SkeletalMesh->SetSkeletalMesh(bIsFemale ? FemaleMesh : MaleMesh);
-        SkeletalMesh->SetAnimInstanceClass(bIsFemale ? FemaleAnimationBlueprint : MaleAnimationBlueprint);
-        if (Sword) Sword->AttachToSkeleton(SkeletalMesh);
+        GetMesh()->SetSkeletalMesh(bIsFemale ? FemaleMesh : MaleMesh);
+        GetMesh()->SetAnimInstanceClass(bIsFemale ? FemaleAnimationBlueprint : MaleAnimationBlueprint);
+        if (Sword) Sword->AttachToSkeleton(GetMesh());
     }
     else if (Sword) Sword->AttachToComponent(Weapon, FAttachmentTransformRules::SnapToTargetNotIncludingScale);
-    SkeletalMesh->SetVisibility(bActive);
-    SkeletalMesh->SetComponentTickEnabled(bActive);
-    SkeletalMesh->SetCollisionEnabled(bActive ? ECollisionEnabled::QueryAndPhysics : ECollisionEnabled::NoCollision);
-    SkeletalMesh->SetCollisionResponseToAllChannels(bActive ? ECR_Block : ECR_Ignore);
+    GetMesh()->SetVisibility(bActive);
+    GetMesh()->SetComponentTickEnabled(bActive);
+    GetMesh()->SetCollisionEnabled(bActive ? ECollisionEnabled::QueryAndPhysics : ECollisionEnabled::NoCollision);
+    GetMesh()->SetCollisionResponseToAllChannels(bActive ? ECR_Block : ECR_Ignore);
+    if (bActive)
+    {
+        GetMesh()->SetCollisionResponseToChannel(ECC_WorldStatic, ECR_Ignore);
+        GetMesh()->SetCollisionResponseToChannel(ECC_Pawn, ECR_Overlap);
+    }
     if (Sword)
     {
         Sword->GetMesh()->SetVisibility(bActive);
@@ -72,3 +89,7 @@ void AWarrior::DoUpdatePerceptionOnTeamChange()
         CurrentAttackTarget = nullptr;
     }
 }
+
+void AWarrior::OnAttackMontageEnded(UAnimMontage*, bool) { EndAttack(); }
+
+void AWarrior::OnDeathMontageEnded(UAnimMontage*, bool) { OnDeathComplete(); }

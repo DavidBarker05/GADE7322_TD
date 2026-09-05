@@ -2,7 +2,7 @@
 
 #include "CoreMinimal.h"
 
-#include "GameFramework/Pawn.h"
+#include "GameFramework/Character.h"
 #include "GenericTeamAgentInterface.h"
 
 #include "TowerDefencePawn.generated.h"
@@ -21,7 +21,7 @@ enum class EAITeam : uint8
 // ^ will probably add more teams when I add different types
 
 UCLASS(Abstract)
-class GADE7322_TD_API ATowerDefencePawn : public APawn,
+class GADE7322_TD_API ATowerDefencePawn : public ACharacter,
                                           public IGenericTeamAgentInterface
 {
     GENERATED_BODY()
@@ -66,8 +66,6 @@ public:
     bool CanAttack() const { return bCanAttack; }
 
     bool UseAIController() const { return bUseAIController; }
-
-    TSubclassOf<ATowerDefencePawnAIController> GetTDAIControllerClass() const { return TDAIControllerClass; }
 
     EAITeam GetCurrentTeam() const { return CurrentTeam; }
 
@@ -114,18 +112,14 @@ protected:
     UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "TD Pawn", meta = (AllowPrivateAccess = true))
     bool bCanAttack = true;
 
-    UPROPERTY(EditDefaultsOnly, Category = "AI", meta = (DisplayName = "TD AI Controller Class"))
-    TSubclassOf<ATowerDefencePawnAIController> TDAIControllerClass;
-
     UPROPERTY(EditDefaultsOnly, Category = "AI")
     bool bUseAIController = false;
+
+    bool bDeathStarted = false;
 
     TFunction<void()> DestroyDelegate;
 
 private:
-    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = true))
-    USceneComponent* Root;
-
     UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "TD Pawn", meta = (AllowPrivateAccess = true))
     bool bIsPawnActive = false;
 };

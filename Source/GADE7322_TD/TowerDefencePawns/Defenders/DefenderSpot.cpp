@@ -3,7 +3,6 @@
 #include "Components/BoxComponent.h"
 #include "Events/EventBus.h"
 #include "TDCollisionChannels.h"
-#include "TowerDefencePawnAIControllerFactory.h"
 #include "TowerDefencePawns/Defenders/Defender.h"
 #include "TowerDefencePawns/TowerDefencePawnFactory.h"
 
@@ -47,7 +46,6 @@ void ADefenderSpot::OnEventReceived_Implementation(const FName& EventName, const
                 {
                     if (TOWER_DEFENCE_PAWN_FACTORY_EXISTS)
                     {
-                        if (CurrentDefender->UseAIController()) UNPOSSESS_TOWER_DEFENCE_PAWN(CurrentDefender);
                         CurrentDefender->SetSpawnPoint(nullptr);
                         CurrentDefender->SetPawnActive(false);
                         DESTROY_PAWN(CurrentDefender);
@@ -66,8 +64,6 @@ void ADefenderSpot::PurchaseDefender(const TSubclassOf<ADefender>& DefenderBluep
     if (TOWER_DEFENCE_PAWN_FACTORY_EXISTS)
     {
         CurrentDefender = Cast<ADefender>(CREATE_PAWN(DefenderBlueprint, GetTransform()));
-        if (CurrentDefender->UseAIController())
-            POSSESS_TOWER_DEFENCE_PAWN(CurrentDefender); // Will this cause issues here? We'll see
         CurrentDefender->SetSpawnPoint(this);
         CurrentDefender->SetPawnActive(true);
         BROADCAST_EVENT(TEXT("PurchaseEvent"), CurrentDefender->GetCost());
@@ -80,7 +76,6 @@ void ADefenderSpot::SellDefender()
     if (TOWER_DEFENCE_PAWN_FACTORY_EXISTS)
     {
         BROADCAST_EVENT(TEXT("SellEvent"), CurrentDefender->GetSellPrice());
-        if (CurrentDefender->UseAIController()) UNPOSSESS_TOWER_DEFENCE_PAWN(CurrentDefender);
         CurrentDefender->SetSpawnPoint(nullptr);
         CurrentDefender->SetPawnActive(false);
         DESTROY_PAWN(CurrentDefender);

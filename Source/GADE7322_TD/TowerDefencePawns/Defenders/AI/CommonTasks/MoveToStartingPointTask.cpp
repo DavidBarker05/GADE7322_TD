@@ -8,7 +8,11 @@
 EStateTreeRunStatus FMoveToStartingPointTask::EnterState(FStateTreeExecutionContext& Context,
                                                          const FStateTreeTransitionResult& Transition) const
 {
-    const auto& [AIController, Actor, AcceptanceRadius] = Context.GetInstanceData(*this);
+    auto& [AIController, Actor, AcceptanceRadius, StuckCheckLocation, StuckCheckTime, ConsecutiveStuckNudges] =
+        Context.GetInstanceData(*this);
+    StuckCheckTime = 0.0f;
+    ConsecutiveStuckNudges = 0;
+    if (Actor) StuckCheckLocation = Actor->GetActorLocation();
     if (!AIController)
     {
         TD_LOG_ERROR(TEXT("FMoveToStartingPointTask::EnterState -> AI Controller context is nullptr"));
@@ -26,10 +30,11 @@ EStateTreeRunStatus FMoveToStartingPointTask::EnterState(FStateTreeExecutionCont
     }
 
     const FVector Destination = Actor->GetSpawnPoint()->GetActorLocation();
+    const float DistToHome = FVector::Dist2D(Actor->GetActorLocation(), Destination);
 
-    // Rather be slightly closer, and it also skips issuing a move entirely on the common "already home" case
-    if (FVector::Dist2D(Actor->GetActorLocation(), Destination) <= AcceptanceRadius - KINDA_SMALL_NUMBER)
-        return EStateTreeRunStatus::Succeeded;
+    if (DistToHome <= AcceptanceRadius - KINDA_SMALL_NUMBER) return EStateTreeRunStatus::Succeeded;
+
+    if (AIController->GetMoveStatus() == EPathFollowingStatus::Moving) return EStateTreeRunStatus::Running;
 
     switch (AIController->MoveToLocation(Destination, AcceptanceRadius))
     {
@@ -44,10 +49,36 @@ EStateTreeRunStatus FMoveToStartingPointTask::EnterState(FStateTreeExecutionCont
 
 EStateTreeRunStatus FMoveToStartingPointTask::Tick(FStateTreeExecutionContext& Context, const float DeltaTime) const
 {
-    const auto& [AIController, Actor, AcceptanceRadius] = Context.GetInstanceData(*this);
+    auto& [AIController, Actor, AcceptanceRadius, StuckCheckLocation, StuckCheckTime, ConsecutiveStuckNudges] =
+        Context.GetInstanceData(*this);
     if (!AIController || !Actor) return EStateTreeRunStatus::Failed;
+
+    constexpr float StuckDistanceThreshold = 15.0f;
+    constexpr float StuckTimeThreshold = 1.5f;
+    if (FVector::DistSquared(Actor->GetActorLocation(), StuckCheckLocation) > FMath::Square(StuckDistanceThreshold))
+    {
+        StuckCheckLocation = Actor->GetActorLocation();
+        StuckCheckTime = 0.0f;
+        ConsecutiveStuckNudges = 0;
+    }
+    else StuckCheckTime += DeltaTime;
+
+    if (StuckCheckTime >= StuckTimeThreshold && AIController->GetMoveStatus() == EPathFollowingStatus::Moving)
+    {
+        StuckCheckTime = 0.0f;
+        constexpr int32 MaxStuckNudges = 3;
+        if (ConsecutiveStuckNudges >= MaxStuckNudges) return EStateTreeRunStatus::Succeeded;
+        if (Actor->GetSpawnPoint())
+        {
+            ++ConsecutiveStuckNudges;
+            const FVector ToTarget =
+                (Actor->GetSpawnPoint()->GetActorLocation() - Actor->GetActorLocation()).GetSafeNormal2D();
+            Actor->LaunchCharacter(ToTarget * 100.0f + FVector::UpVector * 150.0f, true, true);
+        }
+    }
+
     return AIController->GetMoveStatus() == EPathFollowingStatus::Idle ? EStateTreeRunStatus::Succeeded :
-                                                                          EStateTreeRunStatus::Running;
+                                                                         EStateTreeRunStatus::Running;
 }
 
 void FMoveToStartingPointTask::ExitState(FStateTreeExecutionContext& Context,

@@ -1,6 +1,7 @@
 #include "TowerDefencePawns/Tower/PlayerTower.h"
 
 #include "Components/BoxComponent.h"
+#include "CustomLog.h"
 #include "HealthComponent.h"
 #include "Perception/AIPerceptionComponent.h"
 #include "Perception/AIPerceptionTypes.h"
@@ -29,6 +30,19 @@ APlayerTower::APlayerTower()
     BoxCollider->SetCollisionResponseToAllChannels(ECR_Ignore);
     BoxCollider->SetCollisionResponseToChannel(MouseClickTraceChannel, ECR_Block);
     CurrentTeam = EAITeam::Defender;
+}
+
+void APlayerTower::BeginPlay()
+{
+    Super::BeginPlay();
+    SetPawnActive(true);
+    if (OccupiedRadius <= 0.0f && TowerMesh)
+    {
+        const FVector Extent = TowerMesh->Bounds.BoxExtent;
+        OccupiedRadius = FMath::Min(Extent.X, Extent.Y);
+        TD_LOG_INFO(TEXT("APlayerTower::BeginPlay -> computed OccupiedRadius = %.1f from BoxExtent = %s"),
+                    OccupiedRadius, *Extent.ToString());
+    }
 }
 
 void APlayerTower::Tick(float DeltaTime)

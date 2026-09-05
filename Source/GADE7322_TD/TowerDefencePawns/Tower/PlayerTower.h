@@ -1,7 +1,6 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "Net/RepLayout.h"
 
 #include "TowerDefencePawns/TowerDefencePawn.h"
 
@@ -20,6 +19,8 @@ class GADE7322_TD_API APlayerTower : public ATowerDefencePawn
 
 public:
     APlayerTower();
+
+    virtual void BeginPlay() override;
 
     virtual void Tick(float DeltaTime) override;
 

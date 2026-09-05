@@ -24,6 +24,7 @@ public class GADE7322_TD : ModuleRules
 			"StateTreeModule",
 			"GameplayStateTreeModule",
 			"AIModule",
+			"NavigationSystem",
 			"UMG",
 			"Slate",
 			"MeshDescription",

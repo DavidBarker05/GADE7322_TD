@@ -32,9 +32,6 @@ protected:
     virtual void DoUpdatePerceptionOnTeamChange() override;
 
 public:
-    const USkeletalMeshComponent* GetMesh() const { return SkeletalMesh; }
-    USkeletalMeshComponent* GetMesh() { return SkeletalMesh; }
-
     AWarrior& SetAttackTarget(ATowerDefencePawn* Target)
     {
         CurrentAttackTarget = Target;
@@ -49,6 +46,10 @@ public:
     AWeapon* GetWeapon();
 
 private:
+    void OnAttackMontageEnded(UAnimMontage* Montage, bool bInterrupted);
+
+    void OnDeathMontageEnded(UAnimMontage* Montage, bool bInterrupted);
+
     UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Mesh", meta = (AllowPrivateAccess = true))
     USkeletalMesh* MaleMesh = nullptr;
 
@@ -72,9 +73,6 @@ private:
 
     UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Animation", meta = (AllowPrivateAccess = true))
     UAnimMontage* FemaleDeathMontage;
-
-    UPROPERTY(BlueprintReadOnly, Category = "Components", meta = (AllowPrivateAccess = true))
-    USkeletalMeshComponent* SkeletalMesh = nullptr;
 
     UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Weapon", meta = (AllowPrivateAccess = true))
     UChildActorComponent* Weapon;
