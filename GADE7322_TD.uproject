@@ -11,9 +11,16 @@
       "AdditionalDependencies": [
         "Engine",
         "CoreUObject",
-        "BlueprintGraph",
         "AIModule",
         "UMG"
+      ]
+    },
+    {
+      "Name": "GADE7322_TDEditor",
+      "Type": "Editor",
+      "LoadingPhase": "Default",
+      "AdditionalDependencies": [
+        "GADE7322_TD"
       ]
     }
   ],

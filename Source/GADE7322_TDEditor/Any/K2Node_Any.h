@@ -7,7 +7,7 @@
 #include "K2Node_Any.generated.h"
 
 UCLASS()
-class GADE7322_TD_API UK2Node_Any : public UK2Node_CallFunction
+class GADE7322_TDEDITOR_API UK2Node_Any : public UK2Node_CallFunction
 {
     GENERATED_BODY()
 

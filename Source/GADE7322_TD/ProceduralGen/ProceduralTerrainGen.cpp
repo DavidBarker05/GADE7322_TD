@@ -18,7 +18,7 @@ AProceduralTerrainGen::AProceduralTerrainGen()
     TerrainMesh = CreateDefaultSubobject<UProceduralMeshComponent>(TEXT("TerrainMesh"));
     SetRootComponent(TerrainMesh);
     TerrainMesh->SetMobility(EComponentMobility::Static); // Never moves after BeginPlay, lets the engine optimise it
-    TerrainMesh->bUseAsyncCooking = true; // Collision cooking for a mesh this size would be slow if not async
+    TerrainMesh->bUseAsyncCooking = false;
 
     // Starts hidden/non-colliding with no mesh assigned, BakeMesh() fills it in and swaps it for TerrainMesh
     BakedTerrainMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("BakedTerrainMesh"));
@@ -35,7 +35,9 @@ void AProceduralTerrainGen::BeginPlay()
     ComputeDefenderSpotLocations(); // Before GenerateTerrain() so it can flatten around them too
     GenerateTerrain();
     SpawnDefenderSpots();
-    BakeMesh();
+    // BakeMesh()
+    // ^ Used editor only stuff, commented out for now until can fix if possible
+    if (IsValid(TerrainMesh)) UNavigationSystemV1::UpdateComponentInNavOctree(*TerrainMesh);
     RebuildNavMesh();
     TD_LOG_INFO(TEXT("Level is finished generating :)"));
 }
@@ -483,6 +485,10 @@ void AProceduralTerrainGen::SpawnDefenderSpots()
 
 // This was very hard to figure out, because not much information about how to do this, but I managed to get
 // it working :)
+// Disabled (see the BeginPlay() call site) - AddSourceModel()/SetMaterial() on UStaticMesh are editor-only,
+// so this can't even compile into a packaged build, let alone run in one. Left here in case baking gets
+// reinstated later with a runtime-safe approach
+#if WITH_EDITOR
 void AProceduralTerrainGen::BakeMesh()
 {
     if (!IsValid(TerrainMesh) || !IsValid(BakedTerrainMesh)) return;
@@ -537,6 +543,12 @@ void AProceduralTerrainGen::BakeMesh()
 
     UE_LOG(LogCustom, Display, TEXT("Baked Mesh"));
 }
+#else
+void AProceduralTerrainGen::BakeMesh()
+{
+    TD_LOG_WARN(TEXT("AProceduralTerrainGen::BakeMesh -> disabled outside the editor (uses editor-only UStaticMesh APIs), terrain stays as the raw procedural mesh");
+}
+#endif
 
 void AProceduralTerrainGen::RebuildNavMesh() const
 {
