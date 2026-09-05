@@ -11,6 +11,7 @@ class UBoxComponent;
 class UAIPerceptionComponent;
 class UAISenseConfig_Proximity;
 class UStaticMeshComponent;
+class UNiagaraComponent;
 
 UCLASS(Abstract)
 class GADE7322_TD_API APlayerTower : public ATowerDefencePawn
@@ -62,6 +63,8 @@ private:
 
     void UpdateAttackTargets();
 
+    void FireAttackBeam(int32 Index, const FVector& TargetLocation);
+
     // The amount of health the tower heals by with each purchase of health
     UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Tower",
               meta = (AllowPrivateAccess = true, ClampMin = 0, UIMin = 0))
@@ -107,4 +110,7 @@ private:
     TArray<bool, TFixedAllocator<3>> CanAttackTarget = {true, true, true};
 
     TArray<FTimerHandle, TFixedAllocator<3>> TimerHandles;
+
+    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components|Beams", meta = (AllowPrivateAccess = true))
+    TArray<UNiagaraComponent*> BeamComponents;
 };

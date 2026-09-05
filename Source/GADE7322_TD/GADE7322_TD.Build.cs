@@ -28,7 +28,8 @@ public class GADE7322_TD : ModuleRules
 			"UMG",
 			"Slate",
 			"MeshDescription",
-			"StaticMeshDescription"
+			"StaticMeshDescription",
+			"Niagara"
 		});
 
 		PrivateDependencyModuleNames.AddRange(new string[] { "Slate", "SlateCore" });

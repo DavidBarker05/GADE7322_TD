@@ -1,9 +1,9 @@
 #include "TowerDefencePawns/Tower/PlayerTower.h"
 
 #include "Components/BoxComponent.h"
-#include "CustomLog.h"
 #include "HealthComponent.h"
 #include "HitFlashComponent.h"
+#include "NiagaraComponent.h"
 #include "Perception/AIPerceptionComponent.h"
 #include "Perception/AIPerceptionTypes.h"
 #include "TDCollisionChannels.h"
@@ -32,6 +32,16 @@ APlayerTower::APlayerTower()
     BoxCollider->SetCollisionResponseToAllChannels(ECR_Ignore);
     BoxCollider->SetCollisionResponseToChannel(MouseClickTraceChannel, ECR_Block);
     CurrentTeam = EAITeam::Defender;
+
+    BeamComponents.SetNum(3);
+    for (int32 i = 0; i < 3; ++i)
+    {
+        UNiagaraComponent* Beam =
+            CreateDefaultSubobject<UNiagaraComponent>(*FString::Printf(TEXT("Attack Beam %d"), i));
+        Beam->SetupAttachment(RootComponent);
+        Beam->SetAutoActivate(false);
+        BeamComponents[i] = Beam;
+    }
 }
 
 void APlayerTower::BeginPlay()
@@ -66,11 +76,20 @@ void APlayerTower::StartAttack()
         {
             CanAttackTarget[i] = false;
             Attack(AttackTargets[i]);
-            // TODO: Fire laser
+            FireAttackBeam(i, AttackTargets[i]->GetActorLocation());
             GetWorldTimerManager().SetTimer(
                 TimerHandles[i], [this, i]() -> void { CanAttackTarget[i] = true; }, AttackCooldown, false);
         }
     }
+}
+
+void APlayerTower::FireAttackBeam(int32 Index, const FVector& TargetLocation)
+{
+    UNiagaraComponent* Beam = BeamComponents[Index];
+    if (!Beam) return;
+    Beam->SetVariablePosition(TEXT("Beam Start"), Beam->GetComponentLocation());
+    Beam->SetVariablePosition(TEXT("Beam End"), TargetLocation);
+    Beam->Activate(true);
 }
 
 void APlayerTower::DoUpdatePerceptionOnTeamChange()
