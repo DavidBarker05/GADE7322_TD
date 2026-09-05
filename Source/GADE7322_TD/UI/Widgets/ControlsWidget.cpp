@@ -2,7 +2,6 @@
 
 #include "Components/Button.h"
 #include "Components/RichTextBlock.h"
-#include "UI/TowerDefence/Widgets/PauseScreenWidget.h"
 
 bool UControlsWidget::Initialize()
 {

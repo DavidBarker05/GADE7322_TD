@@ -2,12 +2,17 @@
 #include "TowerDefencePawns/TowerDefencePawn.h"
 
 #include "Components/CapsuleComponent.h"
+#include "Components/ProgressBar.h"
+#include "Components/WidgetComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
+#include "Kismet/GameplayStatics.h"
+#include "Kismet/KismetMathLibrary.h"
 #include "Perception/AIPerceptionStimuliSourceComponent.h"
 #include "TowerDefencePawns/AI/ProximityPerception/AISense_Proximity.h"
 #include "TowerDefencePawns/AI/TowerDefencePawnAIController.h"
 #include "TowerDefencePawns/Components/DamageComponent.h"
 #include "TowerDefencePawns/Components/HealthComponent.h"
+#include "UI/TowerDefence/Widgets/HealthBarWidget.h"
 
 ATowerDefencePawn::ATowerDefencePawn()
 {
@@ -21,9 +26,11 @@ ATowerDefencePawn::ATowerDefencePawn()
     GetCharacterMovement()->AirControl = 1.0f;
     GetCharacterMovement()->MaxStepHeight = 70.0f;
     GetCharacterMovement()->SetWalkableFloorAngle(60.0f);
-    HealthComponent = CreateDefaultSubobject<UHealthComponent>("Health Component");
-    DamageComponent = CreateDefaultSubobject<UDamageComponent>("Damage Component");
-    StimuliSourceComponent = CreateDefaultSubobject<UAIPerceptionStimuliSourceComponent>("Stimuli Source Component");
+    HealthComponent = CreateDefaultSubobject<UHealthComponent>(TEXT("Health Component"));
+    DamageComponent = CreateDefaultSubobject<UDamageComponent>(TEXT("Damage Component"));
+    StimuliSourceComponent =
+        CreateDefaultSubobject<UAIPerceptionStimuliSourceComponent>(TEXT("Stimuli Source Component"));
+    HealthBar = CreateDefaultSubobject<UWidgetComponent>(TEXT("Health Bar"));
     BaseEyeHeight = 0.0f;
 }
 
@@ -39,6 +46,16 @@ void ATowerDefencePawn::BeginPlay()
     }
 }
 
+void ATowerDefencePawn::Tick(float DeltaTime)
+{
+    Super::Tick(DeltaTime);
+    if (!bIsHealthBarShowing) return;
+    const FVector BarLoc = HealthBar->GetComponentLocation();
+    const FVector CamLoc = UGameplayStatics::GetPlayerCameraManager(this, 0)->GetCameraLocation();
+    const FRotator DesiredRot = UKismetMathLibrary::FindLookAtRotation(BarLoc, CamLoc);
+    HealthBar->SetWorldRotation(DesiredRot);
+}
+
 ATowerDefencePawn& ATowerDefencePawn::SetPawnActive(bool bActive)
 {
     bIsPawnActive = bActive;
@@ -47,11 +64,21 @@ ATowerDefencePawn& ATowerDefencePawn::SetPawnActive(bool bActive)
         StimuliSourceComponent->RegisterWithPerceptionSystem();
         StimuliSourceComponent->RegisterForSense(UAISense_Proximity::StaticClass());
         HealthComponent->ResetHealth();
+        if (UHealthBarWidget* HealthBarWidget = Cast<UHealthBarWidget>(HealthBar->GetUserWidgetObject()))
+        {
+            const int32 CurrentHealth = HealthComponent->GetCurrentHealth();
+            const int32 MaxHealth = HealthComponent->GetMaxHealth();
+            const float HealthPercent = static_cast<float>(CurrentHealth) / static_cast<float>(MaxHealth);
+            HealthBarWidget->GetHealthBar()->SetPercent(HealthPercent);
+        }
+        if (bAlwaysDisplayHealth) ShowHealthBar();
+        else HideHealthBar();
     }
     else
     {
         StimuliSourceComponent->UnregisterFromPerceptionSystem();
         StimuliSourceComponent->UnregisterFromSense(UAISense_Proximity::StaticClass());
+        HideHealthBar();
     }
     if (bUseAIController)
         if (ATowerDefencePawnAIController* AIController = Cast<ATowerDefencePawnAIController>(GetController()))
@@ -60,7 +87,34 @@ ATowerDefencePawn& ATowerDefencePawn::SetPawnActive(bool bActive)
     return *this;
 }
 
-void ATowerDefencePawn::Tick(float DeltaTime) { Super::Tick(DeltaTime); }
+void ATowerDefencePawn::UpdateHealthDisplay()
+{
+    UHealthBarWidget* HealthBarWidget = Cast<UHealthBarWidget>(HealthBar->GetUserWidgetObject());
+    if (!HealthBarWidget) return;
+    const int32 CurrentHealth = HealthComponent->GetCurrentHealth();
+    if (CurrentHealth == 0) return; // Don't display on death
+    const int32 MaxHealth = HealthComponent->GetMaxHealth();
+    const float HealthPercent = static_cast<float>(CurrentHealth) / static_cast<float>(MaxHealth);
+    HealthBarWidget->GetHealthBar()->SetPercent(HealthPercent);
+    if (!bAlwaysDisplayHealth)
+    {
+        ShowHealthBar();
+        GetWorldTimerManager().SetTimer(HealthBarDisplayHandle, this, &ATowerDefencePawn::HideHealthBar,
+                                        HealthDisplayTime, false);
+    }
+}
+
+void ATowerDefencePawn::ShowHealthBar()
+{
+    bIsHealthBarShowing = true;
+    HealthBar->SetVisibility(true);
+}
+
+void ATowerDefencePawn::HideHealthBar()
+{
+    bIsHealthBarShowing = false;
+    HealthBar->SetVisibility(false);
+}
 
 void ATowerDefencePawn::Attack(ATowerDefencePawn* Other)
 {

@@ -41,8 +41,6 @@ void APlayerTower::BeginPlay()
     {
         const FVector Extent = TowerMesh->Bounds.BoxExtent;
         OccupiedRadius = FMath::Min(Extent.X, Extent.Y);
-        TD_LOG_INFO(TEXT("APlayerTower::BeginPlay -> computed OccupiedRadius = %.1f from BoxExtent = %s"),
-                    OccupiedRadius, *Extent.ToString());
     }
 }
 

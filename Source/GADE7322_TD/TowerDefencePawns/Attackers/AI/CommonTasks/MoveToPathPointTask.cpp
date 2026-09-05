@@ -60,11 +60,7 @@ EStateTreeRunStatus FMoveToPathPointTask::EnterState(FStateTreeExecutionContext&
     if (RemainingPoints.Num() < 2) return EStateTreeRunStatus::Succeeded;
 
     UPathFollowingComponent* PFC = AIController->GetPathFollowingComponent();
-    if (!PFC)
-    {
-        TD_LOG_ERROR(TEXT("FMoveToPathPointTask::EnterState -> %s missing PathFollowingComponent"), *Actor->GetName());
-        return EStateTreeRunStatus::Failed;
-    }
+    if (!PFC) return EStateTreeRunStatus::Failed;
 
     const FNavPathSharedPtr NavPath = MakeShared<FNavigationPath>(RemainingPoints);
     FAIMoveRequest MoveReq(RemainingPoints.Last());
@@ -114,10 +110,6 @@ EStateTreeRunStatus FMoveToPathPointTask::Tick(FStateTreeExecutionContext& Conte
         }
     }
 
-    TD_LOG_INFO(TEXT("FMoveToPathPointTask::Tick -> %s Speed = %.1f, MovementMode = %d, PFC status = %d"),
-                *Actor->GetName(), Actor->GetCharacterMovement()->Velocity.Size(),
-                static_cast<int32>(Actor->GetCharacterMovement()->MovementMode),
-                static_cast<int32>(AIController->GetMoveStatus()));
     return AIController->GetMoveStatus() == EPathFollowingStatus::Idle ? EStateTreeRunStatus::Succeeded :
                                                                          EStateTreeRunStatus::Running;
 }

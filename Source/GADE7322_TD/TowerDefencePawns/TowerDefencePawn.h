@@ -8,9 +8,11 @@
 #include "TowerDefencePawn.generated.h"
 
 class ATowerDefencePawnAIController;
-class UHealthComponent;
-class UDamageComponent;
 class UAIPerceptionStimuliSourceComponent;
+class UDamageComponent;
+class UHealthComponent;
+class UHealthBarWidget;
+class UWidgetComponent;
 
 UENUM(BlueprintType)
 enum class EAITeam : uint8
@@ -84,13 +86,15 @@ public:
         DoUpdatePerceptionOnTeamChange();
     }
 
+    virtual void UpdateHealthDisplay();
+
 protected:
     // Stuff like toggling mesh, etc.
     virtual void DoOnSetActive(bool bActive) { }
 
     virtual void DoUpdatePerceptionOnTeamChange() { }
 
-    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components", meta = (AllowPrivateAccess = true))
+    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components|Health", meta = (AllowPrivateAccess = true))
     UHealthComponent* HealthComponent;
 
     UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components", meta = (AllowPrivateAccess = true))
@@ -98,6 +102,9 @@ protected:
 
     UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components", meta = (AllowPrivateAccess = true))
     UAIPerceptionStimuliSourceComponent* StimuliSourceComponent;
+
+    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components|Health", meta = (AllowPrivateAccess = true))
+    UWidgetComponent* HealthBar;
 
     UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "AI|Teams")
     EAITeam CurrentTeam;
@@ -119,7 +126,24 @@ protected:
 
     TFunction<void()> DestroyDelegate;
 
+    bool bIsHealthBarShowing = false;
+
+    UFUNCTION()
+    virtual void ShowHealthBar();
+
+    UFUNCTION()
+    virtual void HideHealthBar();
+
 private:
     UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "TD Pawn", meta = (AllowPrivateAccess = true))
     bool bIsPawnActive = false;
+
+    UPROPERTY(EditDefaultsOnly, Category = "Health", meta = (AllowPrivateAccess = true))
+    bool bAlwaysDisplayHealth = false;
+
+    UPROPERTY(EditDefaultsOnly, Category = "Health",
+              meta = (AllowPrivateAccess = true, ClampMin = 0.0, UIMin = 0.0, Units = "Seconds"))
+    float HealthDisplayTime = 0.5f;
+
+    FTimerHandle HealthBarDisplayHandle;
 };
