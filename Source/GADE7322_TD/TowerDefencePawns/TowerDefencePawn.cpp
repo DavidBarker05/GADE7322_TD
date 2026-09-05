@@ -12,6 +12,7 @@
 #include "TowerDefencePawns/AI/TowerDefencePawnAIController.h"
 #include "TowerDefencePawns/Components/DamageComponent.h"
 #include "TowerDefencePawns/Components/HealthComponent.h"
+#include "TowerDefencePawns/Components/HitFlashComponent.h"
 #include "UI/TowerDefence/Widgets/HealthBarWidget.h"
 
 ATowerDefencePawn::ATowerDefencePawn()
@@ -31,6 +32,8 @@ ATowerDefencePawn::ATowerDefencePawn()
     StimuliSourceComponent =
         CreateDefaultSubobject<UAIPerceptionStimuliSourceComponent>(TEXT("Stimuli Source Component"));
     HealthBar = CreateDefaultSubobject<UWidgetComponent>(TEXT("Health Bar"));
+    HealthBar->SetupAttachment(RootComponent);
+    HitFlashComponent = CreateDefaultSubobject<UHitFlashComponent>(TEXT("Hit Flash Component"));
     BaseEyeHeight = 0.0f;
 }
 

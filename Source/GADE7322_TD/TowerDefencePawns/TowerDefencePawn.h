@@ -12,6 +12,7 @@ class UAIPerceptionStimuliSourceComponent;
 class UDamageComponent;
 class UHealthComponent;
 class UHealthBarWidget;
+class UHitFlashComponent;
 class UWidgetComponent;
 
 UENUM(BlueprintType)
@@ -88,6 +89,9 @@ public:
 
     virtual void UpdateHealthDisplay();
 
+    const UHitFlashComponent* GetHitFlashComponent() const { return HitFlashComponent; }
+    UHitFlashComponent* GetHitFlashComponent() { return HitFlashComponent; }
+
 protected:
     // Stuff like toggling mesh, etc.
     virtual void DoOnSetActive(bool bActive) { }
@@ -105,6 +109,9 @@ protected:
 
     UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components|Health", meta = (AllowPrivateAccess = true))
     UWidgetComponent* HealthBar;
+
+    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components", meta = (AllowPrivateAccess = true))
+    UHitFlashComponent* HitFlashComponent;
 
     UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "AI|Teams")
     EAITeam CurrentTeam;

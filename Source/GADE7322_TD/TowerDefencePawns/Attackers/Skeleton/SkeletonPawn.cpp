@@ -3,6 +3,7 @@
 
 #include "Animation/AnimInstance.h"
 #include "Components/ChildActorComponent.h"
+#include "HitFlashComponent.h"
 #include "Perception/AIPerceptionComponent.h"
 #include "Perception/AIPerceptionSystem.h"
 #include "TowerDefencePawns/Attackers/Skeleton/AI/SkeletonAIController.h"
@@ -15,6 +16,12 @@ ASkeletonPawn::ASkeletonPawn()
     Weapon = CreateDefaultSubobject<UChildActorComponent>(TEXT("Weapon"));
     Weapon->SetupAttachment(RootComponent);
     CurrentTeam = EAITeam::Attacker;
+}
+
+void ASkeletonPawn::BeginPlay()
+{
+    Super::BeginPlay();
+    HitFlashComponent->BindMaterials();
 }
 
 const AWeapon* ASkeletonPawn::GetWeapon() const { return Cast<AWeapon>(Weapon ? Weapon->GetChildActor() : nullptr); }

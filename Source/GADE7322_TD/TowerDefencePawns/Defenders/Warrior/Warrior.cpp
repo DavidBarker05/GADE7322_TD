@@ -3,6 +3,7 @@
 
 #include "Animation/AnimInstance.h"
 #include "Components/ChildActorComponent.h"
+#include "HitFlashComponent.h"
 #include "Perception/AIPerceptionComponent.h"
 #include "TowerDefencePawns/Defenders/Warrior/AI/WarriorAIController.h"
 #include "TowerDefencePawns/Weapon.h"
@@ -60,8 +61,13 @@ void AWarrior::DoOnSetActive(bool bActive)
         GetMesh()->SetSkeletalMesh(bIsFemale ? FemaleMesh : MaleMesh);
         GetMesh()->SetAnimInstanceClass(bIsFemale ? FemaleAnimationBlueprint : MaleAnimationBlueprint);
         if (Sword) Sword->AttachToSkeleton(GetMesh());
+        HitFlashComponent->BindMaterials();
     }
-    else if (Sword) Sword->AttachToComponent(Weapon, FAttachmentTransformRules::SnapToTargetNotIncludingScale);
+    else
+    {
+        if (Sword) Sword->AttachToComponent(Weapon, FAttachmentTransformRules::SnapToTargetNotIncludingScale);
+        HitFlashComponent->UnbindMaterials();
+    }
     GetMesh()->SetVisibility(bActive);
     GetMesh()->SetComponentTickEnabled(bActive);
     GetMesh()->SetCollisionEnabled(bActive ? ECollisionEnabled::QueryAndPhysics : ECollisionEnabled::NoCollision);

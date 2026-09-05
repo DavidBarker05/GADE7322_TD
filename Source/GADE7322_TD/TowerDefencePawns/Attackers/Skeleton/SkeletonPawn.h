@@ -19,6 +19,8 @@ class GADE7322_TD_API ASkeletonPawn : public AAttacker
 public:
     ASkeletonPawn();
 
+    virtual void BeginPlay() override;
+
     virtual void StartAttack() override;
 
     virtual void EndAttack() override;

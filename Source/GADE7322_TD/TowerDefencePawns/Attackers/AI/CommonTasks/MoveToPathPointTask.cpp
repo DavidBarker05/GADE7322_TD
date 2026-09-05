@@ -91,9 +91,21 @@ EStateTreeRunStatus FMoveToPathPointTask::Tick(FStateTreeExecutionContext& Conte
     {
         StuckCheckTime = 0.0f;
         constexpr int32 MaxStuckNudges = 3;
-        if (ConsecutiveStuckNudges >= MaxStuckNudges) return EStateTreeRunStatus::Succeeded;
         const TArray<FVector>& AllPoints = Actor->GetPathPoints();
         const int32 Idx = Actor->GetCurrentPathIndex();
+        if (ConsecutiveStuckNudges >= MaxStuckNudges)
+        {
+            const int32 SkipCount = FMath::RandRange(1, 10);
+            const int32 NewIdx = FMath::Min(Idx + SkipCount, AllPoints.Num() - 1);
+            if (AllPoints.IsValidIndex(NewIdx))
+            {
+                Actor->SetActorLocation(AllPoints[NewIdx], false, nullptr, ETeleportType::TeleportPhysics);
+                Actor->SetCurrentPathIndex(NewIdx);
+                if (UCharacterMovementComponent* Movement = Actor->GetCharacterMovement())
+                    Movement->StopMovementImmediately();
+            }
+            return EStateTreeRunStatus::Succeeded;
+        }
         if (AllPoints.IsValidIndex(Idx))
         {
             ++ConsecutiveStuckNudges;

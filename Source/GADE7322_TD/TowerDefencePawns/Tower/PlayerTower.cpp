@@ -3,6 +3,7 @@
 #include "Components/BoxComponent.h"
 #include "CustomLog.h"
 #include "HealthComponent.h"
+#include "HitFlashComponent.h"
 #include "Perception/AIPerceptionComponent.h"
 #include "Perception/AIPerceptionTypes.h"
 #include "TDCollisionChannels.h"
@@ -37,6 +38,7 @@ void APlayerTower::BeginPlay()
 {
     Super::BeginPlay();
     SetPawnActive(true);
+    HitFlashComponent->BindMaterials();
     if (OccupiedRadius <= 0.0f && TowerMesh)
     {
         const FVector Extent = TowerMesh->Bounds.BoxExtent;
