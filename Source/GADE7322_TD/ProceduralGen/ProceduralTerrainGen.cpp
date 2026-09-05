@@ -1,14 +1,17 @@
 // ReSharper disable CppParameterMayBeConst
 #include "ProceduralGen/ProceduralTerrainGen.h"
 
-#include "CustomLog.h"
+#if WITH_EDITOR
 #include "DrawDebugHelpers.h"
-#include "KismetProceduralMeshLibrary.h"
-#include "NavigationSystem.h"
 #include "PhysicsEngine/BodySetup.h"
-#include "ProceduralMeshComponent.h"
 #include "ProceduralMeshConversion.h"
 #include "StaticMeshDescription.h"
+#endif
+
+#include "CustomLog.h"
+#include "KismetProceduralMeshLibrary.h"
+#include "NavigationSystem.h"
+#include "ProceduralMeshComponent.h"
 #include "TowerDefencePawns/Defenders/DefenderSpot.h"
 
 AProceduralTerrainGen::AProceduralTerrainGen()
