@@ -546,7 +546,7 @@ void AProceduralTerrainGen::BakeMesh()
 #else
 void AProceduralTerrainGen::BakeMesh()
 {
-    TD_LOG_WARN(TEXT("AProceduralTerrainGen::BakeMesh -> disabled outside the editor (uses editor-only UStaticMesh APIs), terrain stays as the raw procedural mesh");
+    TD_LOG_WARN(TEXT("AProceduralTerrainGen::BakeMesh -> disabled outside the editor (uses editor-only UStaticMesh APIs), terrain stays as the raw procedural mesh"));
 }
 #endif
 
