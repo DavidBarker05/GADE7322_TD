@@ -38,9 +38,14 @@ void AProceduralTerrainGen::BeginPlay()
     ComputeDefenderSpotLocations(); // Before GenerateTerrain() so it can flatten around them too
     GenerateTerrain();
     SpawnDefenderSpots();
-    // BakeMesh()
-    // ^ Used editor only stuff, commented out for now until can fix if possible
+#if WITH_EDITOR
+    BakeMesh();
+    // ^ Uses editor only stuff to bake the mesh into a static mesh. Keep doing in editor for better performance in
+    // editor, but leave out of build (because impossible in build) which has better performance already
+#else
     if (IsValid(TerrainMesh)) UNavigationSystemV1::UpdateComponentInNavOctree(*TerrainMesh);
+    // ^ Need to call this separate in build because it was originally done in BakeMesh()
+#endif
     RebuildNavMesh();
     TD_LOG_INFO(TEXT("Level is finished generating :)"));
 }
@@ -274,7 +279,10 @@ void AProceduralTerrainGen::GenerateTerrain() const
 
     TerrainMesh->CreateMeshSection_LinearColor(0, Vertices, Triangles, Normals, UVs, VertexColors, Tangents, true);
 
+#if !WITH_EDITOR
     if (TerrainMaterial) TerrainMesh->SetMaterial(0, TerrainMaterial);
+    // ^ Need to apply material to procedural mesh as opposed to static mesh when in build
+#endif
 
     UE_LOG(LogCustom, Display, TEXT("Generated Terrain"));
 }
@@ -363,6 +371,7 @@ float AProceduralTerrainGen::DistanceToNearestDefenderSpotEdge(const FVector2D& 
 
 void AProceduralTerrainGen::DrawDebugForPaths() const
 {
+#if WITH_EDITOR
     const UWorld* const World = GetWorld();
     if (!World) return;
 
@@ -376,6 +385,7 @@ void AProceduralTerrainGen::DrawDebugForPaths() const
         if (Points.Num() > 0)
             DrawDebugSphere(World, Points[0], 80.0f, 12, FColor::Green, false, DebugDrawDuration, 0, 3.0f);
     }
+#endif
 }
 
 void AProceduralTerrainGen::GenerateDefenderSpots()
@@ -490,9 +500,6 @@ void AProceduralTerrainGen::SpawnDefenderSpots()
 
 // This was very hard to figure out, because not much information about how to do this, but I managed to get
 // it working :)
-// Disabled (see the BeginPlay() call site) - AddSourceModel()/SetMaterial() on UStaticMesh are editor-only,
-// so this can't even compile into a packaged build, let alone run in one. Left here in case baking gets
-// reinstated later with a runtime-safe approach
 #if WITH_EDITOR
 void AProceduralTerrainGen::BakeMesh()
 {
@@ -568,6 +575,7 @@ void AProceduralTerrainGen::RebuildNavMesh() const
 
 void AProceduralTerrainGen::DrawDebugForDefenderSpots() const
 {
+#if WITH_EDITOR
     const UWorld* const World = GetWorld();
     if (!World) return;
 
@@ -577,4 +585,5 @@ void AProceduralTerrainGen::DrawDebugForDefenderSpots() const
             DrawDebugSphere(World, Spot->GetActorLocation(), ExampleDefenderPerceptionRadius, 12, FColor::Cyan, false,
                             DebugDrawDuration, 0, 3.0f);
     }
+#endif
 }
