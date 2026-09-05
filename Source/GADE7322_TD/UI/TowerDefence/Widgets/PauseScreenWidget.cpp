@@ -44,6 +44,7 @@ void UPauseScreenWidget::ResumeGame() const
 
 void UPauseScreenWidget::RestartGame() const
 {
+    if (APlayerController* PC = GetOwningPlayer()) PC->SetPause(false);
     if (TOWER_DEFENCE_PAWN_FACTORY_EXISTS) CLEAR_PAWN_POOLS();
     const FString CurrentMapName = UGameplayStatics::GetCurrentLevelName(this, true);
     UGameplayStatics::OpenLevel(this, FName(*CurrentMapName));
