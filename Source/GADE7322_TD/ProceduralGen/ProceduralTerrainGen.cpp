@@ -59,7 +59,7 @@ void AProceduralTerrainGen::GeneratePaths()
 
     TD_LOG_INFO(TEXT("Current Seed: %d"), Seed);
 
-    UE_LOG(LogCustom, Display, TEXT("Generating Paths..."));
+    TD_LOG_INFO_NDSP(TEXT("Generating Paths..."));
 
     const FRandomStream Stream(Seed);
 
@@ -69,7 +69,7 @@ void AProceduralTerrainGen::GeneratePaths()
     const TArray<float> EntryAngles = GenerateEntryAngles(Stream);
     for (const float Angle : EntryAngles) Paths.Add(BuildPath(Angle, Stream));
 
-    UE_LOG(LogCustom, Display, TEXT("Generated Paths"));
+    TD_LOG_INFO_NDSP(TEXT("Generated Paths"));
 
     if (bDrawDebugPaths) DrawDebugForPaths();
 }
@@ -214,7 +214,7 @@ void AProceduralTerrainGen::GenerateTerrain() const
 {
     if (!IsValid(TerrainMesh)) return;
 
-    UE_LOG(LogCustom, Display, TEXT("Generating Terrain..."));
+    TD_LOG_INFO_NDSP(TEXT("Generating Terrain..."));
 
     TerrainMesh->ClearAllMeshSections();
 
@@ -287,7 +287,7 @@ void AProceduralTerrainGen::GenerateTerrain() const
     // ^ Need to apply material to procedural mesh as opposed to static mesh when in build
 #endif
 
-    UE_LOG(LogCustom, Display, TEXT("Generated Terrain"));
+    TD_LOG_INFO_NDSP(TEXT("Generated Terrain"));
 }
 
 float AProceduralTerrainGen::GetTerrainHeight(const FVector2D& WorldXY) const
@@ -393,10 +393,10 @@ void AProceduralTerrainGen::DrawDebugForPaths() const
 
 void AProceduralTerrainGen::GenerateDefenderSpots()
 {
-    UE_LOG(LogCustom, Display, TEXT("Generating Defender Spots..."));
+    TD_LOG_INFO_NDSP(TEXT("Generating Defender Spots..."));
     ComputeDefenderSpotLocations();
     SpawnDefenderSpots();
-    UE_LOG(LogCustom, Display, TEXT("Generated Defender Spots"));
+    TD_LOG_INFO_NDSP(TEXT("Generated Defender Spots"));
 }
 
 void AProceduralTerrainGen::ComputeDefenderSpotLocations()
@@ -476,7 +476,7 @@ bool AProceduralTerrainGen::TryAddDefenderSpotLocation(const FVector2D& Candidat
 
 void AProceduralTerrainGen::SpawnDefenderSpots()
 {
-    UE_LOG(LogCustom, Display, TEXT("Spawning Defender Spots..."));
+    TD_LOG_INFO_NDSP(TEXT("Spawning Defender Spots..."));
     for (ADefenderSpot* Spot : DefenderSpots)
     {
         if (IsValid(Spot)) Spot->Destroy();
@@ -498,7 +498,7 @@ void AProceduralTerrainGen::SpawnDefenderSpots()
     }
 
     if (bDrawDebugDefenderSpots) DrawDebugForDefenderSpots();
-    UE_LOG(LogCustom, Display, TEXT("Spawned Defender Spots"));
+    TD_LOG_INFO_NDSP(TEXT("Spawned Defender Spots"));
 }
 
 // This was very hard to figure out, because not much information about how to do this, but I managed to get
@@ -508,7 +508,7 @@ void AProceduralTerrainGen::BakeMesh()
 {
     if (!IsValid(TerrainMesh) || !IsValid(BakedTerrainMesh)) return;
 
-    UE_LOG(LogCustom, Display, TEXT("Baking Mesh..."));
+    TD_LOG_INFO_NDSP(TEXT("Baking Mesh..."));
 
     UStaticMesh* StaticMesh =
         NewObject<UStaticMesh>(this /* = Owner/Holder */, NAME_None, RF_Transient /* = Don't save mesh */);
@@ -556,7 +556,7 @@ void AProceduralTerrainGen::BakeMesh()
     UNavigationSystemV1::UpdateComponentInNavOctree(*TerrainMesh);
     UNavigationSystemV1::UpdateComponentInNavOctree(*BakedTerrainMesh);
 
-    UE_LOG(LogCustom, Display, TEXT("Baked Mesh"));
+    TD_LOG_INFO_NDSP(TEXT("Baked Mesh"));
 }
 #else
 void AProceduralTerrainGen::BakeMesh()
@@ -570,9 +570,9 @@ void AProceduralTerrainGen::RebuildNavMesh() const
 {
     if (UWorld* World = GetWorld())
     {
-        UE_LOG(LogCustom, Display, TEXT("Rebuilding Nav Mesh..."));
+        TD_LOG_INFO_NDSP(TEXT("Rebuilding Nav Mesh..."));
         FNavigationSystem::Build(*World);
-        UE_LOG(LogCustom, Display, TEXT("Rebuilt Nav Mesh"));
+        TD_LOG_INFO_NDSP(TEXT("Rebuilt Nav Mesh"));
     }
 }
 
