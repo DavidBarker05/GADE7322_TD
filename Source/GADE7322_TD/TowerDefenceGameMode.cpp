@@ -67,14 +67,14 @@ ETeamAttitude::Type ATowerDefenceGameMode::GetAttitude(FGenericTeamId TeamA, FGe
                 case EAITeam::MeleeDefender:
                 case EAITeam::RangedDefender:
                 case EAITeam::SupportDefender:
-                    return ETeamAttitude::Friendly;
+                    return ETeamAttitude::Friendly; // Friendly to all defenders
                 case EAITeam::MeleeAttacker:
                 case EAITeam::SupportAttacker:
-                    return ETeamAttitude::Hostile;
+                    return ETeamAttitude::Hostile; // Hostile to attackers on ground
                 case EAITeam::FlyingAttacker:
-                    return ETeamAttitude::Neutral;
+                    return ETeamAttitude::Neutral; // Neutral to attackers in air (doesn't attack)
                 default:
-                    return ETeamAttitude::Neutral;
+                    return ETeamAttitude::Neutral; // Neutral by default
             }
         case EAITeam::RangedDefender:
             switch (AiTeamB)
@@ -82,13 +82,13 @@ ETeamAttitude::Type ATowerDefenceGameMode::GetAttitude(FGenericTeamId TeamA, FGe
                 case EAITeam::MeleeDefender:
                 case EAITeam::RangedDefender:
                 case EAITeam::SupportDefender:
-                    return ETeamAttitude::Friendly;
+                    return ETeamAttitude::Friendly; // Friendly to all defenders
                 case EAITeam::MeleeAttacker:
                 case EAITeam::SupportAttacker:
                 case EAITeam::FlyingAttacker:
-                    return ETeamAttitude::Hostile;
+                    return ETeamAttitude::Hostile; // Hostile to all attackers
                 default:
-                    return ETeamAttitude::Neutral;
+                    return ETeamAttitude::Neutral; // Neutral by default
             }
         case EAITeam::SupportDefender:
             switch (AiTeamB)
@@ -96,13 +96,13 @@ ETeamAttitude::Type ATowerDefenceGameMode::GetAttitude(FGenericTeamId TeamA, FGe
                 case EAITeam::MeleeDefender:
                 case EAITeam::RangedDefender:
                 case EAITeam::SupportDefender:
-                    return ETeamAttitude::Friendly;
+                    return ETeamAttitude::Friendly; // Friendly to all defenders
                 case EAITeam::MeleeAttacker:
                 case EAITeam::SupportAttacker:
                 case EAITeam::FlyingAttacker:
-                    return ETeamAttitude::Neutral;
+                    return ETeamAttitude::Neutral; // Neutral to all attackers (doesn't attack)
                 default:
-                    return ETeamAttitude::Neutral;
+                    return ETeamAttitude::Neutral; // Neutral by default
             }
         case EAITeam::MeleeAttacker:
         case EAITeam::FlyingAttacker:
@@ -111,13 +111,13 @@ ETeamAttitude::Type ATowerDefenceGameMode::GetAttitude(FGenericTeamId TeamA, FGe
                 case EAITeam::MeleeDefender:
                 case EAITeam::RangedDefender:
                 case EAITeam::SupportDefender:
-                    return ETeamAttitude::Hostile;
+                    return ETeamAttitude::Hostile; // Hostile to all defenders
                 case EAITeam::MeleeAttacker:
                 case EAITeam::SupportAttacker:
                 case EAITeam::FlyingAttacker:
-                    return ETeamAttitude::Friendly;
+                    return ETeamAttitude::Friendly; // Friendly to all attackers
                 default:
-                    return ETeamAttitude::Neutral;
+                    return ETeamAttitude::Neutral; // Neutral by default
             }
         case EAITeam::SupportAttacker:
             switch (AiTeamB)
@@ -125,16 +125,16 @@ ETeamAttitude::Type ATowerDefenceGameMode::GetAttitude(FGenericTeamId TeamA, FGe
                 case EAITeam::MeleeDefender:
                 case EAITeam::RangedDefender:
                 case EAITeam::SupportDefender:
-                    return ETeamAttitude::Neutral;
+                    return ETeamAttitude::Neutral; // Neutral to all defenders (doesn't attack)
                 case EAITeam::MeleeAttacker:
                 case EAITeam::SupportAttacker:
                 case EAITeam::FlyingAttacker:
-                    return ETeamAttitude::Friendly;
+                    return ETeamAttitude::Friendly; // Friendly to all attackers
                 default:
-                    return ETeamAttitude::Neutral;
+                    return ETeamAttitude::Neutral; // Neutral by default
             }
         default:
-            return ETeamAttitude::Neutral;
+            return ETeamAttitude::Neutral; // Neutral by default
     }
 }
 
