@@ -31,7 +31,7 @@ APlayerTower::APlayerTower()
     BoxCollider->SetCollisionObjectType(ECC_WorldDynamic);
     BoxCollider->SetCollisionResponseToAllChannels(ECR_Ignore);
     BoxCollider->SetCollisionResponseToChannel(MouseClickTraceChannel, ECR_Block);
-    CurrentTeam = EAITeam::Defender;
+    CurrentTeam = EAITeam::RangedDefender;
 
     BeamComponents.SetNum(3);
     for (int32 i = 0; i < 3; ++i)

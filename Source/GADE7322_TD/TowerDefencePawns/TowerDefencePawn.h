@@ -18,10 +18,13 @@ class UWidgetComponent;
 UENUM(BlueprintType)
 enum class EAITeam : uint8
 {
-    Defender = 0 UMETA(DisplayName = "Defender"),
-    Attacker = 1 UMETA(DisplayName = "Attacker"),
+    MeleeDefender = 0 UMETA(DisplayName = "Melee Defender"),
+    RangedDefender = 1 UMETA(DisplayName = "Ranged Defender"),
+    SupportDefender = 2 UMETA(DisplayName = "Support Defender"),
+    MeleeAttacker = 3 UMETA(DisplayName = "Melee Attacker"),
+    FlyingAttacker = 4 UMETA(DisplayName = "Flying Attacker"),
+    SupportAttacker = 5 UMETA(DisplayName = "Support Attacker")
 };
-// ^ will probably add more teams when I add different types
 
 UCLASS(Abstract)
 class GADE7322_TD_API ATowerDefencePawn : public ACharacter,

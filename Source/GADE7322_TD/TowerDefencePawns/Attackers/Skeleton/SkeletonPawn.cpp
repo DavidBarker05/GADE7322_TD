@@ -15,7 +15,7 @@ ASkeletonPawn::ASkeletonPawn()
     OccupiedRadius = 40.0f;
     Weapon = CreateDefaultSubobject<UChildActorComponent>(TEXT("Weapon"));
     Weapon->SetupAttachment(RootComponent);
-    CurrentTeam = EAITeam::Attacker;
+    CurrentTeam = EAITeam::MeleeAttacker;
 }
 
 void ASkeletonPawn::BeginPlay()

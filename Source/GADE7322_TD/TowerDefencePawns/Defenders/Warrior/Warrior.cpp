@@ -14,7 +14,7 @@ AWarrior::AWarrior()
     OccupiedRadius = 40.0f;
     Weapon = CreateDefaultSubobject<UChildActorComponent>(TEXT("Weapon"));
     Weapon->SetupAttachment(RootComponent);
-    CurrentTeam = EAITeam::Defender;
+    CurrentTeam = EAITeam::MeleeDefender;
 }
 
 const AWeapon* AWarrior::GetWeapon() const { return Cast<AWeapon>(Weapon ? Weapon->GetChildActor() : nullptr); }

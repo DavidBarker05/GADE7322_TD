@@ -57,7 +57,85 @@ void ATowerDefenceGameMode::StartNextWave()
 
 ETeamAttitude::Type ATowerDefenceGameMode::GetAttitude(FGenericTeamId TeamA, FGenericTeamId TeamB)
 {
-    return TeamA == TeamB ? ETeamAttitude::Friendly : ETeamAttitude::Hostile;
+    const EAITeam AiTeamA = static_cast<EAITeam>(TeamA.GetId());
+    const EAITeam AiTeamB = static_cast<EAITeam>(TeamB.GetId());
+    switch (AiTeamA)
+    {
+        case EAITeam::MeleeDefender:
+            switch (AiTeamB)
+            {
+                case EAITeam::MeleeDefender:
+                case EAITeam::RangedDefender:
+                case EAITeam::SupportDefender:
+                    return ETeamAttitude::Friendly;
+                case EAITeam::MeleeAttacker:
+                case EAITeam::SupportAttacker:
+                    return ETeamAttitude::Hostile;
+                case EAITeam::FlyingAttacker:
+                    return ETeamAttitude::Neutral;
+                default:
+                    return ETeamAttitude::Neutral;
+            }
+        case EAITeam::RangedDefender:
+            switch (AiTeamB)
+            {
+                case EAITeam::MeleeDefender:
+                case EAITeam::RangedDefender:
+                case EAITeam::SupportDefender:
+                    return ETeamAttitude::Friendly;
+                case EAITeam::MeleeAttacker:
+                case EAITeam::SupportAttacker:
+                case EAITeam::FlyingAttacker:
+                    return ETeamAttitude::Hostile;
+                default:
+                    return ETeamAttitude::Neutral;
+            }
+        case EAITeam::SupportDefender:
+            switch (AiTeamB)
+            {
+                case EAITeam::MeleeDefender:
+                case EAITeam::RangedDefender:
+                case EAITeam::SupportDefender:
+                    return ETeamAttitude::Friendly;
+                case EAITeam::MeleeAttacker:
+                case EAITeam::SupportAttacker:
+                case EAITeam::FlyingAttacker:
+                    return ETeamAttitude::Neutral;
+                default:
+                    return ETeamAttitude::Neutral;
+            }
+        case EAITeam::MeleeAttacker:
+        case EAITeam::FlyingAttacker:
+            switch (AiTeamB)
+            {
+                case EAITeam::MeleeDefender:
+                case EAITeam::RangedDefender:
+                case EAITeam::SupportDefender:
+                    return ETeamAttitude::Hostile;
+                case EAITeam::MeleeAttacker:
+                case EAITeam::SupportAttacker:
+                case EAITeam::FlyingAttacker:
+                    return ETeamAttitude::Friendly;
+                default:
+                    return ETeamAttitude::Neutral;
+            }
+        case EAITeam::SupportAttacker:
+            switch (AiTeamB)
+            {
+                case EAITeam::MeleeDefender:
+                case EAITeam::RangedDefender:
+                case EAITeam::SupportDefender:
+                    return ETeamAttitude::Neutral;
+                case EAITeam::MeleeAttacker:
+                case EAITeam::SupportAttacker:
+                case EAITeam::FlyingAttacker:
+                    return ETeamAttitude::Friendly;
+                default:
+                    return ETeamAttitude::Neutral;
+            }
+        default:
+            return ETeamAttitude::Neutral;
+    }
 }
 
 void ATowerDefenceGameMode::SpawnBurst()
