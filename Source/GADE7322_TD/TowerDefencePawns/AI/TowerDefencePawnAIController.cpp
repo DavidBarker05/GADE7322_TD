@@ -5,6 +5,7 @@
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Navigation/PathFollowingComponent.h"
 #include "Perception/AIPerceptionComponent.h"
+#include "Perception/AIPerceptionSystem.h"
 #include "Perception/AIPerceptionTypes.h"
 #include "TowerDefencePawns/AI/ProximityPerception/AISenseConfig_Proximity.h"
 #include "TowerDefencePawns/Components/HealthComponent.h"
@@ -29,7 +30,15 @@ void ATowerDefencePawnAIController::SetControllerActive(bool bActive)
         VisiblePawns.Empty();
     }
     PerceptionComponent->SetActive(bActive);
-    if (bActive) StateTree->RestartLogic();
+    if (bActive)
+    {
+        // Reused from the pool, so the perception component was just reactivated from its previous
+        // (deactivated) life - it needs to catch up on the pawn's actual position now, since calling this
+        // any earlier (e.g. while still deactivated, right after being repositioned) is a no-op
+        if (UAIPerceptionSystem* PerceptionSys = UAIPerceptionSystem::GetCurrent(GetWorld()))
+            PerceptionSys->UpdateListener(*PerceptionComponent);
+        StateTree->RestartLogic();
+    }
     else StateTree->StopLogic(TEXT("Controller deactivated"));
 }
 

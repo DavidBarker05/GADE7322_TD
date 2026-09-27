@@ -48,6 +48,7 @@ void ATowerDefencePawn::BeginPlay()
         if (bUseAIController)
             if (ATowerDefencePawnAIController* AIController = Cast<ATowerDefencePawnAIController>(GetController()))
                 AIController->SetControllerActive(false);
+        DoOnSetActive(false);
     }
 }
 
