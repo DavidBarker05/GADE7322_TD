@@ -34,6 +34,8 @@ ATowerDefencePawn::ATowerDefencePawn()
     HealthBar = CreateDefaultSubobject<UWidgetComponent>(TEXT("Health Bar"));
     HealthBar->SetupAttachment(RootComponent);
     HitFlashComponent = CreateDefaultSubobject<UHitFlashComponent>(TEXT("Hit Flash Component"));
+    VisualAttackPoint = CreateDefaultSubobject<USceneComponent>(TEXT("Visual Attack Point"));
+    VisualAttackPoint->SetupAttachment(RootComponent);
     BaseEyeHeight = 0.0f;
 }
 

@@ -21,7 +21,9 @@ APlayerTower::APlayerTower()
     PerceptionComponent = CreateDefaultSubobject<UAIPerceptionComponent>(TEXT("Perception Component"));
     ProximityConfig = CreateDefaultSubobject<UAISenseConfig_Proximity>(TEXT("Proximity Config"));
     ProximityConfig->DetectionRadius = AttackRadius;
-    ProximityConfig->DetectionByAffiliation.bDetectNeutrals = true;
+    ProximityConfig->DetectionByAffiliation.bDetectEnemies = true;
+    ProximityConfig->DetectionByAffiliation.bDetectFriendlies = false;
+    ProximityConfig->DetectionByAffiliation.bDetectNeutrals = false;
     PerceptionComponent->ConfigureSense(*ProximityConfig);
     PerceptionComponent->SetDominantSense(ProximityConfig->GetSenseImplementation());
     PerceptionComponent->OnTargetPerceptionUpdated.AddDynamic(this, &APlayerTower::OnTargetPerceptionUpdated);
@@ -76,7 +78,7 @@ void APlayerTower::StartAttack()
         {
             CanAttackTarget[i] = false;
             Attack(AttackTargets[i]);
-            FireAttackBeam(i, AttackTargets[i]->GetActorLocation());
+            FireAttackBeam(i, AttackTargets[i]->GetVisualAttackPointLocation());
             GetWorldTimerManager().SetTimer(
                 TimerHandles[i], [this, i]() -> void { CanAttackTarget[i] = true; }, AttackCooldown, false);
         }

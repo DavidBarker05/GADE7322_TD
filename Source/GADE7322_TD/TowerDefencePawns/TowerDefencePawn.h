@@ -95,6 +95,10 @@ public:
     const UHitFlashComponent* GetHitFlashComponent() const { return HitFlashComponent; }
     UHitFlashComponent* GetHitFlashComponent() { return HitFlashComponent; }
 
+    const USceneComponent* GetVisualAttackPoint() const { return VisualAttackPoint; }
+    USceneComponent* GetVisualAttackPoint() { return VisualAttackPoint; }
+    FVector GetVisualAttackPointLocation() const { return VisualAttackPoint->GetComponentLocation(); }
+
 protected:
     // Stuff like toggling mesh, etc.
     virtual void DoOnSetActive(bool bActive) { }
@@ -154,6 +158,13 @@ private:
     UPROPERTY(EditDefaultsOnly, Category = "Health",
               meta = (AllowPrivateAccess = true, ClampMin = 0.0, UIMin = 0.0, Units = "Seconds"))
     float HealthDisplayTime = 0.5f;
+
+    // The point to aim at to attack this pawn
+    // So like the tower shoots at this point so that the attack visually lines up
+    // especially with the flying enemy which is just going to be on the ground but
+    // mesh will be in the air
+    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "TD Pawn", meta = (AllowPrivateAccess = true))
+    USceneComponent* VisualAttackPoint;
 
     FTimerHandle HealthBarDisplayHandle;
 };
