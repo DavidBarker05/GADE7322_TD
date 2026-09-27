@@ -31,6 +31,8 @@ public:
     ADefenderSpot* GetSpawnPoint() { return SpawnPoint; }
 
 protected:
+    virtual void DoOnSetActive(bool bActive) override;
+
     UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Cost",
               meta = (AllowPrivateAccess = true, ClampMin = 0, UIMin = 0))
     int32 Cost = 0;

@@ -13,3 +13,8 @@ ADefender::ADefender()
     BoxCollider->SetCollisionResponseToAllChannels(ECR_Ignore);
     BoxCollider->SetCollisionResponseToChannel(MouseClickTraceChannel, ECR_Block);
 }
+
+void ADefender::DoOnSetActive(bool bActive)
+{
+    BoxCollider->SetCollisionEnabled(bActive ? ECollisionEnabled::QueryOnly : ECollisionEnabled::NoCollision);
+}

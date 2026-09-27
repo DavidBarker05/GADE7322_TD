@@ -53,6 +53,7 @@ void AWarrior::OnDeath(TFunction<void()>&& Func)
 
 void AWarrior::DoOnSetActive(bool bActive)
 {
+    Super::DoOnSetActive(bActive);
     if (bActive) CurrentAttackTarget = nullptr;
     AWeapon* Sword = GetWeapon();
     if (bActive)

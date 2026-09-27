@@ -67,6 +67,7 @@ void ABallista::StartAttack()
 
 void ABallista::DoOnSetActive(bool bActive)
 {
+    Super::DoOnSetActive(bActive);
     if (bActive)
     {
         CurrentAttackTarget = nullptr;
