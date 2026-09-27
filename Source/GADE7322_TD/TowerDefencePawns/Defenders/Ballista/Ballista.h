@@ -2,18 +2,17 @@
 
 #include "CoreMinimal.h"
 
-#include "TowerDefencePawns/TowerDefencePawn.h"
+#include "TowerDefencePawns/Defenders/Defender.h"
 
 #include "Ballista.generated.h"
 
 struct FAIStimulus;
-class UBoxComponent;
 class UAIPerceptionComponent;
 class UAISenseConfig_Proximity;
 class UStaticMeshComponent;
 
 UCLASS(Abstract)
-class GADE7322_TD_API ABallista : public ATowerDefencePawn
+class GADE7322_TD_API ABallista : public ADefender
 {
     GENERATED_BODY()
 
@@ -47,6 +46,14 @@ private:
 
     void UpdateAttackTarget();
 
+    void UpdatePivotRotation(float DeltaTime);
+
+    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components", meta = (AllowPrivateAccess = true))
+    UStaticMeshComponent* StandMesh;
+
+    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components", meta = (AllowPrivateAccess = true))
+    USceneComponent* PivotPoint;
+
     UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components", meta = (AllowPrivateAccess = true))
     UStaticMeshComponent* BallistaMesh;
 
@@ -58,9 +65,6 @@ private:
 
     UPROPERTY(BlueprintReadWrite, Category = "TD Pawn", meta = (AllowPrivateAccess = true))
     ATowerDefencePawn* CurrentAttackTarget;
-
-    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components", meta = (AllowPrivateAccess = true))
-    UBoxComponent* BoxCollider = nullptr;
 
     UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "AI",
               meta = (AllowPrivateAccess = true, ClampMin = 0.0, UIMin = 0.0, Units = "Centimeters"))
@@ -74,10 +78,16 @@ private:
               meta = (AllowPrivateAccess = true, ClampMin = 0.0, UIMin = 0.0, Units = "Hertz"))
     float TargetUpdateFrequency = 5.0f;
 
+    UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "AI",
+              meta = (AllowPrivateAccess = true, ClampMin = 0.0, UIMin = 0.0, Units = "Degrees"))
+    float RotationSpeed = 180.0f;
+
     float TimeSinceLastTargetUpdate = 0.0f;
 
     UPROPERTY(BlueprintReadOnly, Category = "AI", meta = (AllowPrivateAccess = true))
     TArray<ATowerDefencePawn*> VisiblePawns;
 
     FTimerHandle AttackTimerHandle;
+
+    FRotator DefaultPivotRotation = FRotator::ZeroRotator;
 };

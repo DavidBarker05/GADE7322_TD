@@ -1,11 +1,9 @@
 #include "TowerDefencePawns/Defenders/Ballista/Ballista.h"
 
-#include "Components/BoxComponent.h"
 #include "HealthComponent.h"
 #include "HitFlashComponent.h"
 #include "Perception/AIPerceptionComponent.h"
 #include "Perception/AIPerceptionTypes.h"
-#include "TDCollisionChannels.h"
 #include "TowerDefencePawns/AI/ProximityPerception/AISenseConfig_Proximity.h"
 #include "TowerDefencePawns/AI/TargetSelectionFunctions.h"
 
@@ -13,8 +11,13 @@ ABallista::ABallista()
 {
     PawnDisplayName = TEXT("Ballista");
     OccupiedRadius = 200.0f;
+    StandMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Stand Mesh"));
+    StandMesh->SetupAttachment(RootComponent);
+    PivotPoint = CreateDefaultSubobject<USceneComponent>(TEXT("Pivot Point"));
+    PivotPoint->SetupAttachment(RootComponent); // Don't attach to stand so doesn't affect scale if resize stand
     BallistaMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Ballista Mesh"));
-    BallistaMesh->SetupAttachment(RootComponent);
+    BallistaMesh->SetupAttachment(PivotPoint);
+    // ^ So that we can pivot around the point rather than the mesh because mesh isn't centred
     PerceptionComponent = CreateDefaultSubobject<UAIPerceptionComponent>(TEXT("Perception Component"));
     ProximityConfig = CreateDefaultSubobject<UAISenseConfig_Proximity>(TEXT("Proximity Config"));
     ProximityConfig->DetectionRadius = AttackRadius;
@@ -24,12 +27,6 @@ ABallista::ABallista()
     PerceptionComponent->ConfigureSense(*ProximityConfig);
     PerceptionComponent->SetDominantSense(ProximityConfig->GetSenseImplementation());
     PerceptionComponent->OnTargetPerceptionUpdated.AddDynamic(this, &ABallista::OnTargetPerceptionUpdated);
-    BoxCollider = CreateDefaultSubobject<UBoxComponent>(TEXT("Box Collider"));
-    BoxCollider->SetupAttachment(RootComponent);
-    BoxCollider->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
-    BoxCollider->SetCollisionObjectType(ECC_WorldDynamic);
-    BoxCollider->SetCollisionResponseToAllChannels(ECR_Ignore);
-    BoxCollider->SetCollisionResponseToChannel(MouseClickTraceChannel, ECR_Block);
     CurrentTeam = EAITeam::RangedDefender;
 }
 
@@ -38,6 +35,7 @@ void ABallista::BeginPlay()
     Super::BeginPlay();
     SetPawnActive(true);
     HitFlashComponent->BindMaterials();
+    if (PivotPoint) DefaultPivotRotation = PivotPoint->GetRelativeRotation();
     if (OccupiedRadius <= 0.0f && BallistaMesh)
     {
         const FVector Extent = BallistaMesh->Bounds.BoxExtent;
@@ -54,6 +52,7 @@ void ABallista::Tick(float DeltaTime)
         TimeSinceLastTargetUpdate = 0.0f;
         UpdateAttackTarget();
     }
+    UpdatePivotRotation(DeltaTime);
     StartAttack();
 }
 
@@ -63,8 +62,7 @@ void ABallista::StartAttack()
     bCanAttack = false;
     Attack(CurrentAttackTarget);
     // TODO: fire the actual projectile/shot here
-    GetWorldTimerManager().SetTimer(
-        AttackTimerHandle, [this]() -> void { bCanAttack = true; }, AttackCooldown, false);
+    GetWorldTimerManager().SetTimer(AttackTimerHandle, [this]() -> void { bCanAttack = true; }, AttackCooldown, false);
 }
 
 void ABallista::DoOnSetActive(bool bActive)
@@ -76,12 +74,18 @@ void ABallista::DoOnSetActive(bool bActive)
         HitFlashComponent->BindMaterials();
     }
     else HitFlashComponent->UnbindMaterials();
+    StandMesh->SetVisibility(bActive);
+    StandMesh->SetComponentTickEnabled(bActive);
+    StandMesh->SetCollisionEnabled(bActive ? ECollisionEnabled::QueryAndPhysics : ECollisionEnabled::NoCollision);
+    StandMesh->SetCollisionResponseToAllChannels(bActive ? ECR_Block : ECR_Ignore);
     BallistaMesh->SetVisibility(bActive);
     BallistaMesh->SetComponentTickEnabled(bActive);
     BallistaMesh->SetCollisionEnabled(bActive ? ECollisionEnabled::QueryAndPhysics : ECollisionEnabled::NoCollision);
     BallistaMesh->SetCollisionResponseToAllChannels(bActive ? ECR_Block : ECR_Ignore);
     if (bActive)
     {
+        StandMesh->SetCollisionResponseToChannel(ECC_WorldStatic, ECR_Ignore);
+        StandMesh->SetCollisionResponseToChannel(ECC_Pawn, ECR_Overlap);
         BallistaMesh->SetCollisionResponseToChannel(ECC_WorldStatic, ECR_Ignore);
         BallistaMesh->SetCollisionResponseToChannel(ECC_Pawn, ECR_Overlap);
     }
@@ -116,4 +120,25 @@ void ABallista::UpdateAttackTarget()
         return;
     if (ATowerDefencePawn* NewTarget = SelectClosestTarget(VisiblePawns, this)) SetAttackTarget(NewTarget);
     else CurrentAttackTarget = nullptr;
+}
+
+void ABallista::UpdatePivotRotation(float DeltaTime)
+{
+    if (!PivotPoint) return;
+    FRotator TargetRelativeRotation = DefaultPivotRotation;
+    if (IsValid(CurrentAttackTarget))
+    {
+        FVector Direction = CurrentAttackTarget->GetActorLocation() - PivotPoint->GetComponentLocation();
+        Direction.Z = 0.0f;
+        if (!Direction.IsNearlyZero())
+        {
+            const USceneComponent* Parent = PivotPoint->GetAttachParent();
+            const FVector LocalDirection =
+                Parent ? Parent->GetComponentTransform().InverseTransformVectorNoScale(Direction) : Direction;
+            TargetRelativeRotation = FRotator(0.0f, LocalDirection.Rotation().Yaw, 0.0f);
+        }
+    }
+    const FRotator NewRotation =
+        FMath::RInterpConstantTo(PivotPoint->GetRelativeRotation(), TargetRelativeRotation, DeltaTime, RotationSpeed);
+    PivotPoint->SetRelativeRotation(NewRotation);
 }
