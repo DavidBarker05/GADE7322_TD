@@ -6,7 +6,7 @@
 
 #include "Healer.generated.h"
 
-// TODO: Spell in hand when has target
+class UNiagaraComponent;
 
 UCLASS(Abstract)
 class GADE7322_TD_API AHealer : public ADefender
@@ -15,6 +15,10 @@ class GADE7322_TD_API AHealer : public ADefender
 
 public:
     AHealer();
+
+    virtual void BeginPlay() override;
+
+    virtual void Tick(float DeltaTime) override;
 
     virtual void StartAttack() override;
 
@@ -48,8 +52,27 @@ private:
 
     void OnDeathMontageEnded(UAnimMontage* Montage, bool bInterrupted);
 
-    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Healer", meta = (AllowPrivateAccess = true))
+    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Spell", meta = (AllowPrivateAccess = true))
     USceneComponent* SpellSpawnLocation;
+
+    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Spell", meta = (AllowPrivateAccess = true))
+    UNiagaraComponent* HealSpellBall;
+
+    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Spell", meta = (AllowPrivateAccess = true))
+    UNiagaraComponent* FireSpellBall;
+
+    UPROPERTY(EditDefaultsOnly, Category = "AI",
+              meta = (AllowPrivateAccess = true, ClampMin = 0.0, UIMin = 0.0, ClampMax = 16.667, UIMax = 16.667,
+                      Units = "Hertz"))
+    float SpellDistanceCheckUpdateFrequency = 5.0f;
+
+    float TimeSinceLastVisionUpdate = 0.0f;
+
+    UPROPERTY(BlueprintReadOnly, Category = "Spell", meta = (AllowPrivateAccess = true, ClampMin = 1.0, UIMin = 1.0))
+    float SpellShowRadiusMultiplier = 2.0f;
+
+    UPROPERTY(BlueprintReadOnly, Category = "Spell", meta = (AllowPrivateAccess = true))
+    bool bIsHoldingSpell = false;
 
     UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Animation", meta = (AllowPrivateAccess = true))
     UAnimMontage* AttackMontage;

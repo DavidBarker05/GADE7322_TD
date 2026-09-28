@@ -1,5 +1,7 @@
+#include "Healer.h"
 #include "TowerDefencePawns/Defenders/Healer/Healer.h"
 
+#include "NiagaraComponent.h"
 #include "Perception/AIPerceptionComponent.h"
 #include "Perception/AIPerceptionSystem.h"
 #include "TowerDefenceGameMode.h"
@@ -8,11 +10,55 @@
 
 AHealer::AHealer()
 {
+    PrimaryActorTick.bCanEverTick = true;
     PawnDisplayName = TEXT("Healer");
     OccupiedRadius = 40.0f;
     CurrentTeam = EAITeam::SupportDefender;
     SpellSpawnLocation = CreateDefaultSubobject<USceneComponent>(TEXT("Spell Spawn Location"));
     SpellSpawnLocation->SetupAttachment(GetMesh(), "spell");
+    HealSpellBall = CreateDefaultSubobject<UNiagaraComponent>(TEXT("Heal Spell Ball"));
+    FireSpellBall = CreateDefaultSubobject<UNiagaraComponent>(TEXT("Fire Spell Ball"));
+}
+
+void AHealer::BeginPlay()
+{
+    Super::BeginPlay();
+    HealSpellBall->AttachToComponent(SpellSpawnLocation, FAttachmentTransformRules::SnapToTargetNotIncludingScale);
+    FireSpellBall->AttachToComponent(SpellSpawnLocation, FAttachmentTransformRules::SnapToTargetNotIncludingScale);
+}
+
+void AHealer::Tick(float DeltaTime)
+{
+    Super::Tick(DeltaTime);
+    if (!IsValid(CurrentTarget) || !CurrentTarget->IsPawnActive() || CurrentTarget->GetHealthComponent()->IsDead())
+    {
+        if (bIsHoldingSpell)
+        {
+            HealSpellBall->SetVisibility(false);
+            HealSpellBall->SetComponentTickEnabled(false);
+            FireSpellBall->SetVisibility(false);
+            FireSpellBall->SetComponentTickEnabled(false);
+        }
+        bIsHoldingSpell = false;
+        TimeSinceLastVisionUpdate = 0.0f;
+        return;
+    }
+    if (TimeSinceLastVisionUpdate < 1.0f / SpellDistanceCheckUpdateFrequency + KINDA_SMALL_NUMBER)
+    {
+        TimeSinceLastVisionUpdate += DeltaTime;
+        return;
+    }
+    TimeSinceLastVisionUpdate = 0.0f;
+    const bool bOtherTargetFriendly = IsOtherPawnFriendly(CurrentTarget);
+    const float Radius = (bOtherTargetFriendly ? HealRadius : AttackRadius) * SpellShowRadiusMultiplier;
+    const bool bWasHoldingSpell = bIsHoldingSpell;
+    bIsHoldingSpell =
+        FVector::Dist2D(GetActorLocation(), CurrentTarget->GetActorLocation()) <= Radius + KINDA_SMALL_NUMBER;
+    if (bWasHoldingSpell != bIsHoldingSpell)
+    {
+        (bOtherTargetFriendly ? HealSpellBall : FireSpellBall)->SetVisibility(bIsHoldingSpell);
+        (bOtherTargetFriendly ? HealSpellBall : FireSpellBall)->SetComponentTickEnabled(bIsHoldingSpell);
+    }
 }
 
 void AHealer::StartAttack()
@@ -66,6 +112,12 @@ void AHealer::DoOnSetActive(bool bActive)
     GetMesh()->SetComponentTickEnabled(bActive);
     GetMesh()->SetCollisionEnabled(bActive ? ECollisionEnabled::QueryAndPhysics : ECollisionEnabled::NoCollision);
     GetMesh()->SetCollisionResponseToAllChannels(bActive ? ECR_Block : ECR_Ignore);
+    HealSpellBall->SetVisibility(false);
+    HealSpellBall->SetComponentTickEnabled(false);
+    FireSpellBall->SetVisibility(false);
+    FireSpellBall->SetComponentTickEnabled(false);
+    TimeSinceLastVisionUpdate = 0.0f;
+    bIsHoldingSpell = false;
     if (bActive)
     {
         GetMesh()->SetCollisionResponseToChannel(ECC_WorldStatic, ECR_Ignore);

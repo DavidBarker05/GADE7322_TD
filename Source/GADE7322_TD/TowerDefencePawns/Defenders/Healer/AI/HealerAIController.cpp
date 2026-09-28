@@ -8,6 +8,7 @@
 #include "TowerDefencePawns/Attackers/FlyingEnemy/FlyingEnemy.h"
 #include "TowerDefencePawns/Attackers/Skeleton/SkeletonPawn.h"
 #include "TowerDefencePawns/Defenders/Healer/Healer.h"
+#include "TowerDefencePawns/Tower/PlayerTower.h"
 
 AHealerAIController::AHealerAIController()
 {
@@ -173,6 +174,7 @@ void AHealerAIController::OnTargetPerceptionUpdated(AActor* Actor, FAIStimulus S
     if (!IsValid(Actor)) return;
     if (ATowerDefencePawn* TDPawn = Cast<ATowerDefencePawn>(Actor))
     {
+        if (TDPawn->IsA<APlayerTower>()) return; // Don't heal player tower
         if (!Stimulus.WasSuccessfullySensed())
         {
             GetVisiblePawns().Remove(TDPawn);
