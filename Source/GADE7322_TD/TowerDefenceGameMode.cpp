@@ -55,14 +55,12 @@ void ATowerDefenceGameMode::StartNextWave()
     SpawnBurst();
 }
 
-ETeamAttitude::Type ATowerDefenceGameMode::GetAttitude(FGenericTeamId TeamA, FGenericTeamId TeamB)
+ETeamAttitude::Type ATowerDefenceGameMode::GetAttitudeCustom(EAITeam TeamA, EAITeam TeamB)
 {
-    const EAITeam AiTeamA = static_cast<EAITeam>(TeamA.GetId());
-    const EAITeam AiTeamB = static_cast<EAITeam>(TeamB.GetId());
-    switch (AiTeamA)
+    switch (TeamA)
     {
         case EAITeam::MeleeDefender:
-            switch (AiTeamB)
+            switch (TeamB)
             {
                 case EAITeam::MeleeDefender:
                 case EAITeam::RangedDefender:
@@ -78,7 +76,7 @@ ETeamAttitude::Type ATowerDefenceGameMode::GetAttitude(FGenericTeamId TeamA, FGe
             }
         case EAITeam::RangedDefender:
         case EAITeam::SupportDefender:
-            switch (AiTeamB)
+            switch (TeamB)
             {
                 case EAITeam::MeleeDefender:
                 case EAITeam::RangedDefender:
@@ -94,7 +92,7 @@ ETeamAttitude::Type ATowerDefenceGameMode::GetAttitude(FGenericTeamId TeamA, FGe
         case EAITeam::MeleeAttacker:
         case EAITeam::FlyingAttacker:
         case EAITeam::SupportAttacker:
-            switch (AiTeamB)
+            switch (TeamB)
             {
                 case EAITeam::MeleeDefender:
                 case EAITeam::RangedDefender:
@@ -110,6 +108,13 @@ ETeamAttitude::Type ATowerDefenceGameMode::GetAttitude(FGenericTeamId TeamA, FGe
         default:
             return ETeamAttitude::Neutral; // Neutral by default
     }
+}
+
+ETeamAttitude::Type ATowerDefenceGameMode::GetAttitude(FGenericTeamId TeamA, FGenericTeamId TeamB)
+{
+    const EAITeam AiTeamA = static_cast<EAITeam>(TeamA.GetId());
+    const EAITeam AiTeamB = static_cast<EAITeam>(TeamB.GetId());
+    return GetAttitudeCustom(AiTeamA, AiTeamB);
 }
 
 void ATowerDefenceGameMode::SpawnBurst()

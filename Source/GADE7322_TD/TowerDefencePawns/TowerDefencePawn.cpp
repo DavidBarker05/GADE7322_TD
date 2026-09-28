@@ -79,12 +79,14 @@ ATowerDefencePawn& ATowerDefencePawn::SetPawnActive(bool bActive)
         }
         if (bAlwaysDisplayHealth) ShowHealthBar();
         else HideHealthBar();
+        HitFlashComponent->BindMaterials();
     }
     else
     {
         StimuliSourceComponent->UnregisterFromPerceptionSystem();
         StimuliSourceComponent->UnregisterFromSense(UAISense_Proximity::StaticClass());
         HideHealthBar();
+        HitFlashComponent->UnbindMaterials();
     }
     if (bUseAIController)
         if (ATowerDefencePawnAIController* AIController = Cast<ATowerDefencePawnAIController>(GetController()))

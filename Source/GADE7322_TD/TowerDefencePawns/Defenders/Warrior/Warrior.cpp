@@ -66,14 +66,9 @@ void AWarrior::DoOnSetActive(bool bActive)
             AnimInstance->StopAllMontages(0.0f);
             AnimInstance->InitializeAnimation();
         }
-        if (Sword) Sword->AttachToSkeleton(GetMesh());
-        HitFlashComponent->BindMaterials();
+        if (IsValid(Sword)) Sword->AttachToSkeleton(GetMesh());
     }
-    else
-    {
-        if (Sword) Sword->AttachToComponent(Weapon, FAttachmentTransformRules::SnapToTargetNotIncludingScale);
-        HitFlashComponent->UnbindMaterials();
-    }
+    else if (IsValid(Sword)) Sword->AttachToComponent(Weapon, FAttachmentTransformRules::SnapToTargetNotIncludingScale);
     GetMesh()->SetVisibility(bActive);
     GetMesh()->SetComponentTickEnabled(bActive);
     GetMesh()->SetCollisionEnabled(bActive ? ECollisionEnabled::QueryAndPhysics : ECollisionEnabled::NoCollision);
@@ -83,7 +78,7 @@ void AWarrior::DoOnSetActive(bool bActive)
         GetMesh()->SetCollisionResponseToChannel(ECC_WorldStatic, ECR_Ignore);
         GetMesh()->SetCollisionResponseToChannel(ECC_Pawn, ECR_Overlap);
     }
-    if (Sword)
+    if (IsValid(Sword))
     {
         Sword->GetMesh()->SetVisibility(bActive);
         Sword->GetMesh()->SetComponentTickEnabled(bActive && Sword->DoesMeshTick());

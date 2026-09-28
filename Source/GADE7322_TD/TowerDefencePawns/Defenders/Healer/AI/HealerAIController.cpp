@@ -1,0 +1,214 @@
+#include "TowerDefencePawns/Defenders/Healer/AI/HealerAIController.h"
+
+#include "HealthComponent.h"
+#include "Perception/AIPerceptionTypes.h"
+#include "TargetSelectionFunctions.h"
+#include "TowerDefenceGameMode.h"
+#include "TowerDefencePawns/AI/ProximityPerception/AISenseConfig_Proximity.h"
+#include "TowerDefencePawns/Attackers/FlyingEnemy/FlyingEnemy.h"
+#include "TowerDefencePawns/Attackers/Skeleton/SkeletonPawn.h"
+#include "TowerDefencePawns/Defenders/Healer/Healer.h"
+
+AHealerAIController::AHealerAIController()
+{
+    PrimaryActorTick.bCanEverTick = true;
+    if (const auto ProxConfig = GetProximityConfig())
+    {
+        ProxConfig->DetectionRadius = 1200.0f;
+        // ^ I know it's very far, but healers need to be able to see defenders
+        // so that they can go to them to heal them, we don't really want to
+        // have to place healers right next to attackers for them to do anything
+        ProxConfig->DetectionByAffiliation.bDetectEnemies = true; // Attacking as a last resort
+        ProxConfig->DetectionByAffiliation.bDetectNeutrals = false;
+        ProxConfig->DetectionByAffiliation.bDetectFriendlies = true; // Healing
+    }
+}
+
+void AHealerAIController::Tick(float DeltaTime)
+{
+    Super::Tick(DeltaTime);
+    AHealer* Healer = GetHealer();
+    if (!IsValid(Healer) || !Healer->IsPawnActive()) return;
+
+    // The logic is a bit tricky for this, so I had to map it out to make my life easier
+    // here is that logic:
+    //
+    // Is there a current target?
+    // | -> Yes: Is the current target in the radius?
+    // | | -> Yes: Keep using that target
+    // | | -> No: Are there any attackers in vision?
+    // | . | -> Yes: Are there any attackers in attack radius?
+    // | . | | -> Yes: Are any of those attackers targeting this pawn?
+    // | . | | | -> Yes: Attack the closest of those attackers
+    // | . | | | -> No: Are there any defenders in vision?
+    // | . | | | | -> Yes: Are any of those defenders in heal radius?
+    // | . | | . | | -> Yes: Heal the closest of those defenders
+    // | . | | . | | -> No: Attack the closest of those attackers
+    // | . | | . | -> No: Attack the closest of those attackers
+    // | . | | -> No: Are there any defenders in vision?
+    // | . | . | -> Yes: Are there any defenders in heal radius?
+    // | . | . | | -> Yes: Heal the closest of those defenders
+    // | . | . | | -> No: Head to the closest of those defenders
+    // | . | . | -> No: Head to the closest of those attackers
+    // | . | -> No: Are there any defenders in vision?
+    // | . . | -> Yes: Are there any defenders in heal radius?
+    // | . . | | -> Yes: Heal the closest of those defenders
+    // | . . | | -> No: Head to the closest of those defenders
+    // | . . | -> No: Head back to placement spot
+    // | -> No: Are there any attackers in vision?
+    // . | -> Yes: Are there any attackers in attack radius?
+    // . | | -> Yes: Are any of those attackers targeting this pawn?
+    // . | | | -> Yes: Attack the closest of those attackers
+    // . | | | -> No: Are there any defenders in vision?
+    // . | | | | -> Yes: Are any of those defenders in heal radius?
+    // . | | . | | -> Yes: Heal the closest of those defenders
+    // . | | . | | -> No: Attack the closest of those attackers
+    // . | | . | -> No: Attack the closest of those attackers
+    // . | | -> No: Are there any defenders in vision?
+    // . | . | -> Yes: Are there any defenders in heal radius?
+    // . | . | | -> Yes: Heal the closest of those defenders
+    // . | . | | -> No: Head to the closest of those defenders
+    // . | . | -> No: Head to the closest of those attackers
+    // . | -> No: Are there any defenders in vision?
+    // . . | -> Yes: Are there any defenders in heal radius?
+    // . . | | -> Yes: Heal the closest of those defenders
+    // . . | | -> No: Head to the closest of those defenders
+    // . . | -> No: Head back to placement spot
+
+    if (const ATowerDefencePawn* Target = Healer->GetCurrentTarget();
+        IsValid(Target) && Target->IsPawnActive() &&
+        Target->GetHealthComponent()->IsAlive()) // Is there a current target?
+    {
+        const float Radius = IsOtherPawnFriendly(Target) ? Healer->GetHealRadius() : Healer->GetAttackRadius();
+        if (FVector::Dist2D(Healer->GetActorLocation(), Target->GetActorLocation()) <=
+            Radius + KINDA_SMALL_NUMBER) // Is the current target in the radius?
+        {
+            if (const FVector ToTarget = Target->GetActorLocation() - Target->GetActorLocation();
+                !ToTarget.IsNearlyZero())
+                Healer->SetActorRotation(FRotator(0.0f, ToTarget.Rotation().Yaw, 0.0f));
+            return; // Keep using that target
+        }
+    }
+    if (TimeSinceLastVisionUpdate < 1.0f / VisionUpdateFrequency + KINDA_SMALL_NUMBER)
+    {
+        TimeSinceLastVisionUpdate += DeltaTime;
+        return;
+    }
+    TimeSinceLastVisionUpdate = 0.0f;
+    for (int32 i = GetVisiblePawns().Num(); i > 0; --i)
+    {
+        if (const ATowerDefencePawn* TDPawn = GetVisiblePawns()[i])
+        {
+            if (!IsValid(TDPawn) || !TDPawn->IsPawnActive() || TDPawn->GetHealthComponent()->IsDead())
+                GetVisiblePawns().RemoveAt(i);
+        }
+        else GetVisiblePawns().RemoveAt(i);
+    }
+    FVector HealerLoc = Healer->GetActorLocation();
+    auto GetCurrentVal = [this, &HealerLoc](const ATowerDefencePawn* Other) -> TPair<float, bool>
+    {
+        float Dist = FVector::Dist2D(HealerLoc, Other->GetActorLocation()) - Other->GetOccupiedRadius();
+        bool bIsTargetForOther = IsThisATargetForOtherPawn(Other);
+        return TPair<float, bool>(Dist, bIsTargetForOther);
+    };
+    auto Predicate = [](const TPair<float, bool>& Left, const TPair<float, bool>& Right) -> bool
+    {
+        if (!Left.Value && Right.Value) return true; // Not target for current, but is target for other
+        return Left.Key < Right.Key; // Closest in all other cases
+    };
+    ATowerDefencePawn* KindaClosestEnemy = SelectTarget<TPair<float, bool>>(
+        VisibleEnemies, TPair<float, bool>(TNumericLimits<float>::Max(), false), GetCurrentVal, Predicate);
+    ATowerDefencePawn* ClosestFriendly = SelectClosestTarget(VisibleFriendlies, Healer);
+    if (KindaClosestEnemy) // Are there any attackers in vision?
+    {
+        float DistToEnemy =
+            FVector::Dist2D(HealerLoc, KindaClosestEnemy->GetActorLocation()) - KindaClosestEnemy->GetOccupiedRadius();
+        bool bIsTargetForEnemy = IsThisATargetForOtherPawn(KindaClosestEnemy);
+        if (DistToEnemy <= Healer->GetAttackRadius() + KINDA_SMALL_NUMBER) // Are there any attackers in attack radius?
+        {
+            if (bIsTargetForEnemy) // Are any of those attackers targeting this pawn?
+                Healer->SetCurrentTarget(KindaClosestEnemy); // Attack the closest of those attackers
+            else if (ClosestFriendly) // Are there any defenders in vision?
+            {
+                float DistToFriendly = FVector::Dist2D(HealerLoc, ClosestFriendly->GetActorLocation()) -
+                                       ClosestFriendly->GetOccupiedRadius();
+                if (DistToFriendly <=
+                    Healer->GetHealRadius() + KINDA_SMALL_NUMBER) // Are any of those defenders in heal radius?
+                    Healer->SetCurrentTarget(ClosestFriendly); // Heal the closest of those defenders
+                else Healer->SetCurrentTarget(KindaClosestEnemy); // Attack the closest of those attackers
+            }
+            else Healer->SetCurrentTarget(KindaClosestEnemy); // Attack the closest of those attackers
+        }
+        else if (ClosestFriendly) // Are there any defenders in vision?
+        {
+            Healer->SetCurrentTarget(ClosestFriendly);
+            // ^ Does both
+            // Are there any defenders in heal radius?
+            // | -> Yes: Heal the closest of those defenders
+            // | -> No: Head to the closest of those defenders
+        }
+        else Healer->SetCurrentTarget(KindaClosestEnemy); // Head to the closest of those attackers
+    }
+    else if (ClosestFriendly) // Are there any defenders in vision?
+    {
+        Healer->SetCurrentTarget(ClosestFriendly);
+        // ^ Does both
+        // Are there any defenders in heal radius?
+        // | -> Yes: Heal the closest of those defenders
+        // | -> No: Head to the closest of those defenders
+    }
+    else Healer->SetCurrentTarget(nullptr); // Head back to placement spot
+    // I think that is correct for my initial plan?
+    // It seems right...
+}
+
+void AHealerAIController::SetControllerActive(bool bActive)
+{
+    Super::SetControllerActive(bActive);
+    TimeSinceLastVisionUpdate = 0.0f;
+}
+
+void AHealerAIController::OnTargetPerceptionUpdated(AActor* Actor, FAIStimulus Stimulus)
+{
+    if (!IsValid(Actor)) return;
+    if (ATowerDefencePawn* TDPawn = Cast<ATowerDefencePawn>(Actor))
+    {
+        if (!Stimulus.WasSuccessfullySensed())
+        {
+            GetVisiblePawns().Remove(TDPawn);
+            if (IsOtherPawnFriendly(TDPawn)) VisibleFriendlies.Remove(TDPawn);
+            else VisibleEnemies.Remove(TDPawn);
+        }
+        else if (TDPawn->IsPawnActive() && TDPawn->GetHealthComponent()->IsAlive())
+        {
+            GetVisiblePawns().AddUnique(TDPawn);
+            if (IsOtherPawnFriendly(TDPawn)) VisibleFriendlies.AddUnique(TDPawn);
+            else VisibleEnemies.AddUnique(TDPawn);
+        }
+    }
+}
+
+AHealer* AHealerAIController::GetHealer() const { return GetPawn<AHealer>(); }
+
+bool AHealerAIController::IsOtherPawnFriendly(const ATowerDefencePawn* OtherPawn) const
+{
+    if (const AHealer* Healer = GetHealer(); IsValid(OtherPawn) && OtherPawn->IsPawnActive())
+    {
+        const ETeamAttitude::Type Attitude =
+            ATowerDefenceGameMode::GetAttitudeCustom(Healer->GetCurrentTeam(), OtherPawn->GetCurrentTeam());
+        return Attitude == ETeamAttitude::Friendly;
+    }
+    return false;
+}
+
+bool AHealerAIController::IsThisATargetForOtherPawn(const ATowerDefencePawn* OtherPawn) const
+{
+    if (!IsValid(OtherPawn) || !OtherPawn->IsPawnActive() || OtherPawn->GetHealthComponent()->IsDead()) return false;
+    const AHealer* Healer = GetHealer();
+    if (!Healer) return false;
+    // I hate doing it like this, but ATowerDefencePawn doesn't have a current target
+    // (because some things like tower have multiple) so there is no better way to do this
+    if (const ASkeletonPawn* Skel = Cast<ASkeletonPawn>(OtherPawn)) return Skel->GetAttackTarget() == Healer;
+    if (const AFlyingEnemy* Flyer = Cast<AFlyingEnemy>(OtherPawn)) return Flyer->GetAttackTarget() == Healer;
+    return false;
+}

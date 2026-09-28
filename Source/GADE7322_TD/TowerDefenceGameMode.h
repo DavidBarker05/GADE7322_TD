@@ -5,6 +5,7 @@
 #include "Events/EventListener.h"
 #include "GameFramework/GameModeBase.h"
 #include "GenericTeamAgentInterface.h"
+#include "TowerDefencePawns/TowerDefencePawn.h"
 
 #include "TowerDefenceGameMode.generated.h"
 
@@ -40,6 +41,8 @@ public:
     int32 GetCurrentWave() const { return CurrentWave; }
 
     int32 GetEnemiesRemaining() const { return EnemiesLeftToSpawnThisWave + EnemiesAliveThisWave; }
+
+    static ETeamAttitude::Type GetAttitudeCustom(EAITeam TeamA, EAITeam TeamB);
 
     static ETeamAttitude::Type GetAttitude(FGenericTeamId TeamA, FGenericTeamId TeamB);
 

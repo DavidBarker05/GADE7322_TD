@@ -18,12 +18,6 @@ ASkeletonPawn::ASkeletonPawn()
     CurrentTeam = EAITeam::MeleeAttacker;
 }
 
-void ASkeletonPawn::BeginPlay()
-{
-    Super::BeginPlay();
-    HitFlashComponent->BindMaterials();
-}
-
 const AWeapon* ASkeletonPawn::GetWeapon() const { return Cast<AWeapon>(Weapon ? Weapon->GetChildActor() : nullptr); }
 
 AWeapon* ASkeletonPawn::GetWeapon() { return Cast<AWeapon>(Weapon ? Weapon->GetChildActor() : nullptr); }
@@ -68,7 +62,7 @@ void ASkeletonPawn::DoOnSetActive(bool bActive)
         }
     }
     AWeapon* Sword = GetWeapon();
-    if (bActive && Sword) Sword->AttachToSkeleton(GetMesh());
+    if (bActive && IsValid(Sword)) Sword->AttachToSkeleton(GetMesh());
     GetMesh()->SetVisibility(bActive);
     GetMesh()->SetComponentTickEnabled(bActive);
     GetMesh()->SetCollisionEnabled(bActive ? ECollisionEnabled::QueryAndPhysics : ECollisionEnabled::NoCollision);
@@ -78,7 +72,7 @@ void ASkeletonPawn::DoOnSetActive(bool bActive)
         GetMesh()->SetCollisionResponseToChannel(ECC_WorldStatic, ECR_Ignore);
         GetMesh()->SetCollisionResponseToChannel(ECC_Pawn, ECR_Overlap);
     }
-    if (Sword)
+    if (IsValid(Sword))
     {
         Sword->GetMesh()->SetVisibility(bActive);
         Sword->GetMesh()->SetComponentTickEnabled(bActive && Sword->DoesMeshTick());

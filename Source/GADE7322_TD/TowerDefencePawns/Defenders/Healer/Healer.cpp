@@ -1,0 +1,109 @@
+#include "TowerDefencePawns/Defenders/Healer/Healer.h"
+
+#include "Perception/AIPerceptionComponent.h"
+#include "Perception/AIPerceptionSystem.h"
+#include "TowerDefenceGameMode.h"
+#include "TowerDefencePawns/Components/HealthComponent.h"
+#include "TowerDefencePawns/Defenders/Healer/AI/HealerAIController.h"
+
+AHealer::AHealer()
+{
+    PawnDisplayName = TEXT("Healer");
+    OccupiedRadius = 40.0f;
+    CurrentTeam = EAITeam::SupportDefender;
+    SpellSpawnLocation = CreateDefaultSubobject<USceneComponent>(TEXT("Spell Spawn Location"));
+    SpellSpawnLocation->SetupAttachment(GetMesh(), "spell");
+}
+
+void AHealer::StartAttack()
+{
+    bCanAttack = false;
+    UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
+    UAnimMontage* SpellMontage = bTargetIsFriendly ? HealMontage : AttackMontage;
+    AnimInstance->Montage_Play(SpellMontage, 1.0f);
+    FOnMontageEnded EndDelegate;
+    EndDelegate.BindUObject(this, &AHealer::OnAttackMontageEnded);
+    AnimInstance->Montage_SetEndDelegate(EndDelegate, SpellMontage);
+}
+
+void AHealer::Attack(ATowerDefencePawn* Other)
+{
+    if (!IsValid(Other) || !Other->IsPawnActive()) return;
+    if (IsOtherPawnFriendly(Other))
+    {
+        Other->GetHealthComponent()->ReceiveHealth(HealAmount);
+        // TODO: Some kind of heal effect
+    }
+    else
+    {
+        // TODO: Spawn attack spell
+    }
+}
+
+void AHealer::EndAttack()
+{
+    GetWorldTimerManager().SetTimer(
+        AttackCooldownHandle, [this]() -> void { bCanAttack = true; }, AttackCooldown, false);
+}
+
+void AHealer::OnDeath(TFunction<void()>&& Func)
+{
+    if (bDeathStarted) return;
+    bDeathStarted = true;
+    DestroyDelegate = MoveTemp(Func);
+    UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
+    AnimInstance->Montage_Play(DeathMontage, 1.0f);
+    FOnMontageBlendingOutStarted EndDelegate;
+    EndDelegate.BindUObject(this, &AHealer::OnDeathMontageEnded);
+    AnimInstance->Montage_SetBlendingOutDelegate(EndDelegate, DeathMontage);
+}
+
+void AHealer::DoOnSetActive(bool bActive)
+{
+    Super::DoOnSetActive(bActive);
+    if (bActive) SetCurrentTarget(nullptr);
+    GetMesh()->SetVisibility(bActive);
+    GetMesh()->SetComponentTickEnabled(bActive);
+    GetMesh()->SetCollisionEnabled(bActive ? ECollisionEnabled::QueryAndPhysics : ECollisionEnabled::NoCollision);
+    GetMesh()->SetCollisionResponseToAllChannels(bActive ? ECR_Block : ECR_Ignore);
+    if (bActive)
+    {
+        GetMesh()->SetCollisionResponseToChannel(ECC_WorldStatic, ECR_Ignore);
+        GetMesh()->SetCollisionResponseToChannel(ECC_Pawn, ECR_Overlap);
+    }
+}
+
+void AHealer::DoUpdatePerceptionOnTeamChange()
+{
+    if (AHealerAIController* H_AIC = GetController<AHealerAIController>())
+    {
+        if (UAIPerceptionSystem* PerceptionSys = UAIPerceptionSystem::GetCurrent(GetWorld()))
+            PerceptionSys->UpdateListener(*H_AIC->GetAIPerceptionComponent());
+        H_AIC->GetAIPerceptionComponent()->ForgetAll();
+        H_AIC->GetVisiblePawns().Empty();
+        H_AIC->GetVisibleEnemies().Empty();
+        H_AIC->GetVisibleEnemies().Empty();
+        CurrentTarget = nullptr;
+    }
+}
+
+void AHealer::SetCurrentTarget(ATowerDefencePawn* NewTarget)
+{
+    CurrentTarget = NewTarget;
+    bTargetIsFriendly = IsOtherPawnFriendly(NewTarget);
+}
+
+bool AHealer::IsOtherPawnFriendly(const ATowerDefencePawn* OtherPawn) const
+{
+    if (IsValid(OtherPawn) && OtherPawn->IsPawnActive())
+    {
+        const ETeamAttitude::Type Attitude =
+            ATowerDefenceGameMode::GetAttitudeCustom(CurrentTeam, OtherPawn->GetCurrentTeam());
+        return Attitude == ETeamAttitude::Friendly;
+    }
+    return false;
+}
+
+void AHealer::OnAttackMontageEnded(UAnimMontage* Montage, bool bInterrupted) { EndAttack(); }
+
+void AHealer::OnDeathMontageEnded(UAnimMontage* Montage, bool bInterrupted) { OnDeathComplete(); }

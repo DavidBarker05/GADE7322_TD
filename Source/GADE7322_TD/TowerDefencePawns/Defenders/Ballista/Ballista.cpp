@@ -71,15 +71,10 @@ void ABallista::StartAttack()
 void ABallista::DoOnSetActive(bool bActive)
 {
     Super::DoOnSetActive(bActive);
-    // Ballista owns its perception directly (no AI controller to handle this like
-    // ATowerDefencePawnAIController::SetControllerActive does for Warrior/Skeleton), and unlike the tower
-    // it DOES get deactivated (sold) and later reused from the pool, so it has to do that forgetting/
-    // re-syncing itself here instead
     if (bActive)
     {
         CurrentAttackTarget = nullptr;
         GetWorldTimerManager().ClearTimer(AttackTimerHandle);
-        HitFlashComponent->BindMaterials();
         VisiblePawns.Empty();
         PerceptionComponent->SetActive(true);
         if (UAIPerceptionSystem* PerceptionSys = UAIPerceptionSystem::GetCurrent(GetWorld()))
@@ -87,7 +82,6 @@ void ABallista::DoOnSetActive(bool bActive)
     }
     else
     {
-        HitFlashComponent->UnbindMaterials();
         PerceptionComponent->ForgetAll();
         VisiblePawns.Empty();
         PerceptionComponent->SetActive(false);
@@ -202,7 +196,7 @@ float ABallista::GetAngleToFireProjectile(const UObject* WorldContextObject, FVe
     // 2 * theta = acos(((+g) * (x ^ 2) / (v_0 ^ 2) - h) / sqrt(x ^ 2 + h ^ 2)) + atan(x / h)
     //
     // theta = acos(((+g) * (x ^ 2) / (v_0 ^ 2) - h) / sqrt(x ^ 2 + h ^ 2)) / 2 + atan(x / h) / 2
-    // ^ acos has two valid solutions (+ and -), + is the high lobbing arc, - is the low arc shot, which is what we
+    // ^ acos has two valid solutions (+ and -) apparently, + is the high lobbing arc, - is the low arc shot, which is what we
     // actually want here, so we use - instead
     const float Theta =
         FMath::Atan(X / H) / 2.0f - FMath::Acos((PosG * FMath::Square(X) / FMath::Square(InitialVelocity) - H) /
