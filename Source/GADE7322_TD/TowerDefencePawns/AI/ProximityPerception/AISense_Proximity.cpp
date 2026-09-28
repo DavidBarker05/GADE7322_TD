@@ -7,8 +7,6 @@
 
 UAISense_Proximity::UAISense_Proximity(const FObjectInitializer& ObjectInitializer) : Super(ObjectInitializer)
 {
-    if (!HasAnyFlags(RF_ClassDefaultObject))
-        GetMutableDefault<UAISenseConfig_Proximity>()->Implementation = StaticClass();
     NotifyType = EAISenseNotifyType::OnPerceptionChange;
     bNeedsForgettingNotification = true;
 }

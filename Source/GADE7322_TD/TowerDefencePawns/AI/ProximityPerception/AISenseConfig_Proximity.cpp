@@ -6,4 +6,7 @@ UAISenseConfig_Proximity::UAISenseConfig_Proximity(const FObjectInitializer& Obj
     DebugColor = FColor::Cyan;
 }
 
-TSubclassOf<UAISense> UAISenseConfig_Proximity::GetSenseImplementation() const { return *Implementation; }
+TSubclassOf<UAISense> UAISenseConfig_Proximity::GetSenseImplementation() const
+{
+    return UAISense_Proximity::StaticClass();
+}
