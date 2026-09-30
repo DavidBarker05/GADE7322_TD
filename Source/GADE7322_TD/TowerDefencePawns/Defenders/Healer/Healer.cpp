@@ -1,4 +1,3 @@
-#include "Healer.h"
 #include "TowerDefencePawns/Defenders/Healer/Healer.h"
 
 #include "NiagaraComponent.h"
@@ -78,7 +77,7 @@ void AHealer::Attack(ATowerDefencePawn* Other)
     if (IsOtherPawnFriendly(Other))
     {
         Other->GetHealthComponent()->ReceiveHealth(HealAmount);
-        // TODO: Some kind of heal effect
+        if (ADefender* Defender = Cast<ADefender>(Other)) Defender->GetHealEffect()->Activate(true);
     }
     else
     {

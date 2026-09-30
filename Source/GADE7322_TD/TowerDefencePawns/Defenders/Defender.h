@@ -8,6 +8,7 @@
 
 class ADefenderSpot;
 class UBoxComponent;
+class UNiagaraComponent;
 
 UCLASS(Abstract)
 class GADE7322_TD_API ADefender : public ATowerDefencePawn
@@ -30,6 +31,9 @@ public:
     const ADefenderSpot* GetSpawnPoint() const { return SpawnPoint; }
     ADefenderSpot* GetSpawnPoint() { return SpawnPoint; }
 
+    const UNiagaraComponent* GetHealEffect() const { return HealEffect; }
+    UNiagaraComponent* GetHealEffect() { return HealEffect; }
+
 protected:
     virtual void DoOnSetActive(bool bActive) override;
 
@@ -47,4 +51,7 @@ private:
 
     UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components", meta = (AllowPrivateAccess = true))
     UBoxComponent* BoxCollider = nullptr;
+
+    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components", meta = (AllowPrivateAccess = true))
+    UNiagaraComponent* HealEffect;
 };

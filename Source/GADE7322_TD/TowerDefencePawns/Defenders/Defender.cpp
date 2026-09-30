@@ -1,6 +1,7 @@
 #include "TowerDefencePawns/Defenders/Defender.h"
 
 #include "Components/BoxComponent.h"
+#include "NiagaraComponent.h"
 #include "TDCollisionChannels.h"
 
 ADefender::ADefender()
@@ -12,6 +13,9 @@ ADefender::ADefender()
     BoxCollider->SetCollisionObjectType(ECC_WorldDynamic);
     BoxCollider->SetCollisionResponseToAllChannels(ECR_Ignore);
     BoxCollider->SetCollisionResponseToChannel(MouseClickTraceChannel, ECR_Block);
+    HealEffect = CreateDefaultSubobject<UNiagaraComponent>(TEXT("Heal Effect"));
+    HealEffect->SetupAttachment(RootComponent);
+    HealEffect->bAutoActivate = false;
 }
 
 void ADefender::DoOnSetActive(bool bActive)
