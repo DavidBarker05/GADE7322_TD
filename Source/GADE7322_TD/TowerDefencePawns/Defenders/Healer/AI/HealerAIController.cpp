@@ -2,10 +2,11 @@
 
 #include "HealthComponent.h"
 #include "Perception/AIPerceptionTypes.h"
-#include "TargetSelectionFunctions.h"
 #include "TowerDefenceGameMode.h"
 #include "TowerDefencePawns/AI/ProximityPerception/AISenseConfig_Proximity.h"
+#include "TowerDefencePawns/AI/TargetSelectionFunctions.h"
 #include "TowerDefencePawns/Attackers/FlyingEnemy/FlyingEnemy.h"
+#include "TowerDefencePawns/Attackers/Mage/Mage.h"
 #include "TowerDefencePawns/Attackers/Skeleton/SkeletonPawn.h"
 #include "TowerDefencePawns/Defenders/Healer/Healer.h"
 #include "TowerDefencePawns/Tower/PlayerTower.h"
@@ -84,7 +85,7 @@ void AHealerAIController::Tick(float DeltaTime)
         if (FVector::Dist2D(Healer->GetActorLocation(), Target->GetActorLocation()) <=
             Radius + KINDA_SMALL_NUMBER) // Is the current target in the radius?
         {
-            if (const FVector ToTarget = Target->GetActorLocation() - Target->GetActorLocation();
+            if (const FVector ToTarget = Target->GetActorLocation() - Healer->GetActorLocation();
                 !ToTarget.IsNearlyZero())
                 Healer->SetActorRotation(FRotator(0.0f, ToTarget.Rotation().Yaw, 0.0f));
             return; // Keep using that target
@@ -96,7 +97,7 @@ void AHealerAIController::Tick(float DeltaTime)
         return;
     }
     TimeSinceLastVisionUpdate = 0.0f;
-    for (int32 i = GetVisiblePawns().Num(); i > 0; --i)
+    for (int32 i = GetVisiblePawns().Num() - 1; i >= 0; --i)
     {
         if (const ATowerDefencePawn* TDPawn = GetVisiblePawns()[i])
         {
@@ -212,5 +213,6 @@ bool AHealerAIController::IsThisATargetForOtherPawn(const ATowerDefencePawn* Oth
     // (because some things like tower have multiple) so there is no better way to do this
     if (const ASkeletonPawn* Skel = Cast<ASkeletonPawn>(OtherPawn)) return Skel->GetAttackTarget() == Healer;
     if (const AFlyingEnemy* Flyer = Cast<AFlyingEnemy>(OtherPawn)) return Flyer->GetAttackTarget() == Healer;
+    if (const AMage* Mage = Cast<AMage>(OtherPawn)) return Mage->GetCurrentTarget() == Healer;
     return false;
 }

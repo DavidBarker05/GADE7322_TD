@@ -52,6 +52,8 @@ public class GADE7322_TD : ModuleRules
 			"GADE7322_TD/TowerDefencePawns/Attackers/AI/CommonTasks",
 			"GADE7322_TD/TowerDefencePawns/Attackers/FlyingEnemy",
 			"GADE7322_TD/TowerDefencePawns/Attackers/FlyingEnemy/AI",
+			"GADE7322_TD/TowerDefencePawns/Attackers/Mage",
+			"GADE7322_TD/TowerDefencePawns/Attackers/Mage/AI",
 			"GADE7322_TD/TowerDefencePawns/Attackers/Skeleton",
 			"GADE7322_TD/TowerDefencePawns/Attackers/Skeleton/AI",
 			"GADE7322_TD/TowerDefencePawns/Components",

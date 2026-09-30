@@ -1,10 +1,10 @@
 #include "TowerDefencePawns/Defenders/Healer/Healer.h"
 
-#include "DamageComponent.h"
 #include "NiagaraComponent.h"
 #include "Perception/AIPerceptionComponent.h"
 #include "Perception/AIPerceptionSystem.h"
 #include "TowerDefenceGameMode.h"
+#include "TowerDefencePawns/Components/DamageComponent.h"
 #include "TowerDefencePawns/Components/HealthComponent.h"
 #include "TowerDefencePawns/Defenders/Healer/AI/HealerAIController.h"
 #include "TowerDefencePawns/Defenders/Healer/FireballProjectile.h"

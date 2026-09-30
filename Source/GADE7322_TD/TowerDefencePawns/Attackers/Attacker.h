@@ -6,6 +6,8 @@
 
 #include "Attacker.generated.h"
 
+class UNiagaraComponent;
+
 UCLASS(Abstract)
 class GADE7322_TD_API AAttacker : public ATowerDefencePawn
 {
@@ -13,6 +15,9 @@ class GADE7322_TD_API AAttacker : public ATowerDefencePawn
 
 public:
     AAttacker();
+
+    const UNiagaraComponent* GetBoostEffect() const { return BoostEffect; }
+    UNiagaraComponent* GetBoostEffect() { return BoostEffect; }
 
     int32 GetCurrencyOnDeath() const { return CurrencyOnDeath; }
 
@@ -60,4 +65,7 @@ private:
     UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "AI",
               meta = (AllowPrivateAccess = true, ClampMin = 0.0, UIMin = 0.0, Units = "Centimeters"))
     float PathTargetAcceptanceDistance = 10.0f;
+
+    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components", meta = (AllowPrivateAccess = true))
+    UNiagaraComponent* BoostEffect;
 };

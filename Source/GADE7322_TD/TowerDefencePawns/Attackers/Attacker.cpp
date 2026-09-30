@@ -1,3 +1,11 @@
 #include "TowerDefencePawns/Attackers/Attacker.h"
 
-AAttacker::AAttacker() { PawnDisplayName = TEXT("EnemyTroop"); }
+#include "NiagaraComponent.h"
+
+AAttacker::AAttacker()
+{
+    PawnDisplayName = TEXT("EnemyTroop");
+    BoostEffect = CreateDefaultSubobject<UNiagaraComponent>(TEXT("Boost Effect"));
+    BoostEffect->SetupAttachment(RootComponent);
+    BoostEffect->bAutoActivate = false;
+}
