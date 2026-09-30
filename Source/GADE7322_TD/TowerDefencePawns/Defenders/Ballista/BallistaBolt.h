@@ -64,7 +64,7 @@ private:
     USceneComponent* Target;
 
     UPROPERTY(BlueprintReadWrite, Category = "Ballista", meta = (AllowPrivateAccess = true, ClampMin = 1))
-    int Damage = 1;
+    int32 Damage = 1;
 
     UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Ballista",
               meta = (AllowPrivateAccess = true, ClampMin = 0.0, UIMin = 0.0, Units = "Seconds"))

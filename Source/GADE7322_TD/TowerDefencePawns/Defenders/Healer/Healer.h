@@ -6,6 +6,7 @@
 
 #include "Healer.generated.h"
 
+class AFireballProjectile;
 class UNiagaraComponent;
 
 UCLASS(Abstract)
@@ -73,6 +74,13 @@ private:
 
     UPROPERTY(BlueprintReadOnly, Category = "Spell", meta = (AllowPrivateAccess = true))
     bool bIsHoldingSpell = false;
+
+    UPROPERTY(EditDefaultsOnly, Category = "Spell", meta = (AllowPrivateAccess = true))
+    TSubclassOf<AFireballProjectile> FireballClass;
+
+    UPROPERTY(EditDefaultsOnly, Category = "Spell",
+              meta = (AllowPrivateAccess = true, ClampMin = 0.0, UIMin = 0.0, Units = "cm/s"))
+    float FireballSpeed = 2000.0f;
 
     UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Animation", meta = (AllowPrivateAccess = true))
     UAnimMontage* AttackMontage;

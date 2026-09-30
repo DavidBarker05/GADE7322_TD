@@ -1,11 +1,14 @@
 #include "TowerDefencePawns/Defenders/Healer/Healer.h"
 
+#include "DamageComponent.h"
 #include "NiagaraComponent.h"
 #include "Perception/AIPerceptionComponent.h"
 #include "Perception/AIPerceptionSystem.h"
 #include "TowerDefenceGameMode.h"
 #include "TowerDefencePawns/Components/HealthComponent.h"
 #include "TowerDefencePawns/Defenders/Healer/AI/HealerAIController.h"
+#include "TowerDefencePawns/Defenders/Healer/FireballProjectile.h"
+#include "TowerDefencePawns/ProjectilePoolFactory.h"
 
 AHealer::AHealer()
 {
@@ -79,9 +82,15 @@ void AHealer::Attack(ATowerDefencePawn* Other)
         Other->GetHealthComponent()->ReceiveHealth(HealAmount);
         if (ADefender* Defender = Cast<ADefender>(Other)) Defender->GetHealEffect()->Activate(true);
     }
-    else
+    else if (PROJECTILE_POOL_FACTORY_EXISTS)
     {
-        // TODO: Spawn attack spell
+        const FVector LaunchLocation = SpellSpawnLocation->GetComponentLocation();
+        const FVector TargetLocation = CurrentTarget->GetVisualAttackPointLocation();
+        AFireballProjectile* Fireball =
+            Cast<AFireballProjectile>(CREATE_PROJECTILE(FireballClass, FTransform(LaunchLocation)));
+        if (!Fireball) return;
+        const FVector LaunchVelocity = (TargetLocation - LaunchLocation).GetSafeNormal() * FireballSpeed;
+        Fireball->Fire(CurrentTarget->GetVisualAttackPoint(), DamageComponent->GetDamage(), LaunchVelocity);
     }
 }
 

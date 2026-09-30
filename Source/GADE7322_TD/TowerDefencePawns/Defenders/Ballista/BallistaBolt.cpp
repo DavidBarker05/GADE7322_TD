@@ -2,9 +2,9 @@
 
 #include "Components/BoxComponent.h"
 #include "GameFramework/ProjectileMovementComponent.h"
-#include "TowerDefencePawns/Attackers/Attacker.h"
 #include "TowerDefencePawns/Components/HealthComponent.h"
 #include "TowerDefencePawns/ProjectilePoolFactory.h"
+#include "TowerDefencePawns/TowerDefencePawn.h"
 
 ABallistaBolt::ABallistaBolt()
 {
@@ -30,9 +30,9 @@ void ABallistaBolt::Tick(float DeltaTime)
     Super::Tick(DeltaTime);
     if (!IsValid(Target)) return;
     if (FVector::DistSquared(GetActorLocation(), Target->GetComponentLocation()) > FMath::Square(HitRadius)) return;
-    if (AAttacker* HitAttacker = Cast<AAttacker>(Target->GetOwner());
-        IsValid(HitAttacker) && HitAttacker->IsPawnActive() && HitAttacker->GetHealthComponent()->IsAlive())
-        HitAttacker->GetHealthComponent()->TakeDamage(Damage);
+    if (ATowerDefencePawn* HitPawn = Cast<ATowerDefencePawn>(Target->GetOwner());
+        IsValid(HitPawn) && HitPawn->IsPawnActive() && HitPawn->GetHealthComponent()->IsAlive())
+        HitPawn->GetHealthComponent()->TakeDamage(Damage);
     ReturnToPool();
 }
 
