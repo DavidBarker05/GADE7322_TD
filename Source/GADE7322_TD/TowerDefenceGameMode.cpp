@@ -167,8 +167,12 @@ void ATowerDefenceGameMode::SpawnEnemyOnRandomPath()
     if (Paths.IsEmpty() || EnemyClasses.IsEmpty()) return;
     const FTerrainPath& Path = Paths[FMath::RandHelper(Paths.Num())];
     if (Path.Points.IsEmpty()) return;
-    const TSubclassOf<AAttacker> EnemyClass = EnemyClasses[FMath::RandHelper(EnemyClasses.Num())];
-    if (!EnemyClass) return;
+
+    TArray<TSubclassOf<AAttacker>> UnlockedClasses;
+    for (const FEnemySpawnEntry& Entry : EnemyClasses)
+        if (Entry.EnemyClass && CurrentWave >= Entry.MinWave) UnlockedClasses.Add(Entry.EnemyClass);
+    if (UnlockedClasses.IsEmpty()) return;
+    const TSubclassOf<AAttacker> EnemyClass = UnlockedClasses[FMath::RandHelper(UnlockedClasses.Num())];
     if (TOWER_DEFENCE_PAWN_FACTORY_EXISTS)
     {
         FVector SpawnLocation = Path.Points[0];
