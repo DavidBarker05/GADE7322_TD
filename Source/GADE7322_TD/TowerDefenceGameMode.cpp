@@ -4,6 +4,8 @@
 #include "ProceduralGen/ProceduralTerrainGen.h"
 #include "Settings/GameSettingsSubsystem.h"
 #include "TowerDefencePawns/Attackers/Attacker.h"
+#include "TowerDefencePawns/Components/HealthComponent.h"
+#include "TowerDefencePawns/Defenders/Defender.h"
 #include "TowerDefencePawns/Tower/PlayerTower.h"
 #include "TowerDefencePawns/TowerDefencePawn.h"
 #include "TowerDefencePawns/TowerDefencePawnFactory.h"
@@ -34,12 +36,37 @@ void ATowerDefenceGameMode::StartPlay()
 
 void ATowerDefenceGameMode::OnEventReceived_Implementation(const FName& EventName, const TArray<FAny>& Params)
 {
-    if (!EVENT_MATCHES(TEXT("DeathEvent"), 1) || !PARAMS_ARE_VALID || !PARAMS_ARE_CORRECT_TYPES(ATowerDefencePawn*))
-        return;
-    ATowerDefencePawn* const* DeadPawnPtr = Params[0].Get<ATowerDefencePawn*>();
-    if (!DeadPawnPtr) return;
-    if (AAttacker* Enemy = Cast<AAttacker>(*DeadPawnPtr)) HandleEnemyDeath(Enemy);
-    else if (APlayerTower* Tower = Cast<APlayerTower>(*DeadPawnPtr)) HandleTowerDeath(Tower);
+    if (EVENT_MATCHES(TEXT("DeathEvent"), 1))
+    {
+        if (!PARAMS_ARE_VALID || !PARAMS_ARE_CORRECT_TYPES(ATowerDefencePawn*)) return;
+        ATowerDefencePawn* DeadPawn = *Params[0].Get<ATowerDefencePawn*>();
+        if (!DeadPawn) return;
+        if (AAttacker* Enemy = Cast<AAttacker>(DeadPawn)) HandleEnemyDeath(Enemy);
+        else if (APlayerTower* Tower = Cast<APlayerTower>(DeadPawn)) HandleTowerDeath(Tower);
+        else if (ADefender* DeadDefender = Cast<ADefender>(DeadPawn))
+        {
+            if (NumAliveDefenders > 0) --NumAliveDefenders;
+            HealthTotal = FMath::Max(0, HealthTotal - DeadDefender->GetHealthComponent()->GetMaxHealth());
+        }
+    }
+    else if (EVENT_MATCHES(TEXT("DefenderPurchasedEvent"), 1))
+    {
+        if (!PARAMS_ARE_VALID || !PARAMS_ARE_CORRECT_TYPES(int32)) return;
+        const int32 DefenderMaxHealth = *Params[0].Get<int32>();
+        ++NumAliveDefenders;
+        ++NumTotalDefenders;
+        HealthTotal += DefenderMaxHealth;
+    }
+    else if (EVENT_MATCHES(TEXT("DefenderSoldEvent"), 1))
+    {
+        if (NumAliveDefenders == 0) return;
+        if (!PARAMS_ARE_VALID || !PARAMS_ARE_CORRECT_TYPES(int32)) return;
+        const int32 DefenderMaxHealth = *Params[0].Get<int32>();
+        --NumAliveDefenders;
+        --NumTotalDefenders;
+        HealthTotal = FMath::Max(0, HealthTotal - DefenderMaxHealth);
+    }
+    else if (EVENT_MATCHES(TEXT("LeakEvent"), 0)) ++NumLeakedEnemies;
 }
 
 void ATowerDefenceGameMode::StartNextWave()
@@ -51,6 +78,10 @@ void ATowerDefenceGameMode::StartNextWave()
     bWaveInProgress = true;
     BROADCAST_EVENT(TEXT("UpdateHUDEvent"), FName(TEXT("Round")), CurrentWave);
     BROADCAST_EVENT(TEXT("UpdateHUDEvent"), FName(TEXT("WaveState")), FName(TEXT("InProgress")));
+    NumTotalDefenders = NumAliveDefenders;
+    NumLeakedEnemies = 0;
+    HealthGained = 0;
+    HealthLost = 0;
     BroadcastEnemyCount();
     SpawnBurst();
 }

@@ -2,6 +2,7 @@
 
 #include "Components/BoxComponent.h"
 #include "Events/EventBus.h"
+#include "HealthComponent.h"
 #include "TDCollisionChannels.h"
 #include "TowerDefencePawns/Defenders/Defender.h"
 #include "TowerDefencePawns/TowerDefencePawnFactory.h"
@@ -67,6 +68,7 @@ void ADefenderSpot::PurchaseDefender(const TSubclassOf<ADefender>& DefenderBluep
         CurrentDefender->SetSpawnPoint(this);
         CurrentDefender->SetPawnActive(true);
         BROADCAST_EVENT(TEXT("PurchaseEvent"), CurrentDefender->GetCost());
+        BROADCAST_EVENT(TEXT("DefenderPurchasedEvent"), CurrentDefender->GetHealthComponent()->GetMaxHealth());
     }
 }
 
@@ -76,6 +78,7 @@ void ADefenderSpot::SellDefender()
     if (TOWER_DEFENCE_PAWN_FACTORY_EXISTS)
     {
         BROADCAST_EVENT(TEXT("SellEvent"), CurrentDefender->GetSellPrice());
+        BROADCAST_EVENT(TEXT("DefenderSoldEvent"), CurrentDefender->GetHealthComponent()->GetMaxHealth());
         CurrentDefender->SetSpawnPoint(nullptr);
         CurrentDefender->SetPawnActive(false);
         DESTROY_PAWN(CurrentDefender);

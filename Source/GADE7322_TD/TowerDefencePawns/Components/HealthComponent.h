@@ -7,12 +7,16 @@
 
 #include "HealthComponent.generated.h"
 
+class ATowerDefenceGameMode;
+
 UCLASS(ClassGroup = (TowerDefencePawn), meta = (BlueprintSpawnableComponent))
 class GADE7322_TD_API UHealthComponent : public UActorComponent
 {
     GENERATED_BODY()
 
 public:
+    virtual void BeginPlay() override;
+
     int32 GetMaxHealth() const { return MaxHealth; }
     void SetMaxHealth(int32 Health)
     {
@@ -57,4 +61,11 @@ private:
 
     UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Health", meta = (AllowPrivateAccess = true))
     bool bDead = false;
+
+    bool bOwnerIsDefender = false;
+
+    UPROPERTY()
+    ATowerDefenceGameMode* TowerDefenceGameMode;
+    // If going to be updating game mode every time take damage then accessing directly
+    // is better than broadcasting because of how often it happens
 };

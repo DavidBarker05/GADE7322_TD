@@ -19,7 +19,7 @@ class GADE7322_TD_API ATowerDefenceGameMode : public AGameModeBase,
 {
     GENERATED_BODY()
 
-    EVENTS_TO_LISTEN_TO(TEXT("DeathEvent"))
+    EVENTS_TO_LISTEN_TO(TEXT("DeathEvent"), TEXT("DefenderPurchasedEvent"), TEXT("DefenderSoldEvent"), TEXT("LeakEvent"))
 
 protected:
     virtual void BeginPlay() override;
@@ -45,6 +45,18 @@ public:
     static ETeamAttitude::Type GetAttitudeCustom(EAITeam TeamA, EAITeam TeamB);
 
     static ETeamAttitude::Type GetAttitude(FGenericTeamId TeamA, FGenericTeamId TeamB);
+
+    UFUNCTION(BlueprintCallable, Category = "Adaptive Difficulty")
+    void DefenderLostHealth(int32 Amount)
+    {
+        if (Amount > 0) HealthLost += Amount;
+    }
+
+    UFUNCTION(BlueprintCallable, Category = "Adaptive Difficulty")
+    void DefenderGainedHealth(int32 Amount)
+    {
+        if (Amount > 0) HealthGained += Amount;
+    }
 
 protected:
     // Spawns one burst of enemies, then (if there are more left to spawn this wave) schedules the next burst
@@ -101,6 +113,48 @@ private:
     int32 EnemiesLeftToSpawnThisWave = 0;
     int32 EnemiesAliveThisWave = 0;
     bool bWaveInProgress = false;
+
+    UPROPERTY(EditDefaultsOnly, Category = "Adaptive Difficulty",
+              meta = (AllowPrivateAccess = true, ClampMin = 0.0, UIMin = 0.0))
+    float SurvivalFactorInfluence = 1.0f;
+    int32 NumAliveDefenders = 0;
+    int32 NumTotalDefenders = 0;
+    float GetSurvivalFactor() const
+    {
+        if (NumTotalDefenders == 0) return -1.0f;
+        const float SurvivalRate = static_cast<float>(NumAliveDefenders) / static_cast<float>(NumTotalDefenders);
+        const float SurvivalFactor = 2.0f * SurvivalRate - 1.0f;
+        return SurvivalFactor * SurvivalFactorInfluence;
+    }
+
+    UPROPERTY(EditDefaultsOnly, Category = "Adaptive Difficulty",
+              meta = (AllowPrivateAccess = true, ClampMin = 0.0, UIMin = 0.0))
+    float LeakFactorInfluence = 1.0f;
+    int32 NumLeakedEnemies = 0;
+    int32 NumTotalEnemies = 0;
+    float GetLeakFactor() const
+    {
+        if (NumTotalEnemies == 0) return 1.0f;
+        const float LeakRate = static_cast<float>(NumLeakedEnemies) / static_cast<float>(NumTotalEnemies);
+        const float LeakFactor = 1.0f - 2.0f * LeakRate;
+        return LeakFactor * LeakFactorInfluence;
+    }
+
+    UPROPERTY(EditDefaultsOnly, Category = "Adaptive Difficulty",
+              meta = (AllowPrivateAccess = true, ClampMin = 0.0, UIMin = 0.0))
+    float HealthFactorInfluence = 1.0f;
+    int32 HealthGained = 0;
+    int32 HealthLost = 0;
+    int32 HealthTotal = 0;
+    float GetHealthFactor() const
+    {
+        if (HealthTotal == 0) return -1.0f;
+        const float HealthRatio = static_cast<float>(HealthGained - HealthLost) / static_cast<float>(HealthTotal);
+        const float HealthFactor = FMath::Clamp(HealthRatio, -1.0f, 1.0f);
+        return HealthFactor * HealthFactorInfluence;
+    }
+
+    float GetRoundScore() const { return GetSurvivalFactor() + GetLeakFactor() + GetHealthFactor(); }
 
     FTimerHandle SpawnBurstTimerHandle;
 };

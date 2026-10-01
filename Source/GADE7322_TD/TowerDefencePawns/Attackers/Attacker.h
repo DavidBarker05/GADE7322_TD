@@ -16,6 +16,12 @@ class GADE7322_TD_API AAttacker : public ATowerDefencePawn
 public:
     AAttacker();
 
+    virtual void Attack(ATowerDefencePawn* Other) override;
+
+protected:
+    virtual void DoOnSetActive(bool bActive) override;
+
+public:
     const UNiagaraComponent* GetBoostEffect() const { return BoostEffect; }
     UNiagaraComponent* GetBoostEffect() { return BoostEffect; }
 
@@ -68,4 +74,6 @@ private:
 
     UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components", meta = (AllowPrivateAccess = true))
     UNiagaraComponent* BoostEffect;
+
+    bool bHasBeenLeaked = false;
 };
