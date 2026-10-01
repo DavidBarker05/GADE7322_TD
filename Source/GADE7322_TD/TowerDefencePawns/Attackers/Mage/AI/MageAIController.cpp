@@ -74,6 +74,11 @@ void AMageAIController::Tick(float DeltaTime)
     // . . | | -> No: Head to the closest of those attackers
     // . . | -> No: Head towards the tower
 
+    // Additional thing realised later and don't want to rewrite my comment:
+    // Don't want mages to get in a circle of boosting and therefore get stuck
+    // boosting each other and never be able to boost other attackers or attack defenders or head towards the tower.
+    // So need to not target a healer if they are healing someone else
+
     if (const ATowerDefencePawn* Target = Mage->GetCurrentTarget();
         IsValid(Target) && Target->IsPawnActive() &&
         Target->GetHealthComponent()->IsAlive()) // Is there a current target?
@@ -104,20 +109,34 @@ void AMageAIController::Tick(float DeltaTime)
         else GetVisiblePawns().RemoveAt(i);
     }
     FVector MageLoc = Mage->GetActorLocation();
-    auto GetCurrentVal = [this, &MageLoc](const ATowerDefencePawn* Other) -> TPair<float, bool>
-    {
-        float Dist = FVector::Dist2D(MageLoc, Other->GetActorLocation()) - Other->GetOccupiedRadius();
-        bool bIsTargetForOther = IsThisATargetForOtherPawn(Other);
-        return TPair<float, bool>(Dist, bIsTargetForOther);
-    };
     auto Predicate = [](const TPair<float, bool>& Left, const TPair<float, bool>& Right) -> bool
     {
-        if (!Left.Value && Right.Value) return true; // Not target for current, but is target for other
-        return Left.Key < Right.Key; // Closest in all other cases
+        if (Left.Value != Right.Value) return Left.Value;
+        return Left.Key < Right.Key;
+    };
+    auto GetCurrentValEnemy = [this, &MageLoc](const ATowerDefencePawn* Other) -> TPair<float, bool>
+    {
+        float Dist = FVector::Dist2D(MageLoc, Other->GetActorLocation()) - Other->GetOccupiedRadius();
+        bool bIsTargetForOther = IsThisATargetForOtherPawn(Other); // Prioritise targeting enemies targeting this pawn
+        return TPair<float, bool>(Dist, bIsTargetForOther);
+    };
+    auto IsOtherPawnBoosting = [](const ATowerDefencePawn* Other) -> bool
+    {
+        if (const AMage* OtherMage = Cast<AMage>(Other)) return OtherMage->IsCurrentTargetFriendly();
+        return false;
+    };
+    auto GetCurrentValFriendly = [this, &MageLoc,
+                                  &IsOtherPawnBoosting](const ATowerDefencePawn* Other) -> TPair<float, bool>
+    {
+        float Dist = FVector::Dist2D(MageLoc, Other->GetActorLocation()) - Other->GetOccupiedRadius();
+        const bool bIsOtherPawnBoosting =
+            IsOtherPawnBoosting(Other); // Don't target mages that are boosting someone else
+        return TPair<float, bool>(Dist, !bIsOtherPawnBoosting);
     };
     ATowerDefencePawn* KindaClosestEnemy = SelectTarget<TPair<float, bool>>(
-        VisibleEnemies, TPair<float, bool>(TNumericLimits<float>::Max(), false), GetCurrentVal, Predicate);
-    ATowerDefencePawn* ClosestFriendly = SelectClosestTarget(VisibleFriendlies, Mage);
+        VisibleEnemies, TPair<float, bool>(TNumericLimits<float>::Max(), false), GetCurrentValEnemy, Predicate);
+    ATowerDefencePawn* KindaClosestFriendly = SelectTarget<TPair<float, bool>>(
+        VisibleFriendlies, TPair<float, bool>(TNumericLimits<float>::Max(), false), GetCurrentValFriendly, Predicate);
     if (KindaClosestEnemy) // Are there any defenders in vision?
     {
         float DistToEnemy =
@@ -127,20 +146,24 @@ void AMageAIController::Tick(float DeltaTime)
         {
             if (bIsTargetForEnemy) // Are any of those defenders targeting this pawn?
                 Mage->SetCurrentTarget(KindaClosestEnemy); // Attack the closest of those defenders
-            else if (ClosestFriendly) // Are there any attackers in vision?
+            else if (KindaClosestFriendly &&
+                     !IsOtherPawnBoosting(KindaClosestFriendly)) // Are there any attackers in vision? (and the other
+                                                                 // attacker can't be boosting someone)
             {
-                float DistToFriendly = FVector::Dist2D(MageLoc, ClosestFriendly->GetActorLocation()) -
-                                       ClosestFriendly->GetOccupiedRadius();
+                float DistToFriendly = FVector::Dist2D(MageLoc, KindaClosestFriendly->GetActorLocation()) -
+                                       KindaClosestFriendly->GetOccupiedRadius();
                 if (DistToFriendly <=
                     Mage->GetBoostRadius() + KINDA_SMALL_NUMBER) // Are any of those attackers in boost radius?
-                    Mage->SetCurrentTarget(ClosestFriendly); // Boost the closest of those defenders
+                    Mage->SetCurrentTarget(KindaClosestFriendly); // Boost the closest of those defenders
                 else Mage->SetCurrentTarget(KindaClosestEnemy); // Attack the closest of those defenders
             }
             else Mage->SetCurrentTarget(KindaClosestEnemy); // Attack the closest of those defenders
         }
-        else if (ClosestFriendly) // Are there any attackers in vision?
+        else if (KindaClosestFriendly &&
+                 !IsOtherPawnBoosting(KindaClosestFriendly)) // Are there any attackers in vision?(and the other
+                                                             // attacker can't be boosting someone)
         {
-            Mage->SetCurrentTarget(ClosestFriendly);
+            Mage->SetCurrentTarget(KindaClosestFriendly);
             // ^ Does both
             // Are there any attackers in boost radius?
             // | -> Yes: Boost the closest of those attackers
@@ -148,9 +171,11 @@ void AMageAIController::Tick(float DeltaTime)
         }
         else Mage->SetCurrentTarget(KindaClosestEnemy); // Head to the closest of those defenders
     }
-    else if (ClosestFriendly) // Are there any attackers in vision?
+    else if (KindaClosestFriendly &&
+             !IsOtherPawnBoosting(KindaClosestFriendly)) // Are there any attackers in vision? (and the other
+                                                         // attacker can't be boosting someone)
     {
-        Mage->SetCurrentTarget(ClosestFriendly);
+        Mage->SetCurrentTarget(KindaClosestFriendly);
         // ^ Does both
         // Are there any attackers in boost radius?
         // | -> Yes: Boost the closest of those attackers
@@ -169,7 +194,7 @@ void AMageAIController::SetControllerActive(bool bActive)
 
 void AMageAIController::OnTargetPerceptionUpdated(AActor* Actor, FAIStimulus Stimulus)
 {
-    if (!IsValid(Actor)) return;
+    if (!IsValid(Actor) || Actor == GetPawn()) return;
     if (ATowerDefencePawn* TDPawn = Cast<ATowerDefencePawn>(Actor))
     {
         if (!Stimulus.WasSuccessfullySensed())

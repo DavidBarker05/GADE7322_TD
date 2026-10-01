@@ -17,6 +17,11 @@ ASkeletonPawn::ASkeletonPawn()
     Weapon->SetupAttachment(RootComponent);
     CurrentTeam = EAITeam::MeleeAttacker;
 }
+void ASkeletonPawn::BeginPlay()
+{
+    Super::BeginPlay();
+    HitFlashComponent->BindMaterials();
+}
 
 const AWeapon* ASkeletonPawn::GetWeapon() const { return Cast<AWeapon>(Weapon ? Weapon->GetChildActor() : nullptr); }
 

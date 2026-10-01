@@ -65,6 +65,8 @@ void ATowerDefencePawn::Tick(float DeltaTime)
 ATowerDefencePawn& ATowerDefencePawn::SetPawnActive(bool bActive)
 {
     bIsPawnActive = bActive;
+    GetCapsuleComponent()->SetCollisionEnabled(bActive ? ECollisionEnabled::QueryAndPhysics :
+                                                         ECollisionEnabled::NoCollision);
     if (bActive)
     {
         StimuliSourceComponent->RegisterWithPerceptionSystem();
@@ -79,14 +81,12 @@ ATowerDefencePawn& ATowerDefencePawn::SetPawnActive(bool bActive)
         }
         if (bAlwaysDisplayHealth) ShowHealthBar();
         else HideHealthBar();
-        HitFlashComponent->BindMaterials();
     }
     else
     {
         StimuliSourceComponent->UnregisterFromPerceptionSystem();
         StimuliSourceComponent->UnregisterFromSense(UAISense_Proximity::StaticClass());
         HideHealthBar();
-        HitFlashComponent->UnbindMaterials();
     }
     if (bUseAIController)
         if (ATowerDefencePawnAIController* AIController = Cast<ATowerDefencePawnAIController>(GetController()))

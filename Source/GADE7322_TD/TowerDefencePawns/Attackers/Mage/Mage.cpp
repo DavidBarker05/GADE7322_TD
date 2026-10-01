@@ -1,5 +1,6 @@
 #include "TowerDefencePawns/Attackers/Mage/Mage.h"
 
+#include "HitFlashComponent.h"
 #include "NiagaraComponent.h"
 #include "Perception/AIPerceptionComponent.h"
 #include "Perception/AIPerceptionSystem.h"
@@ -27,11 +28,13 @@ void AMage::BeginPlay()
     Super::BeginPlay();
     BoostSpellBall->AttachToComponent(SpellSpawnLocation, FAttachmentTransformRules::SnapToTargetNotIncludingScale);
     DamageSpellBall->AttachToComponent(SpellSpawnLocation, FAttachmentTransformRules::SnapToTargetNotIncludingScale);
+    HitFlashComponent->BindMaterials();
 }
 
 void AMage::Tick(float DeltaTime)
 {
     Super::Tick(DeltaTime);
+    if (!IsPawnActive()) return;
     if (!IsValid(CurrentTarget) || !CurrentTarget->IsPawnActive() || CurrentTarget->GetHealthComponent()->IsDead())
     {
         if (bIsHoldingSpell)
@@ -87,15 +90,18 @@ void AMage::StartAttack()
 void AMage::Attack(ATowerDefencePawn* Other)
 {
     if (!IsValid(Other) || !Other->IsPawnActive()) return;
-    if (PROJECTILE_POOL_FACTORY_EXISTS)
+    if (FVector::Dist2D(GetActorLocation(), Other->GetVisualAttackPointLocation()) <=
+        AttackNoThrowingRadius + KINDA_SMALL_NUMBER)
+        Super::Attack(Other);
+    else if (PROJECTILE_POOL_FACTORY_EXISTS)
     {
         const FVector LaunchLocation = SpellSpawnLocation->GetComponentLocation();
-        const FVector TargetLocation = CurrentTarget->GetVisualAttackPointLocation();
+        const FVector TargetLocation = Other->GetVisualAttackPointLocation();
         ADamageSpellProjectile* DamageSpell =
             Cast<ADamageSpellProjectile>(CREATE_PROJECTILE(DamageSpellClass, FTransform(LaunchLocation)));
         if (!DamageSpell) return;
         const FVector LaunchVelocity = (TargetLocation - LaunchLocation).GetSafeNormal() * DamageSpellSpeed;
-        DamageSpell->Fire(CurrentTarget->GetVisualAttackPoint(), DamageComponent->GetDamage(), LaunchVelocity);
+        DamageSpell->Fire(Other->GetVisualAttackPoint(), DamageComponent->GetDamage(), LaunchVelocity);
     }
 }
 
@@ -121,7 +127,15 @@ void AMage::DoOnSetActive(bool bActive)
 {
     Super::DoOnSetActive(bActive);
     StopBoosting();
-    if (bActive) SetCurrentTarget(nullptr);
+    if (bActive)
+    {
+        SetCurrentTarget(nullptr);
+        if (UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance())
+        {
+            AnimInstance->StopAllMontages(0.0f);
+            AnimInstance->InitializeAnimation();
+        }
+    }
     GetMesh()->SetVisibility(bActive);
     GetMesh()->SetComponentTickEnabled(bActive);
     GetMesh()->SetCollisionEnabled(bActive ? ECollisionEnabled::QueryAndPhysics : ECollisionEnabled::NoCollision);
@@ -156,8 +170,17 @@ void AMage::DoUpdatePerceptionOnTeamChange()
 void AMage::SetCurrentTarget(ATowerDefencePawn* NewTarget)
 {
     if (NewTarget != CurrentTarget) StopBoosting();
+    const ATowerDefencePawn* OldTarget = CurrentTarget;
+    const bool bOldTargetWasFriendly = bTargetIsFriendly;
     CurrentTarget = NewTarget;
     bTargetIsFriendly = IsOtherPawnFriendly(NewTarget);
+    if (CurrentTarget && bIsHoldingSpell && OldTarget != CurrentTarget && bOldTargetWasFriendly != bTargetIsFriendly)
+    {
+        (bTargetIsFriendly ? DamageSpellBall : BoostSpellBall)->SetVisibility(false);
+        (bTargetIsFriendly ? BoostSpellBall : DamageSpellBall)->SetVisibility(true);
+        (bTargetIsFriendly ? DamageSpellBall : BoostSpellBall)->SetComponentTickEnabled(false);
+        (bTargetIsFriendly ? BoostSpellBall : DamageSpellBall)->SetComponentTickEnabled(true);
+    }
 }
 
 bool AMage::IsOtherPawnFriendly(const ATowerDefencePawn* OtherPawn) const

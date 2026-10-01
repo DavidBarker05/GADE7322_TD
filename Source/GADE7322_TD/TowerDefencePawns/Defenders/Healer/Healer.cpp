@@ -1,5 +1,6 @@
 #include "TowerDefencePawns/Defenders/Healer/Healer.h"
 
+#include "HitFlashComponent.h"
 #include "NiagaraComponent.h"
 #include "Perception/AIPerceptionComponent.h"
 #include "Perception/AIPerceptionSystem.h"
@@ -27,11 +28,14 @@ void AHealer::BeginPlay()
     Super::BeginPlay();
     HealSpellBall->AttachToComponent(SpellSpawnLocation, FAttachmentTransformRules::SnapToTargetNotIncludingScale);
     FireSpellBall->AttachToComponent(SpellSpawnLocation, FAttachmentTransformRules::SnapToTargetNotIncludingScale);
+    TowerDefenceGameMode = Cast<ATowerDefenceGameMode>(UGameplayStatics::GetGameMode(this));
+    HitFlashComponent->BindMaterials();
 }
 
 void AHealer::Tick(float DeltaTime)
 {
     Super::Tick(DeltaTime);
+    if (!IsPawnActive()) return;
     if (!IsValid(CurrentTarget) || !CurrentTarget->IsPawnActive() || CurrentTarget->GetHealthComponent()->IsDead())
     {
         if (bIsHoldingSpell)
@@ -65,6 +69,8 @@ void AHealer::Tick(float DeltaTime)
 
 void AHealer::StartAttack()
 {
+    if (!TowerDefenceGameMode || !TowerDefenceGameMode->IsWaveInProgress())
+        return; // Don't heal while a wave is in progress
     bCanAttack = false;
     UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
     UAnimMontage* SpellMontage = bTargetIsFriendly ? HealMontage : AttackMontage;
@@ -82,15 +88,21 @@ void AHealer::Attack(ATowerDefencePawn* Other)
         Other->GetHealthComponent()->ReceiveHealth(HealAmount);
         if (ADefender* Defender = Cast<ADefender>(Other)) Defender->GetHealEffect()->Activate(true);
     }
-    else if (PROJECTILE_POOL_FACTORY_EXISTS)
+    else
     {
-        const FVector LaunchLocation = SpellSpawnLocation->GetComponentLocation();
-        const FVector TargetLocation = CurrentTarget->GetVisualAttackPointLocation();
-        AFireballProjectile* Fireball =
-            Cast<AFireballProjectile>(CREATE_PROJECTILE(FireballClass, FTransform(LaunchLocation)));
-        if (!Fireball) return;
-        const FVector LaunchVelocity = (TargetLocation - LaunchLocation).GetSafeNormal() * FireballSpeed;
-        Fireball->Fire(CurrentTarget->GetVisualAttackPoint(), DamageComponent->GetDamage(), LaunchVelocity);
+        if (FVector::Dist2D(GetActorLocation(), Other->GetVisualAttackPointLocation()) <=
+            AttackNoThrowingRadius + KINDA_SMALL_NUMBER)
+            Super::Attack(Other);
+        else if (PROJECTILE_POOL_FACTORY_EXISTS)
+        {
+            const FVector LaunchLocation = SpellSpawnLocation->GetComponentLocation();
+            const FVector TargetLocation = Other->GetVisualAttackPointLocation();
+            AFireballProjectile* Fireball =
+                Cast<AFireballProjectile>(CREATE_PROJECTILE(FireballClass, FTransform(LaunchLocation)));
+            if (!Fireball) return;
+            const FVector LaunchVelocity = (TargetLocation - LaunchLocation).GetSafeNormal() * FireballSpeed;
+            Fireball->Fire(Other->GetVisualAttackPoint(), DamageComponent->GetDamage(), LaunchVelocity);
+        }
     }
 }
 
@@ -115,7 +127,15 @@ void AHealer::OnDeath(TFunction<void()>&& Func)
 void AHealer::DoOnSetActive(bool bActive)
 {
     Super::DoOnSetActive(bActive);
-    if (bActive) SetCurrentTarget(nullptr);
+    if (bActive)
+    {
+        SetCurrentTarget(nullptr);
+        if (UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance())
+        {
+            AnimInstance->StopAllMontages(0.0f);
+            AnimInstance->InitializeAnimation();
+        }
+    }
     GetMesh()->SetVisibility(bActive);
     GetMesh()->SetComponentTickEnabled(bActive);
     GetMesh()->SetCollisionEnabled(bActive ? ECollisionEnabled::QueryAndPhysics : ECollisionEnabled::NoCollision);
@@ -149,8 +169,17 @@ void AHealer::DoUpdatePerceptionOnTeamChange()
 
 void AHealer::SetCurrentTarget(ATowerDefencePawn* NewTarget)
 {
+    const ATowerDefencePawn* OldTarget = CurrentTarget;
+    const bool bOldTargetWasFriendly = bTargetIsFriendly;
     CurrentTarget = NewTarget;
     bTargetIsFriendly = IsOtherPawnFriendly(NewTarget);
+    if (CurrentTarget && bIsHoldingSpell && OldTarget != CurrentTarget && bOldTargetWasFriendly != bTargetIsFriendly)
+    {
+        (bTargetIsFriendly ? FireSpellBall : HealSpellBall)->SetVisibility(false);
+        (bTargetIsFriendly ? HealSpellBall : FireSpellBall)->SetVisibility(true);
+        (bTargetIsFriendly ? FireSpellBall : HealSpellBall)->SetComponentTickEnabled(false);
+        (bTargetIsFriendly ? HealSpellBall : FireSpellBall)->SetComponentTickEnabled(true);
+    }
 }
 
 bool AHealer::IsOtherPawnFriendly(const ATowerDefencePawn* OtherPawn) const

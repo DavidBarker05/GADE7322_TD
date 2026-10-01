@@ -7,6 +7,7 @@
 #include "Healer.generated.h"
 
 class AFireballProjectile;
+class ATowerDefenceGameMode;
 class UNiagaraComponent;
 
 UCLASS(Abstract)
@@ -103,15 +104,24 @@ private:
 
     UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "AI",
               meta = (AllowPrivateAccess = true, ClampMin = 0.0, UIMin = 0.0, Units = "Centimeters"))
-    float HealRadius = 200.0f;
+    float HealRadius = 300.0f;
 
     UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "AI",
               meta = (AllowPrivateAccess = true, ClampMin = 0.0, UIMin = 0.0, Units = "Centimeters"))
-    float AttackRadius = 100.0f;
+    float AttackRadius = 200.0f;
+
+    // The radius that if the enemy is within this distance then throwing a spell would be
+    // inconsistent so just damage them instead
+    UPROPERTY(EditDefaultsOnly, Category = "Healer",
+              meta = (AllowPrivateAccess = true, ClampMin = 0.0, UIMin = 0.0, Units = "Centimeters"))
+    float AttackNoThrowingRadius = 100.0f;
 
     UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "AI",
               meta = (AllowPrivateAccess = true, ClampMin = 0.0, UIMin = 0.0, Units = "Seconds"))
     float AttackCooldown = 0.5f;
+
+    UPROPERTY()
+    ATowerDefenceGameMode* TowerDefenceGameMode;
 
     FTimerHandle AttackCooldownHandle;
 };

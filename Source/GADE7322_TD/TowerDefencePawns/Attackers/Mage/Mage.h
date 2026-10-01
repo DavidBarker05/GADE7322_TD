@@ -112,11 +112,17 @@ private:
 
     UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "AI",
               meta = (AllowPrivateAccess = true, ClampMin = 0.0, UIMin = 0.0, Units = "Centimeters"))
-    float BoostRadius = 200.0f;
+    float BoostRadius = 300.0f;
 
     UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "AI",
               meta = (AllowPrivateAccess = true, ClampMin = 0.0, UIMin = 0.0, Units = "Centimeters"))
-    float AttackRadius = 100.0f;
+    float AttackRadius = 200.0f;
+
+    // The radius that if the enemy is within this distance then throwing a spell would be
+    // inconsistent so just damage them instead
+    UPROPERTY(EditDefaultsOnly, Category = "Mage",
+              meta = (AllowPrivateAccess = true, ClampMin = 0.0, UIMin = 0.0, Units = "Centimeters"))
+    float AttackNoThrowingRadius = 100.0f;
 
     UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "AI",
               meta = (AllowPrivateAccess = true, ClampMin = 0.0, UIMin = 0.0, Units = "Seconds"))

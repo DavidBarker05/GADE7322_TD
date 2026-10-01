@@ -67,8 +67,13 @@ void AWarrior::DoOnSetActive(bool bActive)
             AnimInstance->InitializeAnimation();
         }
         if (IsValid(Sword)) Sword->AttachToSkeleton(GetMesh());
+        HitFlashComponent->BindMaterials(); // Has to be done after gender is set which is why can't be done in TowerDefencePawn
     }
-    else if (IsValid(Sword)) Sword->AttachToComponent(Weapon, FAttachmentTransformRules::SnapToTargetNotIncludingScale);
+    else
+    {
+        if (IsValid(Sword)) Sword->AttachToComponent(Weapon, FAttachmentTransformRules::SnapToTargetNotIncludingScale);
+        HitFlashComponent->UnbindMaterials();
+    }
     GetMesh()->SetVisibility(bActive);
     GetMesh()->SetComponentTickEnabled(bActive);
     GetMesh()->SetCollisionEnabled(bActive ? ECollisionEnabled::QueryAndPhysics : ECollisionEnabled::NoCollision);
