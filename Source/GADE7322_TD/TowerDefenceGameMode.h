@@ -19,7 +19,8 @@ class GADE7322_TD_API ATowerDefenceGameMode : public AGameModeBase,
 {
     GENERATED_BODY()
 
-    EVENTS_TO_LISTEN_TO(TEXT("DeathEvent"), TEXT("DefenderPurchasedEvent"), TEXT("DefenderSoldEvent"), TEXT("LeakEvent"))
+    EVENTS_TO_LISTEN_TO(TEXT("DeathEvent"), TEXT("DefenderPurchasedEvent"), TEXT("DefenderSoldEvent"),
+                        TEXT("LeakEvent"))
 
 protected:
     virtual void BeginPlay() override;
@@ -32,7 +33,6 @@ public:
     UFUNCTION(BlueprintCallable)
     virtual void OnEventReceived_Implementation(const FName& EventName, const TArray<FAny>& Params) override;
 
-    // Called by the HUD's Start/Next Wave button. Does nothing while a wave is still in progress
     UFUNCTION(BlueprintCallable, Category = "Waves")
     void StartNextWave();
 
@@ -59,7 +59,6 @@ public:
     }
 
 protected:
-    // Spawns one burst of enemies, then (if there are more left to spawn this wave) schedules the next burst
     void SpawnBurst();
 
     void SpawnEnemyOnRandomPath();
@@ -70,13 +69,34 @@ protected:
 
     void CheckWaveComplete();
 
-    int32 GetEnemyCountForWave(int32 Wave) const;
+    int32 GetEnemyCountForWave(int32 Wave) const
+    {
+        const int32 BaseCount = BaseEnemiesPerWave + EnemiesPerWaveGrowth * FMath::Max(0, Wave - 1);
+        return FMath::Max(1, FMath::RoundToInt32(BaseCount + CumulativeDifficultyScore * EnemyCountScoreInfluence));
+    }
 
     int32 GetGoldRewardForWave(int32 Wave) const;
 
     void BroadcastEnemyCount() const;
 
-    // Enemy pawn classes that can spawn - one is picked at random for each spawn
+    void UpdateCumulativeDifficultyScore();
+
+    float GetStrengthMultiplier() const
+    {
+        if (CumulativeDifficultyScore > StrengthScoreThreshold)
+        {
+            const float ScoreAboveThreshold = CumulativeDifficultyScore - StrengthScoreThreshold;
+            return FMath::Min(1.0f + ScoreAboveThreshold * StrengthScoreInfluence, MaxStrengthMultiplier);
+        }
+        if (CumulativeDifficultyScore < -StrengthScoreThreshold)
+        {
+            const float ScoreBelowThreshold = -StrengthScoreThreshold - CumulativeDifficultyScore;
+            return FMath::Max(1.0f - ScoreBelowThreshold * StrengthScoreInfluence, MinStrengthMultiplier);
+        }
+        return 1.0f;
+    }
+
+    // Enemy pawn classes that can spawn, one is picked at random for each spawn
     UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Enemies", meta = (AllowPrivateAccess = true))
     TArray<TSubclassOf<AAttacker>> EnemyClasses;
 
@@ -155,6 +175,39 @@ private:
     }
 
     float GetRoundScore() const { return GetSurvivalFactor() + GetLeakFactor() + GetHealthFactor(); }
+
+    float CumulativeDifficultyScore = 0.0f;
+
+    UPROPERTY(EditDefaultsOnly, Category = "Adaptive Difficulty",
+              meta = (AllowPrivateAccess = true, ClampMin = 0.0, ClampMax = 1.0, UIMin = 0.0, UIMax = 1.0))
+    float DifficultyScoreDecay = 0.6f;
+
+    UPROPERTY(EditDefaultsOnly, Category = "Adaptive Difficulty",
+              meta = (AllowPrivateAccess = true, ClampMin = 0.0, UIMin = 0.0))
+    float DifficultyScoreCap = 6.0f;
+
+    // How many extra/fewer enemies to spawn per point of CumulativeDifficultyScore
+    UPROPERTY(EditDefaultsOnly, Category = "Adaptive Difficulty",
+              meta = (AllowPrivateAccess = true, ClampMin = 0.0, UIMin = 0.0))
+    float EnemyCountScoreInfluence = 1.0f;
+
+    // CumulativeDifficultyScore must exceed this before enemy health/damage starts scaling up at all
+    UPROPERTY(EditDefaultsOnly, Category = "Adaptive Difficulty",
+              meta = (AllowPrivateAccess = true, ClampMin = 0.0, UIMin = 0.0))
+    float StrengthScoreThreshold = 1.5f;
+
+    // How much GetStrengthMultiplier() rises per point of score above StrengthScoreThreshold
+    UPROPERTY(EditDefaultsOnly, Category = "Adaptive Difficulty",
+              meta = (AllowPrivateAccess = true, ClampMin = 0.0, UIMin = 0.0))
+    float StrengthScoreInfluence = 0.1f;
+
+    UPROPERTY(EditDefaultsOnly, Category = "Adaptive Difficulty",
+              meta = (AllowPrivateAccess = true, ClampMin = 1.0, UIMin = 1.0))
+    float MaxStrengthMultiplier = 1.5f;
+
+    UPROPERTY(EditDefaultsOnly, Category = "Adaptive Difficulty",
+              meta = (AllowPrivateAccess = true, ClampMin = 0.0, ClampMax = 1.0, UIMin = 0.0, UIMax = 1.0))
+    float MinStrengthMultiplier = 0.6f;
 
     FTimerHandle SpawnBurstTimerHandle;
 };

@@ -4,6 +4,7 @@
 #include "ProceduralGen/ProceduralTerrainGen.h"
 #include "Settings/GameSettingsSubsystem.h"
 #include "TowerDefencePawns/Attackers/Attacker.h"
+#include "TowerDefencePawns/Components/DamageComponent.h"
 #include "TowerDefencePawns/Components/HealthComponent.h"
 #include "TowerDefencePawns/Defenders/Defender.h"
 #include "TowerDefencePawns/Tower/PlayerTower.h"
@@ -79,6 +80,7 @@ void ATowerDefenceGameMode::StartNextWave()
     BROADCAST_EVENT(TEXT("UpdateHUDEvent"), FName(TEXT("Round")), CurrentWave);
     BROADCAST_EVENT(TEXT("UpdateHUDEvent"), FName(TEXT("WaveState")), FName(TEXT("InProgress")));
     NumTotalDefenders = NumAliveDefenders;
+    NumTotalEnemies = EnemiesLeftToSpawnThisWave;
     NumLeakedEnemies = 0;
     HealthGained = 0;
     HealthLost = 0;
@@ -176,6 +178,16 @@ void ATowerDefenceGameMode::SpawnEnemyOnRandomPath()
         AAttacker* Enemy = Cast<AAttacker>(CREATE_PAWN(EnemyClass, FTransform(SpawnLocation)));
         if (!IsValid(Enemy)) return;
         Enemy->SetPathPoints(Path.Points);
+        if (const AAttacker* DefaultEnemy = EnemyClass->GetDefaultObject<AAttacker>())
+        {
+            const float StrengthMultiplier = GetStrengthMultiplier();
+            if (UHealthComponent* HC = Enemy->GetHealthComponent())
+                HC->SetMaxHealth(
+                    FMath::RoundToInt32(DefaultEnemy->GetHealthComponent()->GetMaxHealth() * StrengthMultiplier));
+            if (UDamageComponent* DC = Enemy->GetDamageComponent())
+                DC->SetDamage(
+                    FMath::RoundToInt32(DefaultEnemy->GetDamageComponent()->GetDamage() * StrengthMultiplier));
+        }
         Enemy->SetPawnActive(true);
         ++EnemiesAliveThisWave;
     }
@@ -215,6 +227,7 @@ void ATowerDefenceGameMode::CheckWaveComplete()
 {
     if (!bWaveInProgress || EnemiesLeftToSpawnThisWave > 0 || EnemiesAliveThisWave > 0) return;
     bWaveInProgress = false;
+    UpdateCumulativeDifficultyScore();
     const int32 Reward = GetGoldRewardForWave(CurrentWave);
     if (Reward > 0) BROADCAST_EVENT(TEXT("MoneyEarnedEvent"), Reward);
     if (const UGameInstance* GameInstance = GetGameInstance())
@@ -231,11 +244,6 @@ void ATowerDefenceGameMode::CheckWaveComplete()
     BROADCAST_EVENT(TEXT("UpdateHUDEvent"), FName(TEXT("WaveState")), FName(TEXT("AwaitingStart")));
 }
 
-int32 ATowerDefenceGameMode::GetEnemyCountForWave(int32 Wave) const
-{
-    return BaseEnemiesPerWave + EnemiesPerWaveGrowth * FMath::Max(0, Wave - 1);
-}
-
 int32 ATowerDefenceGameMode::GetGoldRewardForWave(int32 Wave) const
 {
     return BaseWaveClearReward + WaveClearRewardGrowth * FMath::Max(0, Wave - 1);
@@ -245,4 +253,11 @@ void ATowerDefenceGameMode::BroadcastEnemyCount() const
 {
     BROADCAST_EVENT(TEXT("UpdateHUDEvent"), FName(TEXT("EnemyCount")),
                     EnemiesLeftToSpawnThisWave + EnemiesAliveThisWave);
+}
+
+void ATowerDefenceGameMode::UpdateCumulativeDifficultyScore()
+{
+    const float RoundScore = GetRoundScore();
+    CumulativeDifficultyScore = FMath::Clamp(CumulativeDifficultyScore * DifficultyScoreDecay + RoundScore,
+                                             -DifficultyScoreCap, DifficultyScoreCap);
 }
