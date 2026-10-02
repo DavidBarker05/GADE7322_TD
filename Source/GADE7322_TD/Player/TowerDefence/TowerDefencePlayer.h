@@ -8,6 +8,7 @@
 
 class ADefender;
 class ADefenderSpot;
+class AProceduralTerrainGen;
 struct FInputActionValue;
 class UCameraComponent;
 class UCurrencyComponent;
@@ -68,6 +69,15 @@ private:
     void UpdateRadiusDisplay();
 
     TWeakObjectPtr<AActor> RadiusDisplayedTarget;
+
+    void ClampToPlayArea();
+
+    UPROPERTY()
+    AProceduralTerrainGen* TerrainGen = nullptr;
+
+    UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Bounds",
+              meta = (AllowPrivateAccess = true, Units = "Centimeters"))
+    float PlayAreaMargin = 0.0f;
 
 protected:
     UPROPERTY(EditAnywhere, Category = "Input")

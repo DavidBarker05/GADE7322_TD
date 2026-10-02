@@ -67,6 +67,13 @@ public:
     UFUNCTION(BlueprintPure, Category = "Defender Spots")
     const TArray<ADefenderSpot*>& GetDefenderSpots() const { return DefenderSpots; }
 
+    UFUNCTION(BlueprintPure, Category = "Terrain Generation")
+    float GetTerrainHalfExtent() const
+    {
+        return TerrainRadius + PathWanderAmount + PathWidth + PathFlatZoneWidth +
+               FMath::Max(PathHeightBlendWidth, PathTextureBlendWidth);
+    }
+
 protected:
     UPROPERTY()
     UProceduralMeshComponent* TerrainMesh;

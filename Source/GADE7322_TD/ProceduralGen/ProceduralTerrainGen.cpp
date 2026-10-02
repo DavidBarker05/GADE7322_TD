@@ -218,9 +218,8 @@ void AProceduralTerrainGen::GenerateTerrain() const
 
     TerrainMesh->ClearAllMeshSections();
 
-    // Extend the mesh past TerrainRadius so path wander/width/blend never runs off the edge of the grid
-    const float HalfExtent = TerrainRadius + PathWanderAmount + PathWidth + PathFlatZoneWidth +
-                             FMath::Max(PathHeightBlendWidth, PathTextureBlendWidth);
+    // Extends past TerrainRadius so path wander/width/blend never runs off the edge of the grid
+    const float HalfExtent = GetTerrainHalfExtent();
     const int32 NumCells = FMath::Max(1, FMath::CeilToInt(HalfExtent * 2.0f / CellSize)); // At least 1 cell
     const int32 VertsPerSide = NumCells + 1; // N cells needs N+1 verts per row/column
 

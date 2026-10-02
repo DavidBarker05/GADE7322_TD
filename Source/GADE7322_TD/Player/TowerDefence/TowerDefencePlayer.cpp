@@ -9,8 +9,10 @@
 #include "GameFramework/PlayerController.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "InputActionValue.h"
+#include "Kismet/GameplayStatics.h"
 #include "Player/TowerDefence/Components/CurrencyComponent.h"
 #include "Player/TowerDefence/TowerDefencePlayerController.h"
+#include "ProceduralGen/ProceduralTerrainGen.h"
 #include "TowerDefencePawns/Defenders/Defender.h"
 #include "TowerDefencePawns/Defenders/DefenderSpot.h"
 #include "TowerDefencePawns/Tower/PlayerTower.h"
@@ -66,10 +68,27 @@ void ATowerDefencePlayer::UpdateRadiusDisplay()
     if (Desired) SetRadiusDisplayVisible(Desired, true);
 }
 
+void ATowerDefencePlayer::ClampToPlayArea()
+{
+    if (!IsValid(TerrainGen))
+    {
+        TerrainGen =
+            Cast<AProceduralTerrainGen>(UGameplayStatics::GetActorOfClass(this, AProceduralTerrainGen::StaticClass()));
+        if (!IsValid(TerrainGen)) return;
+    }
+    const FVector Centre = TerrainGen->GetActorLocation();
+    const float HalfExtent = FMath::Max(0.0f, TerrainGen->GetTerrainHalfExtent() + PlayAreaMargin);
+    const FVector Location = GetActorLocation();
+    const FVector Clamped(FMath::Clamp(Location.X, Centre.X - HalfExtent, Centre.X + HalfExtent),
+                          FMath::Clamp(Location.Y, Centre.Y - HalfExtent, Centre.Y + HalfExtent), Location.Z);
+    if (!Clamped.Equals(Location)) SetActorLocation(Clamped);
+}
+
 void ATowerDefencePlayer::Tick(float DeltaTime)
 {
     Super::Tick(DeltaTime);
     UpdateRadiusDisplay();
+    ClampToPlayArea();
     // This will probably lag behind, but Unreal doesn't really have a late update
     // like unity. There are tick groups, but I'm not sure which group to go in.
     // Because either I miss physics or miss camera update and idk if either is safe
