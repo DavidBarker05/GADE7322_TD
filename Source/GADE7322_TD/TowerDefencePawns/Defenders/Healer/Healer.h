@@ -47,6 +47,9 @@ public:
     float GetHealRadius() const { return HealRadius; }
     float GetAttackRadius() const { return AttackRadius; }
 
+    virtual float GetPrimaryRadius() const override { return HealRadius; }
+    virtual float GetSecondaryRadius() const override { return AttackRadius; }
+
 private:
     bool IsOtherPawnFriendly(const ATowerDefencePawn* OtherPawn) const;
 

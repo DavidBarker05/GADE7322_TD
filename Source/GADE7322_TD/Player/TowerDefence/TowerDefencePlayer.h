@@ -6,6 +6,7 @@
 
 #include "TowerDefencePlayer.generated.h"
 
+class ADefender;
 class ADefenderSpot;
 struct FInputActionValue;
 class UCameraComponent;
@@ -63,6 +64,10 @@ private:
     static bool IsMouseOverUI(const APlayerController* PlayerController);
 
     bool IsGamePaused() const;
+
+    void UpdateRadiusDisplay();
+
+    TWeakObjectPtr<AActor> RadiusDisplayedTarget;
 
 protected:
     UPROPERTY(EditAnywhere, Category = "Input")

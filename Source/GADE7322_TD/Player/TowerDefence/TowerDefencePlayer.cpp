@@ -37,9 +37,39 @@ void ATowerDefencePlayer::BeginPlay()
     CurrencyComponent->ResetCurrency();
 }
 
+static void SetRadiusDisplayVisible(AActor* Actor, bool bVisible)
+{
+    if (ADefender* Defender = Cast<ADefender>(Actor))
+    {
+        if (bVisible) Defender->ShowRadiusDisplay();
+        else Defender->HideRadiusDisplay();
+    }
+    else if (APlayerTower* Tower = Cast<APlayerTower>(Actor))
+    {
+        if (bVisible) Tower->ShowRadiusDisplay();
+        else Tower->HideRadiusDisplay();
+    }
+}
+
+void ATowerDefencePlayer::UpdateRadiusDisplay()
+{
+    AActor* Desired = CurrentFocusTarget;
+    if (ADefenderSpot* Spot = Cast<ADefenderSpot>(Desired)) Desired = Spot->GetCurrentDefender();
+    if (!Cast<ADefender>(Desired) && !Cast<APlayerTower>(Desired)) Desired = nullptr;
+    if (const ATowerDefencePawn* Pawn = Cast<ATowerDefencePawn>(Desired); Pawn && !Pawn->IsPawnActive())
+        Desired = nullptr;
+    if (!IsValid(Desired)) Desired = nullptr;
+    AActor* Previous = RadiusDisplayedTarget.Get();
+    if (Desired == Previous) return;
+    if (Previous) SetRadiusDisplayVisible(Previous, false);
+    RadiusDisplayedTarget = Desired;
+    if (Desired) SetRadiusDisplayVisible(Desired, true);
+}
+
 void ATowerDefencePlayer::Tick(float DeltaTime)
 {
     Super::Tick(DeltaTime);
+    UpdateRadiusDisplay();
     // This will probably lag behind, but Unreal doesn't really have a late update
     // like unity. There are tick groups, but I'm not sure which group to go in.
     // Because either I miss physics or miss camera update and idk if either is safe

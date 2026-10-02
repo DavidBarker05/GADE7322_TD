@@ -21,6 +21,8 @@ AHealer::AHealer()
     SpellSpawnLocation->SetupAttachment(GetMesh(), "spell");
     HealSpellBall = CreateDefaultSubobject<UNiagaraComponent>(TEXT("Heal Spell Ball"));
     FireSpellBall = CreateDefaultSubobject<UNiagaraComponent>(TEXT("Fire Spell Ball"));
+    PrimaryRadiusColour = FLinearColor(0.0f, 1.0f, 0.0f, 1.0f);
+    SecondaryRadiusColour = FLinearColor(1.0f, 0.0f, 0.0f, 1.0f);
 }
 
 void AHealer::BeginPlay()

@@ -11,6 +11,7 @@ class UBoxComponent;
 class UAIPerceptionComponent;
 class UAISenseConfig_Proximity;
 class UStaticMeshComponent;
+class UMaterialInstanceDynamic;
 class UNiagaraComponent;
 
 UCLASS(Abstract)
@@ -26,6 +27,10 @@ public:
     virtual void Tick(float DeltaTime) override;
 
     virtual void StartAttack() override;
+
+    void ShowRadiusDisplay();
+
+    void HideRadiusDisplay();
 
     int32 GetHealAmountPerPurchase() const { return HealAmountPerPurchase; }
 
@@ -77,6 +82,21 @@ private:
 
     UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components", meta = (AllowPrivateAccess = true))
     UStaticMeshComponent* TowerMesh;
+
+    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components", meta = (AllowPrivateAccess = true))
+    UStaticMeshComponent* RadiusDisplay;
+
+    UPROPERTY()
+    UMaterialInstanceDynamic* RadiusMaterial;
+
+    UPROPERTY(EditDefaultsOnly, Category = "Tower", meta = (AllowPrivateAccess = true))
+    FLinearColor DetectionRadiusColour = FLinearColor(0.5f, 0.5f, 0.5f, 1.0f);
+
+    UPROPERTY(EditDefaultsOnly, Category = "Tower", meta = (AllowPrivateAccess = true))
+    FLinearColor PrimaryRadiusColour = FLinearColor(1.0f, 0.0f, 0.0f, 1.0f);
+
+    UPROPERTY(EditDefaultsOnly, Category = "Tower", meta = (AllowPrivateAccess = true))
+    FLinearColor SecondaryRadiusColour = FLinearColor(0.0f, 0.0f, 0.0f, 1.0f);
 
     UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components", meta = (AllowPrivateAccess = true))
     UAIPerceptionComponent* PerceptionComponent;

@@ -36,6 +36,9 @@ public:
         return *this;
     }
 
+    virtual float GetDetectionRadius() const override { return AttackRadius; }
+    virtual float GetPrimaryRadius() const override { return AttackRadius; }
+
 protected:
     virtual void DoOnSetActive(bool bActive) override;
 

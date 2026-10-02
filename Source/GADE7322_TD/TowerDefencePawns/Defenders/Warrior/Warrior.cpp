@@ -15,6 +15,7 @@ AWarrior::AWarrior()
     Weapon = CreateDefaultSubobject<UChildActorComponent>(TEXT("Weapon"));
     Weapon->SetupAttachment(RootComponent);
     CurrentTeam = EAITeam::MeleeDefender;
+    PrimaryRadiusColour = FLinearColor(1.0f, 0.0f, 0.0f, 1.0f);
 }
 
 const AWeapon* AWarrior::GetWeapon() const { return Cast<AWeapon>(Weapon ? Weapon->GetChildActor() : nullptr); }
@@ -67,7 +68,8 @@ void AWarrior::DoOnSetActive(bool bActive)
             AnimInstance->InitializeAnimation();
         }
         if (IsValid(Sword)) Sword->AttachToSkeleton(GetMesh());
-        HitFlashComponent->BindMaterials(); // Has to be done after gender is set which is why can't be done in TowerDefencePawn
+        HitFlashComponent
+            ->BindMaterials(); // Has to be done after gender is set which is why can't be done in TowerDefencePawn
     }
     else
     {

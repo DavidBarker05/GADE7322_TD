@@ -42,6 +42,8 @@ public:
 
     float GetAttackRadius() const { return AttackRadius; }
 
+    virtual float GetPrimaryRadius() const override { return AttackRadius; }
+
     const AWeapon* GetWeapon() const;
     AWeapon* GetWeapon();
 

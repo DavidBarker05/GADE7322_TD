@@ -3,6 +3,7 @@
 #include "Components/BoxComponent.h"
 #include "HealthComponent.h"
 #include "HitFlashComponent.h"
+#include "Materials/MaterialInstanceDynamic.h"
 #include "NiagaraComponent.h"
 #include "Perception/AIPerceptionComponent.h"
 #include "Perception/AIPerceptionTypes.h"
@@ -16,6 +17,11 @@ APlayerTower::APlayerTower()
     OccupiedRadius = 200.0f;
     TowerMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Tower Mesh"));
     TowerMesh->SetupAttachment(RootComponent);
+    RadiusDisplay = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Radius Display"));
+    RadiusDisplay->SetupAttachment(RootComponent);
+    RadiusDisplay->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+    RadiusDisplay->SetCastShadow(false);
+    RadiusDisplay->SetVisibility(false);
     AttackTargets.Init(nullptr, 3);
     TimerHandles.SetNum(3);
     PerceptionComponent = CreateDefaultSubobject<UAIPerceptionComponent>(TEXT("Perception Component"));
@@ -34,7 +40,6 @@ APlayerTower::APlayerTower()
     BoxCollider->SetCollisionResponseToAllChannels(ECR_Ignore);
     BoxCollider->SetCollisionResponseToChannel(MouseClickTraceChannel, ECR_Block);
     CurrentTeam = EAITeam::RangedDefender;
-
     BeamComponents.SetNum(3);
     for (int32 i = 0; i < 3; ++i)
     {
@@ -46,9 +51,23 @@ APlayerTower::APlayerTower()
     }
 }
 
+void APlayerTower::ShowRadiusDisplay()
+{
+    if (!RadiusMaterial) return;
+    const auto Pack = [](const FLinearColor& Colour, float Radius) -> FLinearColor
+    { return FLinearColor(Colour.R, Colour.G, Colour.B, Radius); };
+    RadiusMaterial->SetVectorParameterValue(TEXT("Detection Radius"), Pack(DetectionRadiusColour, AttackRadius));
+    RadiusMaterial->SetVectorParameterValue(TEXT("Primary Radius"), Pack(PrimaryRadiusColour, AttackRadius));
+    RadiusMaterial->SetVectorParameterValue(TEXT("Secondary Radius"), Pack(SecondaryRadiusColour, 0.0f));
+    RadiusDisplay->SetVisibility(true);
+}
+
+void APlayerTower::HideRadiusDisplay() { RadiusDisplay->SetVisibility(false); }
+
 void APlayerTower::BeginPlay()
 {
     Super::BeginPlay();
+    RadiusMaterial = RadiusDisplay->CreateAndSetMaterialInstanceDynamic(0);
     SetPawnActive(true);
     HitFlashComponent->BindMaterials();
     if (OccupiedRadius <= 0.0f && TowerMesh)

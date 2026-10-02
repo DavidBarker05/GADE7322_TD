@@ -33,6 +33,7 @@ ABallista::ABallista()
     PerceptionComponent->SetDominantSense(ProximityConfig->GetSenseImplementation());
     PerceptionComponent->OnTargetPerceptionUpdated.AddDynamic(this, &ABallista::OnTargetPerceptionUpdated);
     CurrentTeam = EAITeam::RangedDefender;
+    PrimaryRadiusColour = FLinearColor(1.0f, 0.0f, 0.0f, 1.0f);
 }
 
 void ABallista::BeginPlay()
@@ -196,8 +197,8 @@ float ABallista::GetAngleToFireProjectile(const UObject* WorldContextObject, FVe
     // 2 * theta = acos(((+g) * (x ^ 2) / (v_0 ^ 2) - h) / sqrt(x ^ 2 + h ^ 2)) + atan(x / h)
     //
     // theta = acos(((+g) * (x ^ 2) / (v_0 ^ 2) - h) / sqrt(x ^ 2 + h ^ 2)) / 2 + atan(x / h) / 2
-    // ^ acos has two valid solutions (+ and -) apparently, + is the high lobbing arc, - is the low arc shot, which is what we
-    // actually want here, so we use - instead
+    // ^ acos has two valid solutions (+ and -) apparently, + is the high lobbing arc, - is the low arc shot, which is
+    // what we actually want here, so we use - instead
     const float Theta =
         FMath::Atan(X / H) / 2.0f - FMath::Acos((PosG * FMath::Square(X) / FMath::Square(InitialVelocity) - H) /
                                                 FMath::Sqrt(FMath::Square(X) + FMath::Square(H))) /
