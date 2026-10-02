@@ -8,6 +8,7 @@
 #include "ProceduralTerrainGen.generated.h"
 
 class UProceduralMeshComponent;
+class UHierarchicalInstancedStaticMeshComponent;
 class UMaterialInterface;
 class ADefenderSpot;
 
@@ -23,6 +24,149 @@ struct FTerrainPath
     // Half-width of the walkable strip either side of the path centreline
     UPROPERTY(BlueprintReadOnly, Category = "Terrain Path")
     float Width = 0.0f;
+};
+
+// Grass
+USTRUCT(BlueprintType)
+struct FProceduralGrass
+{
+    GENERATED_BODY()
+
+    UPROPERTY(EditDefaultsOnly, Category = "Grass")
+    UStaticMesh* GrassMesh = nullptr;
+
+    UPROPERTY(EditDefaultsOnly, Category = "Grass", meta = (ClampMin = 0.0, UIMin = 0.0))
+    float MinScale = 0.4f;
+
+    UPROPERTY(EditDefaultsOnly, Category = "Grass", meta = (ClampMin = 0.0, UIMin = 0.0))
+    float MaxScale = 0.6f;
+};
+
+// Foliage like mushrooms and stuff that would look bad overlapping
+USTRUCT(BlueprintType)
+struct FProceduralFoliage
+{
+    GENERATED_BODY()
+
+    UPROPERTY(EditDefaultsOnly, Category = "Foliage")
+    UStaticMesh* FoliageMesh = nullptr;
+
+    UPROPERTY(EditDefaultsOnly, Category = "Foliage", meta = (ClampMin = 0.0, UIMin = 0.0))
+    float MinScale = 0.85f;
+
+    UPROPERTY(EditDefaultsOnly, Category = "Foliage", meta = (ClampMin = 0.0, UIMin = 0.0))
+    float MaxScale = 1.15f;
+
+    UPROPERTY(EditDefaultsOnly, Category = "Foliage", meta = (ClampMin = 0.0, UIMin = 0.0, Units = "Centimeters"))
+    float OccupiedRadius = 25.0f;
+
+    // How common the foliage is, less common foliage should appear less often
+    UPROPERTY(EditDefaultsOnly, Category = "Foliage", meta = (ClampMin = 0.0, UIMin = 0.0, ClampMax = 1.0, UIMax = 1.0))
+    float SpawnChance = 1.0f;
+};
+
+// Trees, similar trees should want to clump together but can be a variety nearby
+// shouldn't spawn as much of these because they have collision
+USTRUCT(BlueprintType)
+struct FProceduralTree
+{
+    GENERATED_BODY()
+
+    UPROPERTY(EditDefaultsOnly, Category = "Tree")
+    UStaticMesh* TreeMesh = nullptr;
+
+    UPROPERTY(EditDefaultsOnly, Category = "Tree", meta = (ClampMin = 0.0, UIMin = 0.0))
+    float MinScale = 0.5f;
+
+    UPROPERTY(EditDefaultsOnly, Category = "Tree", meta = (ClampMin = 0.0, UIMin = 0.0))
+    float MaxScale = 0.8f;
+
+    UPROPERTY(EditDefaultsOnly, Category = "Tree", meta = (ClampMin = 0.0, UIMin = 0.0, Units = "Centimeters"))
+    float OccupiedRadius = 100.0f;
+};
+
+// These will have collision and will be short enough that they will definitely affect the navmesh
+// these should not be close to the path at all so that they don't ruin the navigation
+USTRUCT(BlueprintType)
+struct FProceduralRock
+{
+    GENERATED_BODY()
+
+    UPROPERTY(EditDefaultsOnly, Category = "Rock")
+    UStaticMesh* RockMesh = nullptr;
+
+    UPROPERTY(EditDefaultsOnly, Category = "Rock", meta = (ClampMin = 0.0, UIMin = 0.0))
+    float MinScale = 0.8f;
+
+    UPROPERTY(EditDefaultsOnly, Category = "Rock", meta = (ClampMin = 0.0, UIMin = 0.0))
+    float MaxScale = 1.2f;
+
+    UPROPERTY(EditDefaultsOnly, Category = "Rock", meta = (ClampMin = 0.0, UIMin = 0.0, Units = "Centimeters"))
+    float OccupiedRadius = 50.0f;
+};
+
+// How a nature layer thins out near paths, the tower plaza and defender spots. Distances are measured from the
+// edge of the path corridor/spot footprint, whichever is closest
+USTRUCT(BlueprintType)
+struct FNatureClearance
+{
+    GENERATED_BODY()
+
+    // Nothing spawns closer than this
+    UPROPERTY(EditAnywhere, Category = "Nature", meta = (ClampMin = 0.0, UIMin = 0.0, Units = "Centimeters"))
+    float MinDistance = 50.0f;
+
+    // Beyond MinDistance, how far it takes for the density to climb from NearDensity back up to full
+    UPROPERTY(EditAnywhere, Category = "Nature", meta = (ClampMin = 0.0, UIMin = 0.0, Units = "Centimeters"))
+    float FalloffDistance = 400.0f;
+
+    // Density multiplier right at MinDistance (1 = no thinning near paths/spots, 0 = nothing until the falloff ends)
+    UPROPERTY(EditAnywhere, Category = "Nature", meta = (ClampMin = 0.0, UIMin = 0.0, ClampMax = 1.0, UIMax = 1.0))
+    float NearDensity = 0.5f;
+};
+
+// Shared scatter settings for one kind of nature (grass, foliage, trees, rocks). The scatter walks a jittered grid
+// over the whole terrain and rejects candidates against these in order, cheapest check first
+USTRUCT(BlueprintType)
+struct FNatureLayer
+{
+    GENERATED_BODY()
+
+    // Distance between candidate points (each one is jittered). Smaller = more instances
+    UPROPERTY(EditAnywhere, Category = "Nature", meta = (ClampMin = 25.0, UIMin = 25.0, Units = "Centimeters"))
+    float Spacing = 200.0f;
+
+    // Chance that a candidate which passes every other check actually spawns
+    UPROPERTY(EditAnywhere, Category = "Nature", meta = (ClampMin = 0.0, UIMin = 0.0, ClampMax = 1.0, UIMax = 1.0))
+    float Density = 0.5f;
+
+    // Size of the noise blobs used to clump this layer into patches. 0 = no patches, spawns everywhere
+    UPROPERTY(EditAnywhere, Category = "Nature", meta = (ClampMin = 0.0, UIMin = 0.0, Units = "Centimeters"))
+    float PatchWavelength = 0.0f;
+
+    // Noise value (0-1) a patch starts at. Higher = fewer and smaller patches
+    UPROPERTY(EditAnywhere, Category = "Nature", meta = (ClampMin = 0.0, UIMin = 0.0, ClampMax = 1.0, UIMax = 1.0))
+    float PatchThreshold = 0.6f;
+
+    UPROPERTY(EditAnywhere, Category = "Nature")
+    FNatureClearance Clearance;
+
+    // Steepest ground this can spawn on. 90 = no limit
+    UPROPERTY(EditAnywhere, Category = "Nature",
+              meta = (ClampMin = 0.0, UIMin = 0.0, ClampMax = 90.0, UIMax = 90.0, Units = "Degrees"))
+    float MaxSlope = 90.0f;
+
+    // Added to the sampled terrain height. Negative sinks the mesh a little, hiding gaps on slopes
+    UPROPERTY(EditAnywhere, Category = "Nature", meta = (Units = "Centimeters"))
+    float VerticalOffset = 0.0f;
+
+    // Instances further than this from the camera aren't drawn (none of the nature meshes have LODs). 0 = never culled
+    UPROPERTY(EditAnywhere, Category = "Nature", meta = (ClampMin = 0.0, UIMin = 0.0, Units = "Centimeters"))
+    float CullDistance = 0.0f;
+
+    // Hard cap on how many of this layer can spawn
+    UPROPERTY(EditAnywhere, Category = "Nature", meta = (ClampMin = 0, UIMin = 0))
+    int32 MaxInstances = 5000;
 };
 
 UCLASS()
@@ -63,6 +207,10 @@ public:
 
     UFUNCTION(BlueprintCallable, Category = "Terrain Generation")
     void RebuildNavMesh() const;
+
+    // (Re)scatters grass, foliage, trees and rocks over the terrain
+    UFUNCTION(BlueprintCallable, Category = "Nature")
+    void GenerateNature();
 
     UFUNCTION(BlueprintPure, Category = "Defender Spots")
     const TArray<ADefenderSpot*>& GetDefenderSpots() const { return DefenderSpots; }
@@ -225,7 +373,70 @@ protected:
     UPROPERTY(EditAnywhere, Category = "Terrain Generation|Debug")
     bool bDrawDebugDefenderSpots = false;
 
+    UPROPERTY(EditAnywhere, Category = "Nature")
+    bool bGenerateNature = true;
+
+    // Grass is the same mesh everywhere, so it only needs the one entry
+    UPROPERTY(EditAnywhere, Category = "Nature|Grass")
+    FProceduralGrass Grass;
+
+    UPROPERTY(EditAnywhere, Category = "Nature|Grass")
+    FNatureLayer GrassLayer;
+
+    // Mushrooms, flowers, ferns... each entry's SpawnChance makes it rarer
+    UPROPERTY(EditAnywhere, Category = "Nature|Foliage")
+    TArray<FProceduralFoliage> Foliage;
+
+    UPROPERTY(EditAnywhere, Category = "Nature|Foliage")
+    FNatureLayer FoliageLayer;
+
+    UPROPERTY(EditAnywhere, Category = "Nature|Trees")
+    TArray<FProceduralTree> Trees;
+
+    UPROPERTY(EditAnywhere, Category = "Nature|Trees")
+    FNatureLayer TreeLayer;
+
+    // Size of the areas that favour one tree species, so similar trees clump together
+    UPROPERTY(EditAnywhere, Category = "Nature|Trees", meta = (ClampMin = 100.0, UIMin = 100.0, Units = "Centimeters"))
+    float TreeSpeciesWavelength = 1200.0f;
+
+    // Chance a tree ignores the species favoured at its spot and picks any species, so a patch has some variety
+    UPROPERTY(EditAnywhere, Category = "Nature|Trees",
+              meta = (ClampMin = 0.0, UIMin = 0.0, ClampMax = 1.0, UIMax = 1.0))
+    float TreeVarietyChance = 0.25f;
+
+    // These block the navmesh, so keep RockLayer's Clearance generous
+    UPROPERTY(EditAnywhere, Category = "Nature|Rocks")
+    TArray<FProceduralRock> Rocks;
+
+    UPROPERTY(EditAnywhere, Category = "Nature|Rocks")
+    FNatureLayer RockLayer;
+
 private:
+    // Noise (0-1) at a world X/Y. Offset moves where on the noise field we sample, so each layer uses a different
+    // part of it and the layers don't line up with each other or with the terrain height noise
+    static float SampleNatureNoise(const FVector2D& WorldXY, float Wavelength, const FVector2D& Offset);
+
+    // Steepness of the terrain at a world X/Y in degrees, from the same heightfield the mesh is built from
+    float GetSlopeDegrees(const FVector2D& WorldXY) const;
+
+    // 0 = too close to a path/tower plaza/defender spot to spawn at all, 1 = far enough for full density
+    float GetNatureClearanceMultiplier(const FVector2D& WorldXY, const FNatureClearance& Clearance) const;
+
+    // Walks a shuffled, jittered grid over the whole terrain. Each candidate that survives the layer's patch, density,
+    // clearance and slope checks is handed to TryPlace, which decides what actually goes there (false = rejected)
+    void ScatterLayer(const FNatureLayer& Layer, const FVector2D& NoiseOffset, FRandomStream& Stream,
+                      TFunctionRef<bool(const FVector& Location, FRandomStream& Stream)> TryPlace) const;
+
+    // One instanced component per mesh. bSolid = collides and affects the navmesh (trees, rocks)
+    void CommitNatureInstances(const TMap<UStaticMesh*, TArray<FTransform>>& Instances, const FNatureLayer& Layer,
+                               bool bSolid);
+
+    void ClearNature();
+
+    UPROPERTY()
+    TArray<UHierarchicalInstancedStaticMeshComponent*> NatureComponents;
+
     // Fractal (multi-octave) Perlin height sample at a world X/Y, before any path flattening
     float SampleNoiseHeight(const FVector2D& WorldXY) const;
 
