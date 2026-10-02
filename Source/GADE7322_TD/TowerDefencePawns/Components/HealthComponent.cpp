@@ -1,4 +1,3 @@
-// ReSharper disable CppParameterMayBeConst
 #include "TowerDefencePawns/Components/HealthComponent.h"
 
 #include "Events/EventBus.h"

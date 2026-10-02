@@ -1,4 +1,3 @@
-// ReSharper disable CppParameterMayBeConst
 #include "ProceduralGen/ProceduralTerrainGen.h"
 
 #if WITH_EDITOR
@@ -394,7 +393,7 @@ void AProceduralTerrainGen::SampleTerrainPoint(const FVector2D& WorldXY, float& 
                                                float& OutTextureBlendAlpha) const
 {
     const float NoiseHeight = SampleNoiseHeight(WorldXY); // What the height would be with no paths at all
-    // Tower plaza folded in here so it blends exactly like an extra path, without actually being one
+    // Tower area folded in here so it blends exactly like an extra path, without actually being one
     const float PathEdgeDistance = FMath::Min(DistanceToNearestPathEdge(WorldXY), DistanceToTowerEdge(WorldXY));
     const float SpotEdgeDistance = DistanceToNearestDefenderSpotEdge(WorldXY); // Negative = inside a spot
 

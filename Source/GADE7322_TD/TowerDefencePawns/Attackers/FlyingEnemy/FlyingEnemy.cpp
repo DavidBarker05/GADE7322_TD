@@ -1,4 +1,3 @@
-// ReSharper disable CppParameterMayBeConst
 #include "TowerDefencePawns/Attackers/FlyingEnemy/FlyingEnemy.h"
 
 #include "Animation/AnimInstance.h"

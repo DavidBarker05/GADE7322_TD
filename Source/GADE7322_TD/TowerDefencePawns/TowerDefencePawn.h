@@ -18,12 +18,18 @@ class UWidgetComponent;
 UENUM(BlueprintType)
 enum class EAITeam : uint8
 {
-    MeleeDefender = 0 UMETA(DisplayName = "Melee Defender"), // Warrior
-    RangedDefender = 1 UMETA(DisplayName = "Ranged Defender"), // Tower and Ballista
-    SupportDefender = 2 UMETA(DisplayName = "Support Defender"), // Witch
-    MeleeAttacker = 3 UMETA(DisplayName = "Melee Attacker"), // Skeleton
-    FlyingAttacker = 4 UMETA(DisplayName = "Flying Attacker"), // Floating eye
-    SupportAttacker = 5 UMETA(DisplayName = "Support Attacker") // Skeleton mage
+    // Warrior
+    MeleeDefender = 0 UMETA(DisplayName = "Melee Defender"),
+    // Tower and Ballista
+    RangedDefender = 1 UMETA(DisplayName = "Ranged Defender"),
+    // Healer
+    SupportDefender = 2 UMETA(DisplayName = "Support Defender"),
+    // Skeleton
+    MeleeAttacker = 3 UMETA(DisplayName = "Melee Attacker"),
+    // Floating eye
+    FlyingAttacker = 4 UMETA(DisplayName = "Flying Attacker"),
+    // Skeleton mage
+    SupportAttacker = 5 UMETA(DisplayName = "Support Attacker")
 };
 
 UCLASS(Abstract)

@@ -30,8 +30,7 @@ protected:
 public:
     void SetTarget(AActor* NewTarget);
 
-    // Also self-hides (unlike SetTarget, which leaves visibility to the caller) - covers both an
-    // explicit Deselect and RefreshDisplay() finding the current target has gone invalid on its own
+    // Also self-hides (unlike SetTarget, which leaves visibility to the caller)
     void ClearTarget();
 
     void UpdateGold(int32 NewGold);

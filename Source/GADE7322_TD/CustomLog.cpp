@@ -2,7 +2,6 @@
 
 DEFINE_LOG_CATEGORY(TowerDefenceLog);
 
-// ReSharper disable once CppParameterMayBeConst
 void FCustomLog::Log(ELogVerbosity::Type Verbosity, const FString& Message)
 {
 #if WITH_EDITOR

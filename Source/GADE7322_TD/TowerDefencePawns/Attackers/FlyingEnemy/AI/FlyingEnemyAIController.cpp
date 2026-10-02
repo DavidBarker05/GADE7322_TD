@@ -1,4 +1,3 @@
-// ReSharper disable CppParameterMayBeConst
 #include "TowerDefencePawns/Attackers/FlyingEnemy/AI/FlyingEnemyAIController.h"
 
 #include "Perception/AIPerceptionTypes.h"
@@ -25,9 +24,6 @@ void AFlyingEnemyAIController::Tick(float DeltaTime)
     if (AFlyingEnemy* FlyingEnemy = GetFlyingEnemy())
     {
         if (!FlyingEnemy->IsPawnActive()) return;
-        // This is basically repetitive I should probably find some way to make something general control this
-        // like I think Hollow Knight's FSM might do something to handle stuff like this. I should look into
-        // that
         if (const ATowerDefencePawn* AttackTarget = FlyingEnemy->GetAttackTarget();
             IsValid(AttackTarget) && AttackTarget->IsPawnActive() && AttackTarget->GetHealthComponent()->IsAlive() &&
             (AttackTarget->IsA<APlayerTower>() ||

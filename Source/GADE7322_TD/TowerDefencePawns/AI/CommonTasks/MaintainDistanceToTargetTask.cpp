@@ -27,7 +27,6 @@ EStateTreeRunStatus FMaintainDistanceToTargetTask::EnterState(FStateTreeExecutio
 
     if (AIController->GetMoveStatus() == EPathFollowingStatus::Moving) return EStateTreeRunStatus::Running;
     const float StopEdgeDistance = (OccupiedRadius + RadiusToKeepTargetWithin) / 2.0f;
-    // ReSharper disable once CppTooWideScopeInitStatement
     const float AcceptanceRadius = TargetOccupiedRadius + StopEdgeDistance;
     switch (AIController->MoveToActor(Target, AcceptanceRadius, false, false))
     {

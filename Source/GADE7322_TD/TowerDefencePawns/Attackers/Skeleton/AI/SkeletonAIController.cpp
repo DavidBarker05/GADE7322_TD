@@ -1,4 +1,3 @@
-// ReSharper disable CppParameterMayBeConst
 #include "TowerDefencePawns/Attackers/Skeleton/AI/SkeletonAIController.h"
 
 #include "Perception/AIPerceptionTypes.h"

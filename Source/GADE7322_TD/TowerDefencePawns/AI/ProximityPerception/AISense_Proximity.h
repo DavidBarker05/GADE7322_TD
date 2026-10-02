@@ -1,4 +1,3 @@
-// ReSharper disable CppNonExplicitConvertingConstructor
 #pragma once
 
 #include "CoreMinimal.h"
@@ -20,10 +19,6 @@ public:
     virtual void RegisterSource(AActor& SourceActor) override;
     virtual void UnregisterSource(AActor& SourceActor) override;
 
-    // Fires synchronously the moment PerceptionComponent->ForgetAll() is called (e.g. on
-    // SetControllerActive(false)/(true)), unlike Update()'s own 0.2s poll - a pooled pawn's death and
-    // respawn can both happen well within that 0.2s window, so Update() alone can miss the listener ever
-    // being absent and never purge its stale PairsInRange entries. This closes that race
     virtual void OnListenerForgetsAll(const FPerceptionListener& Listener) override;
 
 protected:

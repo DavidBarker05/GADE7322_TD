@@ -2,10 +2,6 @@
 
 using UnrealBuildTool;
 
-// ReSharper disable RedundantExplicitArrayCreation
-// ReSharper disable UseCollectionExpression
-// ReSharper disable InconsistentNaming
-
 public class GADE7322_TD : ModuleRules
 {
 	public GADE7322_TD(ReadOnlyTargetRules Target) : base(Target)

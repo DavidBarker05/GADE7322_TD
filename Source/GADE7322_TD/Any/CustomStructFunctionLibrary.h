@@ -1,4 +1,3 @@
-// ReSharper disable CppUEBlueprintCallableFunctionUnused
 #pragma once
 
 #include "CoreMinimal.h"

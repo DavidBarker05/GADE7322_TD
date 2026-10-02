@@ -1,4 +1,3 @@
-// ReSharper disable CppParameterMayBeConst
 #include "TowerDefencePawns/TowerDefencePawn.h"
 
 #include "Components/CapsuleComponent.h"

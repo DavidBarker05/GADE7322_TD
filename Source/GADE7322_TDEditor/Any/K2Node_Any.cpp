@@ -13,7 +13,6 @@ void UK2Node_Any::GetMenuActions(FBlueprintActionDatabaseRegistrar& ActionRegist
     Super::GetMenuActions(ActionRegistrar);
     if (const UClass* Action = GetClass(); ActionRegistrar.IsOpenForRegistration(Action))
     {
-        // ReSharper disable once CppParameterNeverUsed
         auto CustomizeLambda = [](UEdGraphNode* NewNode, bool bIsTemplateNode, const FName FunctionName) -> void
         {
             UK2Node_Any* Node = CastChecked<UK2Node_Any>(NewNode);

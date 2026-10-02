@@ -1,4 +1,3 @@
-// ReSharper disable CppParameterMayBeConst
 #include "Player/TowerDefence/TowerDefencePlayer.h"
 
 #include "Camera/CameraComponent.h"
@@ -138,7 +137,6 @@ void ATowerDefencePlayer::SwitchBetweenSpotAndDefender()
     }
 }
 
-// ReSharper disable once CppMemberFunctionMayBeConst
 void ATowerDefencePlayer::DoMove(const FInputActionValue& Value)
 {
     if (IsGamePaused()) return;
@@ -149,7 +147,6 @@ void ATowerDefencePlayer::DoMove(const FInputActionValue& Value)
     if (MovementVector.SquaredLength() > KINDA_SMALL_NUMBER) bFollowTarget = false;
 }
 
-// ReSharper disable once CppMemberFunctionMayBeConst
 void ATowerDefencePlayer::DoRotate(const FInputActionValue& Value)
 {
     if (IsGamePaused()) return;
@@ -179,7 +176,6 @@ bool ATowerDefencePlayer::IsGamePaused() const
     return false;
 }
 
-// ReSharper disable once CppMemberFunctionMayBeConst
 void ATowerDefencePlayer::DoSelect()
 {
     if (IsGamePaused()) return;
@@ -224,7 +220,6 @@ void ATowerDefencePlayer::DoDeselect()
     BROADCAST_EVENT(TEXT("UpdateHUDEvent"), FName(TEXT("PawnManager")), FName(TEXT("Deselect")));
 }
 
-// ReSharper disable once CppMemberFunctionMayBeConst
 void ATowerDefencePlayer::DoZoom(const FInputActionValue& Value)
 {
     if (IsGamePaused()) return;
@@ -250,7 +245,6 @@ void ATowerDefencePlayer::DoReset()
     SpringArmComponent->TargetArmLength = FurthestCameraDistance;
 }
 
-// ReSharper disable once CppMemberFunctionMayBeConst
 void ATowerDefencePlayer::DoPause()
 {
     if (ATowerDefencePlayerController* TD_PC = GetController<ATowerDefencePlayerController>()) TD_PC->TogglePause();
