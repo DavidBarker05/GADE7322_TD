@@ -43,6 +43,7 @@ void ATowerDefencePawn::BeginPlay()
     Super::BeginPlay();
     if (!bIsPawnActive)
     {
+        HideHealthBar();
         StimuliSourceComponent->UnregisterFromPerceptionSystem();
         if (bUseAIController)
             if (ATowerDefencePawnAIController* AIController = Cast<ATowerDefencePawnAIController>(GetController()))
@@ -98,6 +99,7 @@ ATowerDefencePawn& ATowerDefencePawn::SetPawnActive(bool bActive)
 
 void ATowerDefencePawn::UpdateHealthDisplay()
 {
+    if (!bIsPawnActive) return;
     UHealthBarWidget* HealthBarWidget = Cast<UHealthBarWidget>(HealthBar->GetUserWidgetObject());
     if (!HealthBarWidget) return;
     const int32 CurrentHealth = HealthComponent->GetCurrentHealth();
