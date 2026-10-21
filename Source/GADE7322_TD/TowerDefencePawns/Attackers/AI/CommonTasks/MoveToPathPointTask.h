@@ -27,10 +27,12 @@ struct FMoveToPathPointTaskInstanceData
 
     UPROPERTY(Transient)
     int32 ConsecutiveStuckNudges = 0;
+
+    // True while AI navigation is walking the Actor back to the path after being pulled off it
+    UPROPERTY(Transient)
+    bool bRejoining = false;
 };
 
-// Moves Actor towards its current path point, advancing to the next one first if already there.
-// Acceptance radius comes from the Attacker itself (PathTargetAcceptanceDistance), not a task parameter
 USTRUCT(meta = (DisplayName = "Move To Path Point", Category = "AI|Attacker|CommonTask"))
 struct GADE7322_TD_API FMoveToPathPointTask : public FStateTreeAIActionTaskBase
 {

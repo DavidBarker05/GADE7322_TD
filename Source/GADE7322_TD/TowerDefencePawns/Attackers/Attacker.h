@@ -54,6 +54,8 @@ public:
 
     float GetPathTargetAcceptanceDistance() const { return PathTargetAcceptanceDistance; }
 
+    float GetPathRejoinDistance() const { return PathRejoinDistance; }
+
 protected:
     UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Currency",
               meta = (AllowPrivateAccess = true, ClampMin = 0, UIMin = 0))
@@ -71,6 +73,12 @@ private:
     UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "AI",
               meta = (AllowPrivateAccess = true, ClampMin = 0.0, UIMin = 0.0, Units = "Centimeters"))
     float PathTargetAcceptanceDistance = 10.0f;
+
+    // If attacker is further than this from the path it uses AI navigation to get most of the way back first, then goes
+    // back to manual steering
+    UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "AI",
+              meta = (AllowPrivateAccess = true, ClampMin = 0.0, UIMin = 0.0, Units = "Centimeters"))
+    float PathRejoinDistance = 250.0f;
 
     UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components", meta = (AllowPrivateAccess = true))
     UNiagaraComponent* BoostEffect;

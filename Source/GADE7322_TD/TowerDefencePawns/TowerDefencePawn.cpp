@@ -55,6 +55,8 @@ void ATowerDefencePawn::Tick(float DeltaTime)
 {
     Super::Tick(DeltaTime);
     if (!bIsHealthBarShowing) return;
+    auto CamManager = UGameplayStatics::GetPlayerCameraManager(this, 0);
+    if (!IsValid(HealthBar) || !IsValid(CamManager)) return;
     const FVector BarLoc = HealthBar->GetComponentLocation();
     const FVector CamLoc = UGameplayStatics::GetPlayerCameraManager(this, 0)->GetCameraLocation();
     const FRotator DesiredRot = UKismetMathLibrary::FindLookAtRotation(BarLoc, CamLoc);

@@ -1,14 +1,17 @@
 #include "TowerDefencePawns/Attackers/AI/CommonTasks/MoveToPathPointTask.h"
 
-#include "Components/CapsuleComponent.h"
 #include "CustomLog.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Navigation/PathFollowingComponent.h"
-#include "NavigationData.h"
 #include "StateTreeExecutionContext.h"
 
 namespace
 {
+    // Steer at a point this many ahead of the one currently being walked to. The points are close together, so aiming
+    // slightly ahead rounds off the tiny corners between them instead of stop-start turning at every one
+    constexpr int32 LookAheadPoints = 2;
+
+    // Closest point at or after the attacker's current index (never goes backwards along the path)
     int32 UpdateNearestForwardPathIndex(AAttacker& Actor)
     {
         const TArray<FVector>& AllPoints = Actor.GetPathPoints();
@@ -27,103 +30,149 @@ namespace
         Actor.SetCurrentPathIndex(NearestIndex);
         return NearestIndex;
     }
+
+    // Moves the current path index past every point the attacker has reached or already walked past. Returns true once
+    // the final point of the path has been reached
+    bool AdvancePathIndex(AAttacker& Actor)
+    {
+        const TArray<FVector>& Points = Actor.GetPathPoints();
+        const int32 LastIndex = Points.Num() - 1;
+        const FVector Location = Actor.GetActorLocation();
+        const float Acceptance = Actor.GetPathTargetAcceptanceDistance();
+        int32 Index = Actor.GetCurrentPathIndex();
+        while (Index < LastIndex)
+        {
+            const bool bReached = FVector::Dist2D(Location, Points[Index]) <= Acceptance;
+            // Also counts as done with a point once we're beyond it along the path's direction, so a frame hitch (or
+            // being a bit off to the side) can't leave the attacker circling a point it never got close enough to
+            const bool bPassed = FVector2D::DotProduct(FVector2D(Location - Points[Index]),
+                                                       FVector2D(Points[Index + 1] - Points[Index])) > 0.0f;
+            if (!bReached && !bPassed) break;
+            ++Index;
+        }
+        Actor.SetCurrentPathIndex(Index);
+        return Index >= LastIndex && FVector::Dist2D(Location, Points[LastIndex]) <= Acceptance;
+    }
+
+    // Safety net for physically getting stuck on something: jump a few times, then skip ahead along the path
+    void HandleStuck(FMoveToPathPointTaskInstanceData& Data, AAttacker& Actor, const float DeltaTime)
+    {
+        constexpr float StuckDistanceThreshold = 15.0f;
+        constexpr float StuckTimeThreshold = 1.5f;
+        constexpr int32 MaxStuckNudges = 3;
+
+        if (FVector::DistSquared(Actor.GetActorLocation(), Data.StuckCheckLocation) >
+            FMath::Square(StuckDistanceThreshold))
+        {
+            Data.StuckCheckLocation = Actor.GetActorLocation();
+            Data.StuckCheckTime = 0.0f;
+            Data.ConsecutiveStuckNudges = 0;
+            return;
+        }
+        Data.StuckCheckTime += DeltaTime;
+        if (Data.StuckCheckTime < StuckTimeThreshold) return;
+        Data.StuckCheckTime = 0.0f;
+
+        const TArray<FVector>& Points = Actor.GetPathPoints();
+        const int32 Index = Actor.GetCurrentPathIndex();
+        if (!Points.IsValidIndex(Index)) return;
+
+        if (Data.ConsecutiveStuckNudges >= MaxStuckNudges)
+        {
+            const int32 NewIndex = FMath::Min(Index + FMath::RandRange(1, 10), Points.Num() - 1);
+            Actor.SetActorLocation(Points[NewIndex], false, nullptr, ETeleportType::TeleportPhysics);
+            Actor.SetCurrentPathIndex(NewIndex);
+            if (UCharacterMovementComponent* Movement = Actor.GetCharacterMovement())
+                Movement->StopMovementImmediately();
+            Data.StuckCheckLocation = Actor.GetActorLocation();
+            Data.ConsecutiveStuckNudges = 0;
+            if (Data.bRejoining) // Back on the path now, so no need for the AI to keep trying to get there
+            {
+                Data.AIController->StopMovement();
+                Data.bRejoining = false;
+            }
+            return;
+        }
+        ++Data.ConsecutiveStuckNudges;
+        const FVector ToTarget = (Points[Index] - Actor.GetActorLocation()).GetSafeNormal2D();
+        Actor.LaunchCharacter(ToTarget * 100.0f + FVector::UpVector * 150.0f, true, true);
+    }
 } // namespace
 
 EStateTreeRunStatus FMoveToPathPointTask::EnterState(FStateTreeExecutionContext& Context,
                                                      const FStateTreeTransitionResult& Transition) const
 {
-    auto& [AIController, Actor, StuckCheckLocation, StuckCheckTime, ConsecutiveStuckNudges] =
-        Context.GetInstanceData(*this);
-    StuckCheckTime = 0.0f;
-    ConsecutiveStuckNudges = 0;
-    if (Actor) StuckCheckLocation = Actor->GetActorLocation();
-    if (!AIController)
+    FMoveToPathPointTaskInstanceData& Data = Context.GetInstanceData(*this);
+    Data.StuckCheckTime = 0.0f;
+    Data.ConsecutiveStuckNudges = 0;
+    Data.bRejoining = false;
+    if (Data.Actor) Data.StuckCheckLocation = Data.Actor->GetActorLocation();
+    if (!Data.AIController)
     {
         TD_LOG_ERROR(TEXT("FMoveToPathPointTask::EnterState -> AI Controller context is nullptr"));
         return EStateTreeRunStatus::Failed;
     }
-    if (!Actor)
+    if (!Data.Actor)
     {
         TD_LOG_ERROR(TEXT("FMoveToPathPointTask::EnterState -> Actor context is nullptr"));
         return EStateTreeRunStatus::Failed;
     }
-    const TArray<FVector>& AllPoints = Actor->GetPathPoints();
+    AAttacker& Actor = *Data.Actor;
+    const TArray<FVector>& AllPoints = Actor.GetPathPoints();
     if (AllPoints.IsEmpty())
     {
         TD_LOG_ERROR(TEXT("FMoveToPathPointTask::EnterState -> Attacker has no path"));
         return EStateTreeRunStatus::Failed;
     }
 
-    const int32 StartIndex = UpdateNearestForwardPathIndex(*Actor);
+    const int32 StartIndex = UpdateNearestForwardPathIndex(Actor);
+    if (AllPoints.Num() - StartIndex < 2) return EStateTreeRunStatus::Succeeded;
 
-    TArray<FVector> RemainingPoints(AllPoints.GetData() + StartIndex, AllPoints.Num() - StartIndex);
-    if (RemainingPoints.Num() < 2) return EStateTreeRunStatus::Succeeded;
-
-    UPathFollowingComponent* PFC = AIController->GetPathFollowingComponent();
-    if (!PFC) return EStateTreeRunStatus::Failed;
-
-    const FNavPathSharedPtr NavPath = MakeShared<FNavigationPath>(RemainingPoints);
-    FAIMoveRequest MoveReq(RemainingPoints.Last());
-    MoveReq.SetAcceptanceRadius(Actor->GetPathTargetAcceptanceDistance());
-    MoveReq.SetUsePathfinding(false); // We already built the route ourselves from the attacker's own procedural path
-    MoveReq.SetReachTestIncludesAgentRadius(false);
-    const FAIRequestID RequestID = PFC->RequestMove(MoveReq, NavPath);
-    return RequestID.IsValid() ? EStateTreeRunStatus::Running : EStateTreeRunStatus::Failed;
+    const FVector& RejoinPoint = AllPoints[StartIndex];
+    if (FVector::Dist2D(Actor.GetActorLocation(), RejoinPoint) > Actor.GetPathRejoinDistance())
+    {
+        // Stops once within half the rejoin distance, which is well inside what manual steering can handle
+        const float AcceptanceRadius = Actor.GetPathRejoinDistance() * 0.5f;
+        if (Data.AIController->MoveToLocation(RejoinPoint, AcceptanceRadius, true, true, true, false) ==
+            EPathFollowingRequestResult::RequestSuccessful)
+            Data.bRejoining = true;
+    }
+    return EStateTreeRunStatus::Running;
 }
 
 EStateTreeRunStatus FMoveToPathPointTask::Tick(FStateTreeExecutionContext& Context, const float DeltaTime) const
 {
-    auto& [AIController, Actor, StuckCheckLocation, StuckCheckTime, ConsecutiveStuckNudges] =
-        Context.GetInstanceData(*this);
-    if (!AIController || !Actor) return EStateTreeRunStatus::Failed;
-    if (!Actor->GetPathPoints().IsEmpty()) UpdateNearestForwardPathIndex(*Actor);
-    constexpr float StuckDistanceThreshold = 15.0f;
-    constexpr float StuckTimeThreshold = 1.5f;
-    if (FVector::DistSquared(Actor->GetActorLocation(), StuckCheckLocation) > FMath::Square(StuckDistanceThreshold))
-    {
-        StuckCheckLocation = Actor->GetActorLocation();
-        StuckCheckTime = 0.0f;
-        ConsecutiveStuckNudges = 0;
-    }
-    else StuckCheckTime += DeltaTime;
+    FMoveToPathPointTaskInstanceData& Data = Context.GetInstanceData(*this);
+    if (!Data.AIController || !Data.Actor) return EStateTreeRunStatus::Failed;
+    AAttacker& Actor = *Data.Actor;
+    const TArray<FVector>& Points = Actor.GetPathPoints();
+    if (Points.IsEmpty()) return EStateTreeRunStatus::Failed;
 
-    if (StuckCheckTime >= StuckTimeThreshold && AIController->GetMoveStatus() == EPathFollowingStatus::Moving)
+    if (Data.bRejoining)
     {
-        StuckCheckTime = 0.0f;
-        constexpr int32 MaxStuckNudges = 3;
-        const TArray<FVector>& AllPoints = Actor->GetPathPoints();
-        const int32 Idx = Actor->GetCurrentPathIndex();
-        if (ConsecutiveStuckNudges >= MaxStuckNudges)
+        const FVector& RejoinPoint = Points[FMath::Clamp(Actor.GetCurrentPathIndex(), 0, Points.Num() - 1)];
+        const float RejoinRadius = Actor.GetPathRejoinDistance() * 0.5f;
+        if (Data.AIController->GetMoveStatus() == EPathFollowingStatus::Idle ||
+            FVector::Dist2D(Actor.GetActorLocation(), RejoinPoint) <= RejoinRadius)
         {
-            const int32 SkipCount = FMath::RandRange(1, 10);
-            const int32 NewIdx = FMath::Min(Idx + SkipCount, AllPoints.Num() - 1);
-            if (AllPoints.IsValidIndex(NewIdx))
-            {
-                Actor->SetActorLocation(AllPoints[NewIdx], false, nullptr, ETeleportType::TeleportPhysics);
-                Actor->SetCurrentPathIndex(NewIdx);
-                if (UCharacterMovementComponent* Movement = Actor->GetCharacterMovement())
-                    Movement->StopMovementImmediately();
-            }
-            return EStateTreeRunStatus::Succeeded;
-        }
-        if (AllPoints.IsValidIndex(Idx))
-        {
-            ++ConsecutiveStuckNudges;
-            const FVector ToTarget = (AllPoints[Idx] - Actor->GetActorLocation()).GetSafeNormal2D();
-            TArray<AActor*> OverlappingActors;
-            Actor->GetCapsuleComponent()->GetOverlappingActors(OverlappingActors);
-            FHitResult BlockHit;
-            const float CapsuleRadius = Actor->GetCapsuleComponent()->GetScaledCapsuleRadius();
-            const FVector TraceStart = Actor->GetActorLocation() + ToTarget * (CapsuleRadius + 5.0f);
-            const FVector TraceEnd = TraceStart + ToTarget * 50.0f;
-            FCollisionQueryParams QueryParams;
-            QueryParams.AddIgnoredActor(Actor);
-            Actor->LaunchCharacter(ToTarget * 100.0f + FVector::UpVector * 150.0f, true, true);
+            Data.AIController->StopMovement();
+            Data.bRejoining = false; // Manual steering takes over from here, in this same tick
         }
     }
 
-    return AIController->GetMoveStatus() == EPathFollowingStatus::Idle ? EStateTreeRunStatus::Succeeded :
-                                                                         EStateTreeRunStatus::Running;
+    if (!Data.bRejoining)
+    {
+        if (AdvancePathIndex(Actor)) return EStateTreeRunStatus::Succeeded;
+
+        const int32 AimIndex = FMath::Min(Actor.GetCurrentPathIndex() + LookAheadPoints, Points.Num() - 1);
+        const FVector ToAim = Points[AimIndex] - Actor.GetActorLocation();
+        const UCharacterMovementComponent* Movement = Actor.GetCharacterMovement();
+        const FVector Direction = (Movement && Movement->IsFlying()) ? ToAim.GetSafeNormal() : ToAim.GetSafeNormal2D();
+        Actor.AddMovementInput(Direction, 1.0f);
+    }
+
+    HandleStuck(Data, Actor, DeltaTime);
+    return EStateTreeRunStatus::Running;
 }
 
 void FMoveToPathPointTask::ExitState(FStateTreeExecutionContext& Context,
