@@ -54,7 +54,7 @@ void ATowerDefencePawn::BeginPlay()
 void ATowerDefencePawn::Tick(float DeltaTime)
 {
     Super::Tick(DeltaTime);
-    if (!bIsHealthBarShowing) return;
+    if (!bIsHealthBarShowing || !bIsPawnActive || HealthComponent->IsDead()) return;
     auto CamManager = UGameplayStatics::GetPlayerCameraManager(this, 0);
     if (!IsValid(HealthBar) || !IsValid(CamManager)) return;
     const FVector BarLoc = HealthBar->GetComponentLocation();

@@ -51,6 +51,7 @@ void ABallista::BeginPlay()
 void ABallista::Tick(float DeltaTime)
 {
     Super::Tick(DeltaTime);
+    if (!IsPawnActive() || HealthComponent->IsDead()) return;
     TimeSinceLastTargetUpdate += DeltaTime;
     if (TimeSinceLastTargetUpdate >= 1.0f / TargetUpdateFrequency)
     {
@@ -87,6 +88,7 @@ void ABallista::DoOnSetActive(bool bActive)
         VisiblePawns.Empty();
         PerceptionComponent->SetActive(false);
     }
+    TimeSinceLastTargetUpdate = 0.0f;
     StandMesh->SetVisibility(bActive);
     StandMesh->SetComponentTickEnabled(bActive);
     StandMesh->SetCollisionEnabled(bActive ? ECollisionEnabled::QueryAndPhysics : ECollisionEnabled::NoCollision);
@@ -208,7 +210,7 @@ float ABallista::GetAngleToFireProjectile(const UObject* WorldContextObject, FVe
 
 void ABallista::OnTargetPerceptionUpdated(AActor* Actor, FAIStimulus Stimulus)
 {
-    if (!IsValid(Actor)) return;
+    if (!IsValid(Actor) || !IsPawnActive() || HealthComponent->IsDead()) return;
     if (ATowerDefencePawn* TDPawn = Cast<ATowerDefencePawn>(Actor))
     {
         if (!Stimulus.WasSuccessfullySensed()) VisiblePawns.Remove(TDPawn);
