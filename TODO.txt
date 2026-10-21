@@ -1,2 +1,35 @@
-in future:
-plants and stuff for the terrain
+Fix restart button not working
+
+Make ballista unable to attack ground troops
+Make ballista shoot slower
+
+Split the main tower crystals from the body (will be important later)
+
+Fix the clicks not always registering
+
+Improve UI
+
+Add play guide
+Add controls guide
+
+Upgrades:
+- Warrior
+    - Upgrade 1: Give a shield
+    - Upgrade 2: Switch model to armour with two-handed sword
+- Ballista
+    - Upgrade 1: Allow to attack ground troops for less damage (idk what to do visually yet)
+    - Upgrade 2: Cannon, shoots cannon balls that explode
+- Healer
+    - Upgrade 1: Give like a spell book and he heals more
+    - Upgrade 2: Change to more powerful white and gold outfit and heal in a radius around not just one defender
+
+Shaders:
+- Vertex Displacement Shader: Inverse hull outline shader when selecting defenders
+- Colour Changing Shader: Make main tower crystal change colour the lower the health is (might then not always display the health bar and it only shows when attacked like other tower defence pawns)
+
+Visual Effects:
+- Particle System: Cannon ball explosion
+- Post Processing Effect: Screen hit effect when the tower gets hit to show it's taking damage
+
+Custom Procedural Feature:
+Unsure right now, need to see how much time I have and what is doable still
