@@ -3,6 +3,7 @@
 #include "Components/Button.h"
 #include "Kismet/GameplayStatics.h"
 #include "Kismet/KismetSystemLibrary.h"
+#include "TowerDefencePawns/ProjectilePoolFactory.h"
 #include "TowerDefencePawns/TowerDefencePawnFactory.h"
 
 bool ULoseScreenWidget::Initialize()
@@ -18,6 +19,7 @@ void ULoseScreenWidget::RestartGame() const
 {
     if (APlayerController* PC = GetOwningPlayer()) PC->SetPause(false);
     if (TOWER_DEFENCE_PAWN_FACTORY_EXISTS) CLEAR_PAWN_POOLS();
+    if (PROJECTILE_POOL_FACTORY_EXISTS) CLEAR_PROJECTILE_POOLS();
     const FString CurrentMapName = UGameplayStatics::GetCurrentLevelName(this, true);
     UGameplayStatics::OpenLevel(this, FName(*CurrentMapName));
 }

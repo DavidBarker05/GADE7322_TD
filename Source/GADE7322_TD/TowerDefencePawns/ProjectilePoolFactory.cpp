@@ -1,5 +1,7 @@
 #include "TowerDefencePawns/ProjectilePoolFactory.h"
 
+#include "GameFramework/ProjectileMovementComponent.h"
+
 void UProjectilePoolFactory::Deinitialize()
 {
     ClearAllPools();
@@ -18,16 +20,23 @@ AActor* UProjectilePoolFactory::CreateProjectile(const TSubclassOf<AActor>& Proj
     if (!IsValid(ProjectileClass)) return nullptr;
     if (!AvailablePools.Contains(ProjectileClass)) CreatePool(ProjectileClass);
     auto& AvailablePool = AvailablePools[ProjectileClass];
-    const auto* ProjectilePtr = AvailablePool.FindArbitraryElement();
-    AActor* Projectile;
-    if (ProjectilePtr)
+    AActor* Projectile = nullptr;
+    while (!Projectile)
     {
-        Projectile = ProjectilePtr->Get();
+        const auto* ProjectilePtr = AvailablePool.FindArbitraryElement();
+        if (!ProjectilePtr) break;
+        AActor* Candidate = ProjectilePtr->Get();
         AvailablePool.Remove(*ProjectilePtr);
+        if (IsValid(Candidate) && Candidate->GetWorld() == GetWorld()) Projectile = Candidate;
+    }
+    if (Projectile)
+    {
         Projectile->SetActorTransform(SpawnTransform, false, nullptr, ETeleportType::ResetPhysics);
         Projectile->SetActorHiddenInGame(false);
         Projectile->SetActorEnableCollision(true);
         Projectile->SetActorTickEnabled(true);
+        if (UProjectileMovementComponent* Movement = Projectile->FindComponentByClass<UProjectileMovementComponent>())
+            Movement->Activate();
     }
     else
     {
@@ -74,4 +83,9 @@ void UProjectilePoolFactory::DeactivateProjectile(AActor* Projectile)
     Projectile->SetActorHiddenInGame(true);
     Projectile->SetActorEnableCollision(false);
     Projectile->SetActorTickEnabled(false);
+    if (UProjectileMovementComponent* Movement = Projectile->FindComponentByClass<UProjectileMovementComponent>())
+    {
+        Movement->StopMovementImmediately();
+        Movement->Deactivate();
+    }
 }
