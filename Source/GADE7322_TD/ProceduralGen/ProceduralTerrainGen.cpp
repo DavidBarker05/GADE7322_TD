@@ -129,6 +129,7 @@ AProceduralTerrainGen::AProceduralTerrainGen()
 void AProceduralTerrainGen::BeginPlay()
 {
     Super::BeginPlay();
+    TerrainMesh->SetCollisionResponseToChannel(MouseClickTraceChannel, ECR_Ignore);
     GeneratePaths();
     ComputeDefenderSpotLocations(); // Before GenerateTerrain() so it can flatten around them too
     GenerateTerrain();

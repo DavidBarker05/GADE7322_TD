@@ -4,6 +4,7 @@
 #include "HitFlashComponent.h"
 #include "Perception/AIPerceptionComponent.h"
 #include "Perception/AIPerceptionTypes.h"
+#include "TDCollisionChannels.h"
 #include "TowerDefencePawns/AI/ProximityPerception/AISenseConfig_Proximity.h"
 #include "TowerDefencePawns/AI/TargetSelectionFunctions.h"
 #include "TowerDefencePawns/Components/DamageComponent.h"
@@ -93,10 +94,12 @@ void ABallista::DoOnSetActive(bool bActive)
     StandMesh->SetComponentTickEnabled(bActive);
     StandMesh->SetCollisionEnabled(bActive ? ECollisionEnabled::QueryAndPhysics : ECollisionEnabled::NoCollision);
     StandMesh->SetCollisionResponseToAllChannels(bActive ? ECR_Block : ECR_Ignore);
+    StandMesh->SetCollisionResponseToChannel(MouseClickTraceChannel, ECR_Ignore);
     BallistaMesh->SetVisibility(bActive);
     BallistaMesh->SetComponentTickEnabled(bActive);
     BallistaMesh->SetCollisionEnabled(bActive ? ECollisionEnabled::QueryAndPhysics : ECollisionEnabled::NoCollision);
     BallistaMesh->SetCollisionResponseToAllChannels(bActive ? ECR_Block : ECR_Ignore);
+    BallistaMesh->SetCollisionResponseToChannel(MouseClickTraceChannel, ECR_Ignore);
     if (bActive)
     {
         StandMesh->SetCollisionResponseToChannel(ECC_WorldStatic, ECR_Ignore);

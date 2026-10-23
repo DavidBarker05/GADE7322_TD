@@ -5,6 +5,7 @@
 #include "HitFlashComponent.h"
 #include "Perception/AIPerceptionComponent.h"
 #include "Perception/AIPerceptionSystem.h"
+#include "TDCollisionChannels.h"
 #include "TowerDefencePawns/Attackers/Skeleton/AI/SkeletonAIController.h"
 #include "Weapon.h"
 
@@ -64,6 +65,7 @@ void AFlyingEnemy::DoOnSetActive(bool bActive)
     GetMesh()->SetComponentTickEnabled(bActive);
     GetMesh()->SetCollisionEnabled(bActive ? ECollisionEnabled::QueryAndPhysics : ECollisionEnabled::NoCollision);
     GetMesh()->SetCollisionResponseToAllChannels(bActive ? ECR_Block : ECR_Ignore);
+    GetMesh()->SetCollisionResponseToChannel(MouseClickTraceChannel, ECR_Ignore);
     if (bActive)
     {
         GetMesh()->SetCollisionResponseToChannel(ECC_WorldStatic, ECR_Ignore);

@@ -4,6 +4,7 @@
 #include "NiagaraComponent.h"
 #include "Perception/AIPerceptionComponent.h"
 #include "Perception/AIPerceptionSystem.h"
+#include "TDCollisionChannels.h"
 #include "TowerDefenceGameMode.h"
 #include "TowerDefencePawns/Components/DamageComponent.h"
 #include "TowerDefencePawns/Components/HealthComponent.h"
@@ -142,6 +143,7 @@ void AHealer::DoOnSetActive(bool bActive)
     GetMesh()->SetComponentTickEnabled(bActive);
     GetMesh()->SetCollisionEnabled(bActive ? ECollisionEnabled::QueryAndPhysics : ECollisionEnabled::NoCollision);
     GetMesh()->SetCollisionResponseToAllChannels(bActive ? ECR_Block : ECR_Ignore);
+    GetMesh()->SetCollisionResponseToChannel(MouseClickTraceChannel, ECR_Ignore);
     HealSpellBall->SetVisibility(false);
     HealSpellBall->SetComponentTickEnabled(false);
     FireSpellBall->SetVisibility(false);

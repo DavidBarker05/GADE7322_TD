@@ -159,13 +159,12 @@ bool ATowerDefencePlayer::IsMouseOverUI(const APlayerController* PlayerControlle
     if (!PlayerController || !FSlateApplication::IsInitialized() || !GEngine || !GEngine->GameViewport) return false;
 
     float MouseX, MouseY;
-    if (!PlayerController->GetMousePosition(MouseX, MouseY)) return false;
-
+    if (!PlayerController->GetMousePosition(MouseX, MouseY)) return false; // Cursor isn't over the game viewport
     const TSharedPtr<SViewport> GameViewportWidget = GEngine->GameViewport->GetGameViewportWidget();
     if (!GameViewportWidget.IsValid()) return false;
-
+    const FVector2D ScreenCursorPosition(FSlateApplication::Get().GetCursorPos());
     const FWidgetPath WidgetPath = FSlateApplication::Get().LocateWindowUnderMouse(
-        FVector2D(MouseX, MouseY), FSlateApplication::Get().GetInteractiveTopLevelWindows());
+        ScreenCursorPosition, FSlateApplication::Get().GetInteractiveTopLevelWindows());
 
     return WidgetPath.IsValid() && WidgetPath.GetLastWidget() != GameViewportWidget;
 }

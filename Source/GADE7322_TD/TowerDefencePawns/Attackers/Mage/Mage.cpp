@@ -4,6 +4,7 @@
 #include "NiagaraComponent.h"
 #include "Perception/AIPerceptionComponent.h"
 #include "Perception/AIPerceptionSystem.h"
+#include "TDCollisionChannels.h"
 #include "TowerDefenceGameMode.h"
 #include "TowerDefencePawns/Attackers/Mage/AI/MageAIController.h"
 #include "TowerDefencePawns/Attackers/Mage/DamageSpellProjectile.h"
@@ -140,6 +141,7 @@ void AMage::DoOnSetActive(bool bActive)
     GetMesh()->SetComponentTickEnabled(bActive);
     GetMesh()->SetCollisionEnabled(bActive ? ECollisionEnabled::QueryAndPhysics : ECollisionEnabled::NoCollision);
     GetMesh()->SetCollisionResponseToAllChannels(bActive ? ECR_Block : ECR_Ignore);
+    GetMesh()->SetCollisionResponseToChannel(MouseClickTraceChannel, ECR_Ignore);
     BoostSpellBall->SetVisibility(false);
     BoostSpellBall->SetComponentTickEnabled(false);
     DamageSpellBall->SetVisibility(false);
