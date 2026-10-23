@@ -20,16 +20,18 @@ enum class EAITeam : uint8
 {
     // Warrior
     MeleeDefender = 0 UMETA(DisplayName = "Melee Defender"),
-    // Tower and Ballista
+    // Ballista
     RangedDefender = 1 UMETA(DisplayName = "Ranged Defender"),
     // Healer
     SupportDefender = 2 UMETA(DisplayName = "Support Defender"),
+    // Tower
+    PlayerTower = 3 UMETA(DisplayName = "Player Tower"),
     // Skeleton
-    MeleeAttacker = 3 UMETA(DisplayName = "Melee Attacker"),
+    MeleeAttacker = 4 UMETA(DisplayName = "Melee Attacker"),
     // Floating eye
-    FlyingAttacker = 4 UMETA(DisplayName = "Flying Attacker"),
+    FlyingAttacker = 5 UMETA(DisplayName = "Flying Attacker"),
     // Skeleton mage
-    SupportAttacker = 5 UMETA(DisplayName = "Support Attacker")
+    SupportAttacker = 6 UMETA(DisplayName = "Support Attacker")
 };
 
 UCLASS(Abstract)

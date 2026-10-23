@@ -98,6 +98,7 @@ ETeamAttitude::Type ATowerDefenceGameMode::GetAttitudeCustom(EAITeam TeamA, EAIT
                 case EAITeam::MeleeDefender:
                 case EAITeam::RangedDefender:
                 case EAITeam::SupportDefender:
+                case EAITeam::PlayerTower:
                     return ETeamAttitude::Friendly; // Friendly to all defenders
                 case EAITeam::MeleeAttacker:
                 case EAITeam::SupportAttacker:
@@ -108,12 +109,43 @@ ETeamAttitude::Type ATowerDefenceGameMode::GetAttitudeCustom(EAITeam TeamA, EAIT
                     return ETeamAttitude::Neutral; // Neutral by default
             }
         case EAITeam::RangedDefender:
+            switch (TeamB)
+            {
+                case EAITeam::MeleeDefender:
+                case EAITeam::RangedDefender:
+                case EAITeam::SupportDefender:
+                case EAITeam::PlayerTower:
+                    return ETeamAttitude::Friendly; // Friendly to all defenders
+                case EAITeam::MeleeAttacker:
+                case EAITeam::SupportAttacker:
+                    return ETeamAttitude::Neutral; // Don't attack ground troops
+                case EAITeam::FlyingAttacker:
+                    return ETeamAttitude::Hostile;
+                default:
+                    return ETeamAttitude::Neutral; // Neutral by default
+            }
         case EAITeam::SupportDefender:
             switch (TeamB)
             {
                 case EAITeam::MeleeDefender:
                 case EAITeam::RangedDefender:
                 case EAITeam::SupportDefender:
+                case EAITeam::PlayerTower:
+                    return ETeamAttitude::Friendly; // Friendly to all defenders
+                case EAITeam::MeleeAttacker:
+                case EAITeam::SupportAttacker:
+                case EAITeam::FlyingAttacker:
+                    return ETeamAttitude::Hostile; // Hostile to all attackers
+                default:
+                    return ETeamAttitude::Neutral; // Neutral by default
+            }
+        case EAITeam::PlayerTower:
+            switch (TeamB)
+            {
+                case EAITeam::MeleeDefender:
+                case EAITeam::RangedDefender:
+                case EAITeam::SupportDefender:
+                case EAITeam::PlayerTower:
                     return ETeamAttitude::Friendly; // Friendly to all defenders
                 case EAITeam::MeleeAttacker:
                 case EAITeam::SupportAttacker:

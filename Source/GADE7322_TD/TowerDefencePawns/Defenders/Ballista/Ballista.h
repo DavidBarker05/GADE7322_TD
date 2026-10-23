@@ -88,7 +88,7 @@ private:
 
     UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "AI",
               meta = (AllowPrivateAccess = true, ClampMin = 0.0, UIMin = 0.0, Units = "Seconds"))
-    float AttackCooldown = 1.0f;
+    float AttackCooldown = 2.0f;
 
     UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "AI",
               meta = (AllowPrivateAccess = true, ClampMin = 0.0, UIMin = 0.0, Units = "Hertz"))
