@@ -1,5 +1,3 @@
-Split the main tower crystals from the body (will be important later)
-
 Fix the clicks not always registering
 
 Improve UI

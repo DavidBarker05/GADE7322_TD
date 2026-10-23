@@ -84,6 +84,9 @@ private:
     UStaticMeshComponent* TowerMesh;
 
     UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components", meta = (AllowPrivateAccess = true))
+    UStaticMeshComponent* CrystalMesh;
+
+    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components", meta = (AllowPrivateAccess = true))
     UStaticMeshComponent* RadiusDisplay;
 
     UPROPERTY()

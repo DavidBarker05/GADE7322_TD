@@ -17,6 +17,8 @@ APlayerTower::APlayerTower()
     OccupiedRadius = 200.0f;
     TowerMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Tower Mesh"));
     TowerMesh->SetupAttachment(RootComponent);
+    CrystalMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Crystal Mesh"));
+    CrystalMesh->SetupAttachment(RootComponent);
     RadiusDisplay = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Radius Display"));
     RadiusDisplay->SetupAttachment(RootComponent);
     RadiusDisplay->SetCollisionEnabled(ECollisionEnabled::NoCollision);
