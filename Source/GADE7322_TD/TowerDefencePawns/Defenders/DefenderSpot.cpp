@@ -1,6 +1,7 @@
 #include "TowerDefencePawns/Defenders/DefenderSpot.h"
 
 #include "Components/BoxComponent.h"
+#include "DefenderUpgradeComponent.h"
 #include "Events/EventBus.h"
 #include "HealthComponent.h"
 #include "TDCollisionChannels.h"
@@ -67,7 +68,7 @@ void ADefenderSpot::PurchaseDefender(const TSubclassOf<ADefender>& DefenderBluep
         CurrentDefender = Cast<ADefender>(CREATE_PAWN(DefenderBlueprint, GetTransform()));
         CurrentDefender->SetSpawnPoint(this);
         CurrentDefender->SetPawnActive(true);
-        BROADCAST_EVENT(TEXT("PurchaseEvent"), CurrentDefender->GetCost());
+        BROADCAST_EVENT(TEXT("PurchaseEvent"), CurrentDefender->GetUpgradeComponent()->GetCurrent().GetCost());
         BROADCAST_EVENT(TEXT("DefenderPurchasedEvent"), CurrentDefender->GetHealthComponent()->GetMaxHealth());
     }
 }

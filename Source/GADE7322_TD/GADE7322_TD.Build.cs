@@ -57,6 +57,7 @@ public class GADE7322_TD : ModuleRules
 			"GADE7322_TD/TowerDefencePawns/Defenders/AI",
 			"GADE7322_TD/TowerDefencePawns/Defenders/AI/CommonTasks",
 			"GADE7322_TD/TowerDefencePawns/Defenders/Ballista",
+			"GADE7322_TD/TowerDefencePawns/Defenders/Components",
 			"GADE7322_TD/TowerDefencePawns/Defenders/Healer",
 			"GADE7322_TD/TowerDefencePawns/Defenders/Healer/AI",
 			"GADE7322_TD/TowerDefencePawns/Defenders/Warrior",

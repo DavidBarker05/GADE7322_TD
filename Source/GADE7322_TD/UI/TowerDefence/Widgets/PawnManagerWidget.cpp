@@ -210,8 +210,8 @@ void UPawnManagerWidget::HandleHealTower() const
 void UPawnManagerWidget::HandleBuyDefender(TSubclassOf<ADefender> DefenderClass) const
 {
     if (!IsValid(CurrentShopSpot) || !DefenderClass) return;
-    if (const ADefender* DefaultDefender = DefenderClass->GetDefaultObject<ADefender>();
-        !DefaultDefender || CachedGold < DefaultDefender->GetCost())
+    if (const TOptional<int32> DefenderCost = ADefender::GetDefenderCost(DefenderClass, 0);
+        CachedGold < DefenderCost.GetValue())
         return;
     CurrentShopSpot->PurchaseDefender(DefenderClass);
 }

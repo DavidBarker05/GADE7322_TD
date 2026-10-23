@@ -2,14 +2,14 @@
 
 #include "CoreMinimal.h"
 
-#include "TowerDefencePawns/AI/TowerDefencePawnAIController.h"
+#include "TowerDefencePawns/Defenders/AI/DefenderAIController.h"
 
 #include "WarriorAIController.generated.h"
 
 class AWarrior;
 
 UCLASS(Abstract)
-class GADE7322_TD_API AWarriorAIController : public ATowerDefencePawnAIController
+class GADE7322_TD_API AWarriorAIController : public ADefenderAIController
 {
     GENERATED_BODY()
 

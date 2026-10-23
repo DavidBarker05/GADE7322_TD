@@ -7,6 +7,8 @@ AWeapon::AWeapon()
     WeaponMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Weapon Mesh"));
     WeaponMesh->SetupAttachment(RootComponent);
     WeaponMesh->SetCollisionProfileName(TEXT("NoCollision"));
+    SecondHandPlacement = CreateDefaultSubobject<USceneComponent>(TEXT("Second Hand Placement"));
+    SecondHandPlacement->SetupAttachment(RootComponent);
     bMeshTicks = WeaponMesh && WeaponMesh->IsComponentTickEnabled();
 }
 

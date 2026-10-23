@@ -17,14 +17,19 @@ public:
     virtual void BeginPlay() override;
 
     int32 GetMaxHealth() const { return MaxHealth; }
-    void SetMaxHealth(int32 Health)
+    UHealthComponent& SetMaxHealth(int32 Health)
     {
         MaxHealth = FMath::Max(0, Health);
         CurrentHealth = FMath::Clamp(CurrentHealth, 0, MaxHealth);
+        return *this;
     }
 
     int32 GetCurrentHealth() const { return CurrentHealth; }
-    void SetCurrentHealth(int32 Health) { CurrentHealth = FMath::Clamp(Health, 0, MaxHealth); }
+    UHealthComponent& SetCurrentHealth(int32 Health)
+    {
+        CurrentHealth = FMath::Clamp(Health, 0, MaxHealth);
+        return *this;
+    }
 
     UFUNCTION(BlueprintCallable, Category = "Health")
     void TakeDamage(int32 Damage);
@@ -40,10 +45,8 @@ public:
         bDead = false;
     }
 
-    UFUNCTION(BlueprintPure, Category = "Health")
     bool IsAlive() const { return bAlive; }
 
-    UFUNCTION(BlueprintPure, Category = "Health")
     bool IsDead() const { return bDead; }
 
 private:

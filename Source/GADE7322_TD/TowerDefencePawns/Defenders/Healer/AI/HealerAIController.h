@@ -2,7 +2,7 @@
 
 #include "CoreMinimal.h"
 
-#include "TowerDefencePawns/AI/TowerDefencePawnAIController.h"
+#include "TowerDefencePawns/Defenders/AI/DefenderAIController.h"
 
 #include "HealerAIController.generated.h"
 
@@ -10,7 +10,7 @@ class AHealer;
 class ATowerDefencePawn;
 
 UCLASS(Abstract)
-class AHealerAIController : public ATowerDefencePawnAIController
+class AHealerAIController : public ADefenderAIController
 {
     GENERATED_BODY()
 

@@ -8,6 +8,7 @@
 
 class ADefenderSpot;
 class UBoxComponent;
+class UDefenderUpgradeComponent;
 class UNiagaraComponent;
 
 UCLASS(Abstract)
@@ -20,6 +21,8 @@ public:
 
     virtual void BeginPlay() override;
 
+    virtual void PostInitializeComponents() override;
+
     void ShowRadiusDisplay();
 
     void HideRadiusDisplay();
@@ -28,9 +31,15 @@ public:
     virtual float GetPrimaryRadius() const { return 0.0f; }
     virtual float GetSecondaryRadius() const { return 0.0f; }
 
-    int32 GetCost() const { return Cost; }
+    // Returns the name of the defender for the specified level if the defender class and level are valid
+    static TOptional<FName> GetDefenderName(TSubclassOf<ADefender> DefenderClass, int32 Level);
 
-    int32 GetSellPrice() const { return SellPrice; }
+    // Returns the cost of the defender for the specified level if the defender class and level are valid
+    static TOptional<int32> GetDefenderCost(TSubclassOf<ADefender> DefenderClass, int32 Level);
+
+    // Returns the sell price for the defender at its current level
+    UFUNCTION(BlueprintPure)
+    int32 GetSellPrice() const;
 
     ADefender& SetSpawnPoint(ADefenderSpot* Point)
     {
@@ -41,6 +50,9 @@ public:
     const ADefenderSpot* GetSpawnPoint() const { return SpawnPoint; }
     ADefenderSpot* GetSpawnPoint() { return SpawnPoint; }
 
+    const UBoxComponent* GetBoxCollider() const { return BoxCollider; }
+    UBoxComponent* GetBoxCollider() { return BoxCollider; }
+
     const UNiagaraComponent* GetHealEffect() const { return HealEffect; }
     UNiagaraComponent* GetHealEffect() { return HealEffect; }
 
@@ -50,8 +62,13 @@ public:
     const UMaterialInstanceDynamic* GetDefenderRadiusMaterial() const { return DefenderRadiusMaterial; }
     UMaterialInstanceDynamic* GetDefenderRadiusMaterial() { return DefenderRadiusMaterial; }
 
+    const UDefenderUpgradeComponent* GetUpgradeComponent() const { return UpgradeComponent; }
+    UDefenderUpgradeComponent* GetUpgradeComponent() { return UpgradeComponent; }
+
 protected:
     virtual void DoOnSetActive(bool bActive) override;
+
+    virtual void DoOnLevelChanged(int32 Level) { }
 
     UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Cost",
               meta = (AllowPrivateAccess = true, ClampMin = 0, UIMin = 0))
@@ -71,6 +88,9 @@ protected:
     FLinearColor SecondaryRadiusColour;
 
 private:
+    UFUNCTION()
+    virtual void LevelChanged(int32 Level);
+
     UPROPERTY(BlueprintReadWrite, Category = "Defender", meta = (AllowPrivateAccess = true))
     ADefenderSpot* SpawnPoint = nullptr;
 
@@ -85,4 +105,7 @@ private:
 
     UPROPERTY(BlueprintReadOnly, Category = "Defender", meta = (AllowPrivateAccess = true))
     UMaterialInstanceDynamic* DefenderRadiusMaterial;
+
+    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components", meta = (AllowPrivateAccess = true))
+    UDefenderUpgradeComponent* UpgradeComponent;
 };

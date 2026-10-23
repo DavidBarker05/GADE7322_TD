@@ -7,7 +7,8 @@
 #include "TDCollisionChannels.h"
 #include "TowerDefencePawns/AI/ProximityPerception/AISense_Proximity.h"
 #include "TowerDefencePawns/AI/ProximityPerception/AISenseConfig_Proximity.h"
-#include "TowerDefencePawns/AI/TowerDefencePawnAIController.h"
+#include "TowerDefencePawns/Defenders/AI/DefenderAIController.h"
+#include "TowerDefencePawns/Defenders/Components/DefenderUpgradeComponent.h"
 
 ADefender::ADefender()
 {
@@ -26,12 +27,19 @@ ADefender::ADefender()
     DefenderRadiusDisplay->SetCollisionEnabled(ECollisionEnabled::NoCollision);
     DefenderRadiusDisplay->SetCastShadow(false);
     DefenderRadiusDisplay->SetVisibility(false);
+    UpgradeComponent = CreateDefaultSubobject<UDefenderUpgradeComponent>(TEXT("Upgrade Component"));
 }
 
 void ADefender::BeginPlay()
 {
     Super::BeginPlay();
     DefenderRadiusMaterial = DefenderRadiusDisplay->CreateAndSetMaterialInstanceDynamic(0);
+}
+
+void ADefender::PostInitializeComponents()
+{
+    Super::PostInitializeComponents();
+    UpgradeComponent->OnLevelChanged.AddUniqueDynamic(this, &ADefender::LevelChanged);
 }
 
 void ADefender::ShowRadiusDisplay()
@@ -62,8 +70,41 @@ float ADefender::GetDetectionRadius() const
     return 0.0f;
 }
 
+TOptional<FName> ADefender::GetDefenderName(TSubclassOf<ADefender> DefenderClass, int32 Level)
+{
+    if (Level < 0 || Level > 2 || !DefenderClass) return {};
+    const ADefender* DefaultDefender = DefenderClass->GetDefaultObject<ADefender>();
+    if (!DefaultDefender) return {};
+    if (Level == 0) return DefaultDefender->GetUpgradeComponent()->GetBaseLevel().GetName();
+    if (Level == 1) return DefaultDefender->GetUpgradeComponent()->GetFirstUpgrade().GetName();
+    return DefaultDefender->GetUpgradeComponent()->GetSecondUpgrade().GetName();
+}
+
+TOptional<int32> ADefender::GetDefenderCost(TSubclassOf<ADefender> DefenderClass, int32 Level)
+{
+    if (Level < 0 || Level > 2 || !DefenderClass) return {};
+    const ADefender* DefaultDefender = DefenderClass->GetDefaultObject<ADefender>();
+    if (!DefaultDefender) return {};
+    if (Level == 0) return DefaultDefender->GetUpgradeComponent()->GetBaseLevel().GetCost();
+    if (Level == 1) return DefaultDefender->GetUpgradeComponent()->GetFirstUpgrade().GetCost();
+    return DefaultDefender->GetUpgradeComponent()->GetSecondUpgrade().GetCost();
+}
+
+int32 ADefender::GetSellPrice() const
+{
+    const FDefenderLevel Current = UpgradeComponent->GetCurrent();
+    return Current.GetSellPrice();
+}
+
 void ADefender::DoOnSetActive(bool bActive)
 {
     BoxCollider->SetCollisionEnabled(bActive ? ECollisionEnabled::QueryOnly : ECollisionEnabled::NoCollision);
     HideRadiusDisplay();
+}
+
+void ADefender::LevelChanged(int32 Level)
+{
+    if (bUseAIController)
+        if (ADefenderAIController* D_AIC = GetController<ADefenderAIController>()) D_AIC->UpdateControllerLevel();
+    DoOnLevelChanged(Level);
 }

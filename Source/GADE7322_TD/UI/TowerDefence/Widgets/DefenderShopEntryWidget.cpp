@@ -15,12 +15,10 @@ bool UDefenderShopEntryWidget::Initialize()
 void UDefenderShopEntryWidget::Setup(TSubclassOf<ADefender> InDefenderClass, int32 CurrentGold)
 {
     DefenderClass = InDefenderClass;
-    Cost = 0;
-    if (const ADefender* DefaultDefender = InDefenderClass ? InDefenderClass->GetDefaultObject<ADefender>() : nullptr)
-    {
-        DefenderNameText->SetText(FText::FromName(DefaultDefender->GetPawnDisplayName()));
-        Cost = DefaultDefender->GetCost();
-    }
+    if (TOptional<FName> DefenderName = ADefender::GetDefenderName(InDefenderClass, 0))
+        DefenderNameText->SetText(FText::FromName(DefenderName.GetValue()));
+    if (TOptional<int32> DefenderCost = ADefender::GetDefenderCost(InDefenderClass, 0)) Cost = DefenderCost.GetValue();
+    else Cost = 0;
     BuyButtonText->SetText(FText::FromString(FString::Printf(TEXT("Buy for: %d Gold"), Cost)));
     RefreshAffordability(CurrentGold);
 }

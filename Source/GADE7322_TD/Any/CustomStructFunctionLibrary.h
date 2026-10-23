@@ -3,7 +3,7 @@
 #include "CoreMinimal.h"
 
 #include "BlueprintFunctionLibraryEnums.h"
-#include "CustomStructs.h"
+#include "Any/CustomStructs.h"
 #include "Kismet/BlueprintFunctionLibrary.h"
 
 #include "CustomStructFunctionLibrary.generated.h"
