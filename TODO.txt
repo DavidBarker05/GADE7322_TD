@@ -1,5 +1,3 @@
-Fix restart button not working
-
 Make ballista unable to attack ground troops
 Make ballista shoot slower
 

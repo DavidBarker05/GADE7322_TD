@@ -16,6 +16,7 @@ bool UPauseScreenWidget::Initialize()
     if (!(ResumeButton && AutoPlayToggle && RestartButton && ControlsButton && ControlsWidget && QuitButton))
         return false;
     ResumeButton->OnClicked.AddDynamic(this, &UPauseScreenWidget::ResumeGame);
+    RestartButton->OnClicked.AddDynamic(this, &UPauseScreenWidget::RestartGame);
     ControlsButton->OnClicked.AddDynamic(this, &UPauseScreenWidget::OpenControls);
     QuitButton->OnClicked.AddDynamic(this, &UPauseScreenWidget::QuitGame);
     AutoPlayToggle->OnCheckStateChanged.AddDynamic(this, &UPauseScreenWidget::HandleAutoPlayChanged);
