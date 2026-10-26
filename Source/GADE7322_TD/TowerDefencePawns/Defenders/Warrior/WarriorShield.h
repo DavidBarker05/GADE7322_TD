@@ -36,11 +36,6 @@ private:
     UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = true))
     UStaticMeshComponent* ShieldMesh;
 
-    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Shield", meta = (AllowPrivateAccess = true))
-    FRotator AttachmentRotationOffset = FRotator::ZeroRotator;
-
-    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Shield", meta = (AllowPrivateAccess = true))
-    FVector AttachmentLocationOffset = FVector::ZeroVector;
-
+    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = true))
     bool bMeshTicks;
 };

@@ -7,8 +7,6 @@ AWeapon::AWeapon()
     WeaponMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Weapon Mesh"));
     WeaponMesh->SetupAttachment(RootComponent);
     WeaponMesh->SetCollisionProfileName(TEXT("NoCollision"));
-    SecondHandPlacement = CreateDefaultSubobject<USceneComponent>(TEXT("Second Hand Placement"));
-    SecondHandPlacement->SetupAttachment(RootComponent);
     bMeshTicks = WeaponMesh && WeaponMesh->IsComponentTickEnabled();
 }
 
@@ -30,7 +28,5 @@ bool AWeapon::AttachToSkeleton(USkeletalMeshComponent* Skeleton, EWeaponHand Han
     }();
     if (SocketName.IsNone() || !Skeleton || !Skeleton->GetSocketByName(SocketName)) return false;
     this->AttachToComponent(Skeleton, FAttachmentTransformRules::SnapToTargetNotIncludingScale, SocketName);
-    SetActorRelativeRotation(AttachmentRotationOffset);
-    SetActorRelativeLocation(AttachmentLocationOffset);
     return true;
 }

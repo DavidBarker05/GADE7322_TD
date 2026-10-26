@@ -26,7 +26,5 @@ bool AWarriorShield::AttachToSkeleton(USkeletalMeshComponent* Skeleton, EShieldA
     }();
     if (SocketName.IsNone() || !Skeleton || !Skeleton->GetSocketByName(SocketName)) return false;
     this->AttachToComponent(Skeleton, FAttachmentTransformRules::SnapToTargetNotIncludingScale, SocketName);
-    SetActorRelativeRotation(AttachmentRotationOffset);
-    SetActorRelativeLocation(AttachmentLocationOffset);
     return true;
 }

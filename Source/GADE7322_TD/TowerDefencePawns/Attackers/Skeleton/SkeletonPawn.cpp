@@ -68,6 +68,7 @@ void ASkeletonPawn::DoOnSetActive(bool bActive)
     }
     AWeapon* Sword = GetWeapon();
     if (bActive && IsValid(Sword)) Sword->AttachToSkeleton(GetMesh());
+    else Sword->AttachToComponent(Weapon, FAttachmentTransformRules::SnapToTargetNotIncludingScale);
     GetMesh()->SetVisibility(bActive);
     GetMesh()->SetComponentTickEnabled(bActive);
     GetMesh()->SetCollisionEnabled(bActive ? ECollisionEnabled::QueryAndPhysics : ECollisionEnabled::NoCollision);
