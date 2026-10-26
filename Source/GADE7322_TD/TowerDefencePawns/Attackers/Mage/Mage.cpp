@@ -102,7 +102,7 @@ void AMage::Attack(ATowerDefencePawn* Other)
             Cast<ADamageSpellProjectile>(CREATE_PROJECTILE(DamageSpellClass, FTransform(LaunchLocation)));
         if (!DamageSpell) return;
         const FVector LaunchVelocity = (TargetLocation - LaunchLocation).GetSafeNormal() * DamageSpellSpeed;
-        DamageSpell->Fire(Other->GetVisualAttackPoint(), DamageComponent->GetDamage(), LaunchVelocity);
+        DamageSpell->Fire(Other->GetVisualAttackPoint(), LaunchVelocity, DamageComponent->GetDamage());
     }
 }
 

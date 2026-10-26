@@ -1,62 +1,31 @@
 #include "TowerDefencePawns/Defenders/Ballista/BallistaBolt.h"
 
-#include "Components/BoxComponent.h"
-#include "GameFramework/ProjectileMovementComponent.h"
+#include "Any.h"
 #include "TowerDefencePawns/Components/HealthComponent.h"
-#include "TowerDefencePawns/ProjectilePoolFactory.h"
 #include "TowerDefencePawns/TowerDefencePawn.h"
 
-ABallistaBolt::ABallistaBolt()
+void ABallistaBolt::FireProjectile(USceneComponent* InTarget, const FVector& LaunchVelocity, int32 InDamage,
+                                   const TArray<FAny>& LaunchArguments)
 {
-    PrimaryActorTick.bCanEverTick = true;
-    BoxCollision = CreateDefaultSubobject<UBoxComponent>(TEXT("Box Collision"));
-    SetRootComponent(BoxCollision); // Projectile movement component needs collision root
-    BoxCollision->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-    // ^ Hits are detected by distance to the target's VisualAttackPoint
-    ProjectileMovementComponent =
-        CreateDefaultSubobject<UProjectileMovementComponent>(TEXT("Projectile Movement Component"));
-    ProjectileMovementComponent->bRotationFollowsVelocity = true;
-    ProjectileMovementComponent->bShouldBounce = false;
-    ProjectileMovementComponent->bIsHomingProjectile =
-        true; // Homing because target might be too fast and move out of way
-    StaticMeshComponent = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("StaticMesh Component"));
-    StaticMeshComponent->SetupAttachment(RootComponent);
+    if (!IsValid(InTarget) || InDamage <= 0) return;
+    if (LaunchArguments.Num() != 1 && LaunchArguments.Num() != 2) return;
+    if (!LaunchArguments[0].Get<bool>()) return;
+    bDamageGroundTroops = *LaunchArguments[0].Get<bool>();
+    if (bDamageGroundTroops)
+    {
+        if (LaunchArguments.Num() != 2 && !LaunchArguments[1].Get<float>()) return;
+        GroundTroopDamageReduction = *LaunchArguments[1].Get<float>();
+    }
+    FireWithoutLaunch(InTarget, InDamage);
+    Launch(LaunchVelocity);
 }
 
-void ABallistaBolt::BeginPlay() { Super::BeginPlay(); }
-
-void ABallistaBolt::Tick(float DeltaTime)
+void ABallistaBolt::DamageTarget(ATowerDefencePawn* TargetToDamage)
 {
-    Super::Tick(DeltaTime);
-    if (!IsValid(Target)) return;
-    if (FVector::DistSquared(GetActorLocation(), Target->GetComponentLocation()) > FMath::Square(HitRadius)) return;
-    if (ATowerDefencePawn* HitPawn = Cast<ATowerDefencePawn>(Target->GetOwner());
-        IsValid(HitPawn) && HitPawn->IsPawnActive() && HitPawn->GetHealthComponent()->IsAlive())
-        HitPawn->GetHealthComponent()->TakeDamage(Damage);
-    ReturnToPool();
-}
-
-ABallistaBolt& ABallistaBolt::SetTarget(USceneComponent* InTarget)
-{
-    ProjectileMovementComponent->bIsHomingProjectile = IsValid(InTarget);
-    ProjectileMovementComponent->HomingTargetComponent = InTarget;
-    Target = InTarget;
-    return *this;
-}
-
-void ABallistaBolt::Fire(USceneComponent* InTarget, int32 InDamage, const FVector& LaunchVelocity)
-{
-    SetTarget(InTarget);
-    SetDamage(InDamage);
-    ProjectileMovementComponent->StopMovementImmediately();
-    ProjectileMovementComponent->Velocity = LaunchVelocity;
-    GetWorldTimerManager().SetTimer(LifespanHandle, this, &ABallistaBolt::ReturnToPool, MaxLifetime, false);
-}
-
-void ABallistaBolt::ReturnToPool()
-{
-    GetWorldTimerManager().ClearTimer(LifespanHandle);
-    SetTarget(nullptr);
-    ProjectileMovementComponent->StopMovementImmediately();
-    if (PROJECTILE_POOL_FACTORY_EXISTS) RETURN_PROJECTILE(this);
+    if (!IsValid(TargetToDamage) || !TargetToDamage->IsPawnActive() || TargetToDamage->GetHealthComponent()->IsDead())
+        return;
+    const bool bIsGroundTroop = TargetToDamage->GetCurrentTeam() != EAITeam::FlyingAttacker;
+    const int32 FinalDamage =
+        bIsGroundTroop ? FMath::RoundToInt(GetDamage() * (1.0f - GroundTroopDamageReduction / 100.0f)) : GetDamage();
+    TargetToDamage->GetHealthComponent()->TakeDamage(FinalDamage);
 }

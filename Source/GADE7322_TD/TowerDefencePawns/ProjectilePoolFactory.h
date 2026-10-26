@@ -32,6 +32,8 @@
 #define CLEAR_PROJECTILE_POOLS() ProjectilePoolFactory->ClearAllPools()
 #endif
 
+class AProjectile;
+
 UCLASS()
 class GADE7322_TD_API UProjectilePoolFactory : public UGameInstanceSubsystem
 {
@@ -41,21 +43,21 @@ public:
     virtual void Deinitialize() override;
 
     UFUNCTION(BlueprintCallable)
-    AActor* CreateProjectile(const TSubclassOf<AActor>& ProjectileClass, const FTransform& SpawnTransform);
+    AProjectile* CreateProjectile(const TSubclassOf<AProjectile>& ProjectileClass, const FTransform& SpawnTransform);
 
     UFUNCTION(BlueprintCallable)
-    void ReturnProjectile(AActor* Projectile);
+    void ReturnProjectile(AProjectile* Projectile);
 
     UFUNCTION(BlueprintCallable)
     void ClearAllPools();
 
 private:
-    void CreatePool(const TSubclassOf<AActor>& ProjectileClass);
+    void CreatePool(const TSubclassOf<AProjectile>& ProjectileClass);
 
-    static void DeactivateProjectile(AActor* Projectile);
+    static void DeactivateProjectile(AProjectile* Projectile);
 
-    TMap<TSubclassOf<AActor>, TSet<TStrongObjectPtr<AActor>>> AvailablePools;
-    TMap<TSubclassOf<AActor>, TSet<TStrongObjectPtr<AActor>>> UnavailablePools;
+    TMap<TSubclassOf<AProjectile>, TSet<TStrongObjectPtr<AProjectile>>> AvailablePools;
+    TMap<TSubclassOf<AProjectile>, TSet<TStrongObjectPtr<AProjectile>>> UnavailablePools;
 
     const int32 StartingPoolSize = 10;
 };

@@ -104,7 +104,7 @@ void AHealer::Attack(ATowerDefencePawn* Other)
                 Cast<AFireballProjectile>(CREATE_PROJECTILE(FireballClass, FTransform(LaunchLocation)));
             if (!Fireball) return;
             const FVector LaunchVelocity = (TargetLocation - LaunchLocation).GetSafeNormal() * FireballSpeed;
-            Fireball->Fire(Other->GetVisualAttackPoint(), DamageComponent->GetDamage(), LaunchVelocity);
+            Fireball->Fire(Other->GetVisualAttackPoint(), LaunchVelocity, DamageComponent->GetDamage());
         }
     }
 }

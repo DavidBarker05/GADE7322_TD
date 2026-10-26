@@ -1,14 +1,15 @@
 #include "TowerDefencePawns/Defenders/Ballista/Ballista.h"
 
-#include "HealthComponent.h"
-#include "HitFlashComponent.h"
 #include "Perception/AIPerceptionComponent.h"
 #include "Perception/AIPerceptionTypes.h"
 #include "TDCollisionChannels.h"
 #include "TowerDefencePawns/AI/ProximityPerception/AISenseConfig_Proximity.h"
 #include "TowerDefencePawns/AI/TargetSelectionFunctions.h"
 #include "TowerDefencePawns/Components/DamageComponent.h"
-#include "TowerDefencePawns/Defenders/Ballista/BallistaBolt.h"
+#include "TowerDefencePawns/Components/HealthComponent.h"
+#include "TowerDefencePawns/Components/HitFlashComponent.h"
+#include "TowerDefencePawns/Defenders/Components/DefenderUpgradeComponent.h"
+#include "TowerDefencePawns/Projectile.h"
 #include "TowerDefencePawns/ProjectilePoolFactory.h"
 
 ABallista::ABallista()
@@ -71,24 +72,32 @@ void ABallista::StartAttack()
     GetWorldTimerManager().SetTimer(AttackTimerHandle, [this]() -> void { bCanAttack = true; }, AttackCooldown, false);
 }
 
+FBallistaLevel ABallista::GetBallistaCurrentLevel() const
+{
+    const int32 CurrentLevel = GetUpgradeComponent()->GetCurrentLevel();
+    if (CurrentLevel == 0) return BallistaBaseLevel;
+    if (CurrentLevel == 1) return BallistaFirstUpgrade;
+    return BallistaSecondUpgrade;
+}
+
 void ABallista::DoOnSetActive(bool bActive)
 {
     Super::DoOnSetActive(bActive);
+    CurrentAttackTarget = nullptr;
+    GetWorldTimerManager().ClearTimer(AttackTimerHandle);
     if (bActive)
     {
-        CurrentAttackTarget = nullptr;
-        GetWorldTimerManager().ClearTimer(AttackTimerHandle);
-        VisiblePawns.Empty();
         PerceptionComponent->SetActive(true);
         if (UAIPerceptionSystem* PerceptionSys = UAIPerceptionSystem::GetCurrent(GetWorld()))
             PerceptionSys->UpdateListener(*PerceptionComponent);
+        GetUpgradeComponent()->SetLevel(0); // Reset to base level
     }
     else
     {
         PerceptionComponent->ForgetAll();
-        VisiblePawns.Empty();
         PerceptionComponent->SetActive(false);
     }
+    VisiblePawns.Empty();
     TimeSinceLastTargetUpdate = 0.0f;
     StandMesh->SetVisibility(bActive);
     StandMesh->SetComponentTickEnabled(bActive);
@@ -117,6 +126,24 @@ void ABallista::DoUpdatePerceptionOnTeamChange()
     PerceptionComponent->ForgetAll();
     VisiblePawns.Empty();
     CurrentAttackTarget = nullptr;
+}
+
+void ABallista::DoOnLevelChanged(int32 Level)
+{
+    const FDefenderLevel CurrentDefenderLevel = GetUpgradeComponent()->GetCurrent();
+    const FBallistaLevel CurrentBallistaLevel = GetBallistaCurrentLevel();
+    if (CurrentTeam != CurrentBallistaLevel.GetTeam())
+    {
+        CurrentTeam = CurrentBallistaLevel.GetTeam();
+        PerceptionComponent->ForgetAll();
+        VisiblePawns.Empty();
+        if (UAIPerceptionSystem* PerceptionSys = UAIPerceptionSystem::GetCurrent(GetWorld()))
+            PerceptionSys->UpdateListener(*PerceptionComponent);
+    }
+    DamageComponent->SetDamage(CurrentDefenderLevel.GetDamage());
+    HealthComponent->SetMaxHealth(CurrentDefenderLevel.GetHealth());
+    AttackRadius = CurrentBallistaLevel.GetAttackRadius();
+    AttackCooldown = CurrentBallistaLevel.GetAttackCooldown();
 }
 
 float ABallista::GetAngleToFireProjectile(const UObject* WorldContextObject, FVector LaunchLocation,
@@ -208,7 +235,7 @@ float ABallista::GetAngleToFireProjectile(const UObject* WorldContextObject, FVe
         FMath::Atan(X / H) / 2.0f - FMath::Acos((PosG * FMath::Square(X) / FMath::Square(InitialVelocity) - H) /
                                                 FMath::Sqrt(FMath::Square(X) + FMath::Square(H))) /
                                         2.0f;
-    return FMath::RadiansToDegrees(Theta);
+    return Theta;
 }
 
 void ABallista::OnTargetPerceptionUpdated(AActor* Actor, FAIStimulus Stimulus)
@@ -255,26 +282,37 @@ void ABallista::UpdatePivotRotation(float DeltaTime)
 
 void ABallista::FireProjectile()
 {
-    if (!IsValid(CurrentAttackTarget) || !BoltClass) return;
+    const FBallistaLevel Current = GetBallistaCurrentLevel();
+    auto ProjectileClass = Current.GetProjectile().GetProjectileClass();
+    if (!IsValid(CurrentAttackTarget) || !ProjectileClass) return;
     if (PROJECTILE_POOL_FACTORY_EXISTS)
     {
         const FVector LaunchLocation = MuzzlePoint->GetComponentLocation();
         const FVector TargetLocation = CurrentAttackTarget->GetVisualAttackPointLocation();
-        ABallistaBolt* Bolt = Cast<ABallistaBolt>(CREATE_PROJECTILE(BoltClass, FTransform(LaunchLocation)));
-        if (!Bolt) return;
+        const auto Projectile = CREATE_PROJECTILE(ProjectileClass, FTransform(LaunchLocation));
+        if (!Projectile) return;
         const FVector LaunchVelocity = ComputeLaunchVelocity(LaunchLocation, TargetLocation);
-        Bolt->Fire(CurrentAttackTarget->GetVisualAttackPoint(), DamageComponent->GetDamage(), LaunchVelocity);
+        if (!GetBallistaCurrentLevel().DamageGroundTroops())
+            Projectile->Fire(CurrentAttackTarget->GetVisualAttackPoint(), LaunchVelocity, DamageComponent->GetDamage(),
+                             false);
+        else if (GetUpgradeComponent()->GetCurrentLevel() == 1)
+            Projectile->Fire(CurrentAttackTarget->GetVisualAttackPoint(), LaunchVelocity, DamageComponent->GetDamage(),
+                             true, GroundTroopDamageReduction);
+        else
+            Projectile->Fire(CurrentAttackTarget->GetVisualAttackPoint(), LaunchVelocity, DamageComponent->GetDamage(),
+                             GroundTroopDamageReduction, ExplosionRadius);
     }
 }
 
 FVector ABallista::ComputeLaunchVelocity(const FVector& LaunchLocation, const FVector& TargetLocation) const
 {
+    const FBallistaLevel Current = GetBallistaCurrentLevel();
+    const float ProjectileSpeed = Current.GetProjectile().GetProjectileSpeed();
     FVector HorizontalDirection = TargetLocation - LaunchLocation;
     HorizontalDirection.Z = 0.0f;
     if (!HorizontalDirection.Normalize()) return FVector::ZeroVector;
-    const float ThetaDegrees =
+    const float ThetaRadians =
         GetAngleToFireProjectile(this, LaunchLocation, TargetLocation, ProjectileSpeed, ProjectileGravityScale);
-    const float ThetaRadians = FMath::DegreesToRadians(ThetaDegrees);
     return (HorizontalDirection * FMath::Cos(ThetaRadians) + FVector::UpVector * FMath::Sin(ThetaRadians)) *
            ProjectileSpeed;
 }

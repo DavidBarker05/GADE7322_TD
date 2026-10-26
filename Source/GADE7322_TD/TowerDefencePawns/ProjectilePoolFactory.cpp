@@ -1,6 +1,7 @@
 #include "TowerDefencePawns/ProjectilePoolFactory.h"
 
 #include "GameFramework/ProjectileMovementComponent.h"
+#include "TowerDefencePawns/Projectile.h"
 
 void UProjectilePoolFactory::Deinitialize()
 {
@@ -14,18 +15,18 @@ void UProjectilePoolFactory::ClearAllPools()
     UnavailablePools.Empty();
 }
 
-AActor* UProjectilePoolFactory::CreateProjectile(const TSubclassOf<AActor>& ProjectileClass,
-                                                 const FTransform& SpawnTransform)
+AProjectile* UProjectilePoolFactory::CreateProjectile(const TSubclassOf<AProjectile>& ProjectileClass,
+                                                      const FTransform& SpawnTransform)
 {
     if (!IsValid(ProjectileClass)) return nullptr;
     if (!AvailablePools.Contains(ProjectileClass)) CreatePool(ProjectileClass);
     auto& AvailablePool = AvailablePools[ProjectileClass];
-    AActor* Projectile = nullptr;
+    AProjectile* Projectile = nullptr;
     while (!Projectile)
     {
         const auto* ProjectilePtr = AvailablePool.FindArbitraryElement();
         if (!ProjectilePtr) break;
-        AActor* Candidate = ProjectilePtr->Get();
+        AProjectile* Candidate = ProjectilePtr->Get();
         AvailablePool.Remove(*ProjectilePtr);
         if (IsValid(Candidate) && Candidate->GetWorld() == GetWorld()) Projectile = Candidate;
     }
@@ -42,17 +43,17 @@ AActor* UProjectilePoolFactory::CreateProjectile(const TSubclassOf<AActor>& Proj
     {
         FActorSpawnParameters SpawnParams;
         SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
-        Projectile = GetWorld()->SpawnActor<AActor>(ProjectileClass, SpawnTransform, SpawnParams);
+        Projectile = GetWorld()->SpawnActor<AProjectile>(ProjectileClass, SpawnTransform, SpawnParams);
     }
     if (Projectile) UnavailablePools[ProjectileClass].Emplace(Projectile);
     return Projectile;
 }
 
-void UProjectilePoolFactory::ReturnProjectile(AActor* Projectile)
+void UProjectilePoolFactory::ReturnProjectile(AProjectile* Projectile)
 {
     if (!IsValid(Projectile)) return;
     if (!UnavailablePools.Contains(Projectile->GetClass())) return;
-    const TStrongObjectPtr<AActor> StrongProjectile(Projectile);
+    const TStrongObjectPtr<AProjectile> StrongProjectile(Projectile);
     auto& UnavailablePool = UnavailablePools[Projectile->GetClass()];
     if (!UnavailablePool.Contains(StrongProjectile)) return;
     DeactivateProjectile(Projectile);
@@ -60,7 +61,7 @@ void UProjectilePoolFactory::ReturnProjectile(AActor* Projectile)
     UnavailablePool.Remove(StrongProjectile);
 }
 
-void UProjectilePoolFactory::CreatePool(const TSubclassOf<AActor>& ProjectileClass)
+void UProjectilePoolFactory::CreatePool(const TSubclassOf<AProjectile>& ProjectileClass)
 {
     AvailablePools.Add(ProjectileClass);
     AvailablePools[ProjectileClass].Reserve(StartingPoolSize);
@@ -68,7 +69,8 @@ void UProjectilePoolFactory::CreatePool(const TSubclassOf<AActor>& ProjectileCla
     SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
     for (int32 i = 0; i < StartingPoolSize; ++i)
     {
-        if (AActor* Projectile = GetWorld()->SpawnActor<AActor>(ProjectileClass, FTransform::Identity, SpawnParams))
+        if (AProjectile* Projectile =
+                GetWorld()->SpawnActor<AProjectile>(ProjectileClass, FTransform::Identity, SpawnParams))
         {
             DeactivateProjectile(Projectile);
             AvailablePools[ProjectileClass].Emplace(Projectile);
@@ -78,7 +80,7 @@ void UProjectilePoolFactory::CreatePool(const TSubclassOf<AActor>& ProjectileCla
     UnavailablePools[ProjectileClass].Reserve(StartingPoolSize);
 }
 
-void UProjectilePoolFactory::DeactivateProjectile(AActor* Projectile)
+void UProjectilePoolFactory::DeactivateProjectile(AProjectile* Projectile)
 {
     Projectile->SetActorHiddenInGame(true);
     Projectile->SetActorEnableCollision(false);
