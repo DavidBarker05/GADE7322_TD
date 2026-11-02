@@ -1,18 +1,21 @@
-Improve UI
+Improve UI (if have time)
 
 Add play guide
 Add controls guide
 
+Add main menu
+
 Upgrades:
 - Warrior
-    - Upgrade 1: Give a shield
-    - Upgrade 2: Switch model to armour with two-handed sword
+    - Give upgrades values
+    - Might make upgrade 2 give bleed effect
+    - Maybe replace ronin with male and female in armour
 - Ballista
-    - Upgrade 1: Allow to attack ground troops for less damage (idk what to do visually yet)
-    - Upgrade 2: Cannon, shoots cannon balls that explode
+    - Give upgrades values
+    - Upgrade 1: Add decorations
+    - Upgrade 2: Add cannon and cannon ball visually
 - Healer
-    - Upgrade 1: Give like a spell book and he heals more
-    - Upgrade 2: Change to more powerful white and gold outfit and heal in a radius around not just one defender
+    - Give upgrades values
 
 Shaders:
 - Vertex Displacement Shader: Inverse hull outline shader when selecting defenders
