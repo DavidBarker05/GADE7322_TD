@@ -64,7 +64,11 @@ void AWarrior::DoOnSetActive(bool bActive)
 {
     Super::DoOnSetActive(bActive);
     CurrentAttackTarget = nullptr;
-    if (bActive) GetUpgradeComponent()->SetLevel(0); // Reset to base level
+    if (bActive)
+    {
+        bIsFemale = FMath::RandBool();
+        GetUpgradeComponent()->SetLevel(0); // Reset to base level
+    }
     else
     {
         if (UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance())
@@ -143,7 +147,6 @@ void AWarrior::DoOnLevelChanged(int32 Level)
     // ^^^ Reset animation, detach held items and unbind materials because the mesh is about to change ^^^
 
     const FWarriorLevel CurrentWarriorLevel = GetWarriorCurrentLevel();
-    bIsFemale = FMath::RandBool();
     FWarriorSkeletalMesh CurrentWarrior =
         bIsFemale ? CurrentWarriorLevel.GetFemaleWarrior() : CurrentWarriorLevel.GetMaleWarrior();
     GetMesh()->SetSkeletalMesh(CurrentWarrior.GetSkeletalMesh());
