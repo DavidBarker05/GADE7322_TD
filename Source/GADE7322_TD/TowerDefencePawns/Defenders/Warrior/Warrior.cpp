@@ -6,8 +6,6 @@
 #include "Components/ChildActorComponent.h"
 #include "Perception/AIPerceptionComponent.h"
 #include "TDCollisionChannels.h"
-#include "TowerDefencePawns/Components/DamageComponent.h"
-#include "TowerDefencePawns/Components/HealthComponent.h"
 #include "TowerDefencePawns/Components/HitFlashComponent.h"
 #include "TowerDefencePawns/Defenders/Components/DefenderUpgradeComponent.h"
 #include "TowerDefencePawns/Defenders/Warrior/AI/WarriorAIController.h"
@@ -32,7 +30,9 @@ void AWarrior::StartAttack()
 {
     bCanAttack = false;
     UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
-    UAnimMontage* AttackMontage = GetCurrentWarrior().GetAttackMontage();
+    UAnimMontage* AttackMontage =
+        (bIsFemale ? GetWarriorCurrentLevel().GetFemaleWarrior() : GetWarriorCurrentLevel().GetMaleWarrior())
+            .GetAttackMontage();
     AnimInstance->Montage_Play(AttackMontage, 1.0f);
     FOnMontageEnded EndDelegate;
     EndDelegate.BindUObject(this, &AWarrior::OnAttackMontageEnded);
@@ -51,7 +51,9 @@ void AWarrior::OnDeath(TFunction<void()>&& Func)
     bDeathStarted = true;
     DestroyDelegate = MoveTemp(Func);
     UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
-    UAnimMontage* DeathMontage = GetCurrentWarrior().GetDeathMontage();
+    UAnimMontage* DeathMontage =
+        (bIsFemale ? GetWarriorCurrentLevel().GetFemaleWarrior() : GetWarriorCurrentLevel().GetMaleWarrior())
+            .GetDeathMontage();
     AnimInstance->Montage_Play(DeathMontage, 1.0f);
     FOnMontageBlendingOutStarted EndDelegate;
     EndDelegate.BindUObject(this, &AWarrior::OnDeathMontageEnded);
@@ -109,25 +111,18 @@ void AWarrior::DoUpdatePerceptionOnTeamChange()
         CurrentAttackTarget = nullptr;
     }
 }
+
 void AWarrior::DoOnLevelChanged(int32 Level)
 {
-    const FDefenderLevel CurrentDefenderLevel = GetUpgradeComponent()->GetCurrent();
     const FWarriorLevel CurrentWarriorLevel = GetWarriorCurrentLevel();
-    AWeapon* Sword = GetWeapon();
-    if (Level == 0 || Level == 1)
+    bIsFemale = FMath::RandBool();
+    FWarriorSkeletalMesh CurrentWarrior =
+        bIsFemale ? CurrentWarriorLevel.GetFemaleWarrior() : CurrentWarriorLevel.GetMaleWarrior();
+    if (UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance())
     {
-        bIsFemale = FMath::RandBool();
-        if (Level == 1)
-        {
-            if (AWarriorShield* Shield = GetShield(); IsValid(Shield))
-            {
-                Shield->AttachToSkeleton(GetMesh());
-                Shield->GetMesh()->SetVisibility(true);
-                Shield->GetMesh()->SetComponentTickEnabled(Shield->DoesMeshTick());
-            }
-        }
+        AnimInstance->StopAllMontages(0.0f);
+        AnimInstance->InitializeAnimation();
     }
-    FWarriorSkeletalMesh CurrentWarrior = GetCurrentWarrior();
     GetMesh()->SetSkeletalMesh(CurrentWarrior.GetSkeletalMesh());
     GetMesh()->SetAnimInstanceClass(CurrentWarrior.GetAnimationBlueprint());
     GetCapsuleComponent()->SetCapsuleHalfHeight(CurrentWarrior.GetHalfHeight());
@@ -137,28 +132,25 @@ void AWarrior::DoOnLevelChanged(int32 Level)
     FVector NewBoxExtent = GetBoxCollider()->GetUnscaledBoxExtent();
     NewBoxExtent.Z = CurrentWarrior.GetHalfHeight();
     GetBoxCollider()->SetBoxExtent(NewBoxExtent);
-    DamageComponent->SetDamage(CurrentDefenderLevel.GetDamage());
-    HealthComponent->SetMaxHealth(CurrentDefenderLevel.GetHealth());
+    HitFlashComponent->BindMaterials();
     AttackRadius = CurrentWarriorLevel.GetAttackRadius();
     AttackCooldown = CurrentWarriorLevel.GetAttackCooldown();
-    if (UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance())
+    if (Level == 1)
     {
-        AnimInstance->StopAllMontages(0.0f);
-        AnimInstance->InitializeAnimation();
+        if (AWarriorShield* Shield = GetShield(); IsValid(Shield))
+        {
+            Shield->AttachToSkeleton(GetMesh());
+            Shield->GetMesh()->SetVisibility(true);
+            Shield->GetMesh()->SetComponentTickEnabled(Shield->DoesMeshTick());
+        }
     }
-    HitFlashComponent->BindMaterials();
-    if (IsValid(Sword))
+
+    if (AWeapon* Sword = GetWeapon(); IsValid(Sword))
     {
         Sword->AttachToSkeleton(GetMesh());
         Sword->GetMesh()->SetVisibility(true);
         Sword->GetMesh()->SetComponentTickEnabled(Sword->DoesMeshTick());
     }
-}
-
-FWarriorSkeletalMesh AWarrior::GetCurrentWarrior() const
-{
-    const int32 CurrentLevel = GetUpgradeComponent()->GetCurrentLevel();
-    return CurrentLevel == 0 || CurrentLevel == 1 ? (bIsFemale ? FemaleWarrior : MaleWarrior) : FinalWarrior;
 }
 
 FWarriorLevel AWarrior::GetWarriorCurrentLevel() const

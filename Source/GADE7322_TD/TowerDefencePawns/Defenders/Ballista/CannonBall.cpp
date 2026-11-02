@@ -17,20 +17,18 @@ void ACannonBall::FireProjectile(USceneComponent* InTarget, const FVector& Launc
 
 void ACannonBall::DamageTarget(ATowerDefencePawn* TargetToDamage)
 {
+    TArray<TEnumAsByte<EObjectTypeQuery>> ObjectTypes = {UEngineTypes::ConvertToObjectType(ECC_Pawn)};
     TArray<AActor*> OutActors;
-    TArray<TEnumAsByte<EObjectTypeQuery>> ObjectTypes;
-    ObjectTypes.Add(UEngineTypes::ConvertToObjectType(ECC_Pawn));
-    const int32 AirDamage = GetDamage();
-    const int32 GroundDamage = FMath::RoundToInt(GetDamage() * (1.0f - GroundTroopDamageReduction / 100.0f));
     if (UKismetSystemLibrary::SphereOverlapActors(this, GetActorLocation(), ExplosionRadius, ObjectTypes,
                                                   AAttacker::StaticClass(), {}, OutActors))
     {
+        const int32 AirDamage = GetDamage();
+        const int32 GroundDamage = FMath::RoundToInt(GetDamage() * (1.0f - GroundTroopDamageReduction / 100.0f));
         for (AActor* Actor : OutActors)
         {
             AAttacker* Attacker = Cast<AAttacker>(Actor);
-            if (!IsValid(Attacker) || !Attacker->IsPawnActive() || Attacker->GetHealthComponent()->IsDead()) continue;
-            const bool bIsGroundTroop = Attacker->GetCurrentTeam() != EAITeam::FlyingAttacker;
-            const int32 FinalDamage = bIsGroundTroop ? GroundDamage : AirDamage;
+            if (!ATowerDefencePawn::IsPawnActiveAndAlive(Attacker)) continue;
+            const int32 FinalDamage = ATowerDefencePawn::IsPawnGroundTroop(Attacker) ? GroundDamage : AirDamage;
             Attacker->GetHealthComponent()->TakeDamage(FinalDamage);
         }
     }

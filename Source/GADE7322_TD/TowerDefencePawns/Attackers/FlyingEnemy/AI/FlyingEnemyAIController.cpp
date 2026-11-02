@@ -25,7 +25,7 @@ void AFlyingEnemyAIController::Tick(float DeltaTime)
     {
         if (!FlyingEnemy->IsPawnActive()) return;
         if (const ATowerDefencePawn* AttackTarget = FlyingEnemy->GetAttackTarget();
-            IsValid(AttackTarget) && AttackTarget->IsPawnActive() && AttackTarget->GetHealthComponent()->IsAlive() &&
+            ATowerDefencePawn::IsPawnActiveAndAlive(AttackTarget) &&
             (AttackTarget->IsA<APlayerTower>() ||
              FVector::Dist2D(FlyingEnemy->GetActorLocation(), AttackTarget->GetActorLocation()) -
                      AttackTarget->GetOccupiedRadius() <=
@@ -47,10 +47,10 @@ void AFlyingEnemyAIController::Tick(float DeltaTime)
     }
 }
 
-AFlyingEnemy* AFlyingEnemyAIController::GetFlyingEnemy() const { return GetPawn<AFlyingEnemy>(); }
-
 void AFlyingEnemyAIController::SetControllerActive(bool bActive)
 {
     Super::SetControllerActive(bActive);
     TimeSinceLastVisionUpdate = 0.0f;
 }
+
+AFlyingEnemy* AFlyingEnemyAIController::GetFlyingEnemy() const { return GetPawn<AFlyingEnemy>(); }

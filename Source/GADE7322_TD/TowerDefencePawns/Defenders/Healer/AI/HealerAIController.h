@@ -35,8 +35,6 @@ public:
     TArray<ATowerDefencePawn*>& GetVisibleEnemies() { return VisibleEnemies; }
 
 private:
-    bool IsOtherPawnFriendly(const ATowerDefencePawn* OtherPawn) const;
-
     bool IsThisATargetForOtherPawn(const ATowerDefencePawn* OtherPawn) const;
 
     UPROPERTY(EditDefaultsOnly, Category = "AI",

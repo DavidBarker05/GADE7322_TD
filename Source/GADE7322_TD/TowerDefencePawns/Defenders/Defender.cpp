@@ -7,6 +7,8 @@
 #include "TDCollisionChannels.h"
 #include "TowerDefencePawns/AI/ProximityPerception/AISense_Proximity.h"
 #include "TowerDefencePawns/AI/ProximityPerception/AISenseConfig_Proximity.h"
+#include "TowerDefencePawns/Components/DamageComponent.h"
+#include "TowerDefencePawns/Components/HealthComponent.h"
 #include "TowerDefencePawns/Defenders/AI/DefenderAIController.h"
 #include "TowerDefencePawns/Defenders/Components/DefenderUpgradeComponent.h"
 
@@ -106,5 +108,8 @@ void ADefender::LevelChanged(int32 Level)
 {
     if (bUseAIController)
         if (ADefenderAIController* D_AIC = GetController<ADefenderAIController>()) D_AIC->UpdateControllerLevel();
+    const FDefenderLevel CurrentDefenderLevel = GetUpgradeComponent()->GetCurrent();
+    DamageComponent->SetDamage(CurrentDefenderLevel.GetDamage());
+    HealthComponent->SetMaxHealth(CurrentDefenderLevel.GetHealth());
     DoOnLevelChanged(Level);
 }

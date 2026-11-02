@@ -1,8 +1,8 @@
 #include "TowerDefencePawns/Defenders/Warrior/AI/WarriorAIController.h"
 
 #include "Perception/AIPerceptionTypes.h"
-#include "TargetSelectionFunctions.h"
 #include "TowerDefencePawns/AI/ProximityPerception/AISenseConfig_Proximity.h"
+#include "TowerDefencePawns/AI/TargetSelectionFunctions.h"
 #include "TowerDefencePawns/Defenders/Warrior/Warrior.h"
 
 AWarriorAIController::AWarriorAIController()
@@ -20,29 +20,27 @@ AWarriorAIController::AWarriorAIController()
 void AWarriorAIController::Tick(float DeltaTime)
 {
     Super::Tick(DeltaTime);
-    if (AWarrior* WPawn = GetWarrior())
+    AWarrior* WPawn = GetWarrior();
+    if (!ATowerDefencePawn::IsPawnActiveAndAlive(WPawn)) return;
+    if (const ATowerDefencePawn* AttackTarget = WPawn->GetAttackTarget();
+        ATowerDefencePawn::IsPawnActiveAndAlive(AttackTarget) &&
+        FVector::Dist2D(WPawn->GetActorLocation(), AttackTarget->GetActorLocation()) -
+                AttackTarget->GetOccupiedRadius() <=
+            WPawn->GetAttackRadius() + KINDA_SMALL_NUMBER)
     {
-        if (!WPawn->IsPawnActive()) return;
-        if (const ATowerDefencePawn* AttackTarget = WPawn->GetAttackTarget();
-            IsValid(AttackTarget) && AttackTarget->IsPawnActive() && AttackTarget->GetHealthComponent()->IsAlive() &&
-            FVector::Dist2D(WPawn->GetActorLocation(), AttackTarget->GetActorLocation()) -
-                    AttackTarget->GetOccupiedRadius() <=
-                WPawn->GetAttackRadius() + KINDA_SMALL_NUMBER)
-        {
-            if (const FVector ToTarget = AttackTarget->GetActorLocation() - WPawn->GetActorLocation();
-                !ToTarget.IsNearlyZero())
-                WPawn->SetActorRotation(FRotator(0.0f, ToTarget.Rotation().Yaw, 0.0f));
-            return;
-        }
-        if (TimeSinceLastVisionUpdate < 1.0f / VisionUpdateFrequency + KINDA_SMALL_NUMBER)
-        {
-            TimeSinceLastVisionUpdate += DeltaTime;
-            return;
-        }
-        TimeSinceLastVisionUpdate = 0.0f;
-        ATowerDefencePawn* Closest = SelectClosestTarget(GetVisiblePawns(), WPawn);
-        WPawn->SetAttackTarget(Closest);
+        if (const FVector ToTarget = AttackTarget->GetActorLocation() - WPawn->GetActorLocation();
+            !ToTarget.IsNearlyZero())
+            WPawn->SetActorRotation(FRotator(0.0f, ToTarget.Rotation().Yaw, 0.0f));
+        return;
     }
+    if (TimeSinceLastVisionUpdate < 1.0f / VisionUpdateFrequency + KINDA_SMALL_NUMBER)
+    {
+        TimeSinceLastVisionUpdate += DeltaTime;
+        return;
+    }
+    TimeSinceLastVisionUpdate = 0.0f;
+    ATowerDefencePawn* Closest = SelectClosestTarget(GetVisiblePawns(), WPawn);
+    WPawn->SetAttackTarget(Closest);
 }
 
 AWarrior* AWarriorAIController::GetWarrior() const { return GetPawn<AWarrior>(); }

@@ -1,7 +1,6 @@
 #include "Player/TowerDefence/TowerDefencePlayer.h"
 
 #include "Camera/CameraComponent.h"
-#include "CustomLog.h"
 #include "EnhancedInputComponent.h"
 #include "Framework/Application/SlateApplication.h"
 #include "GameFramework/FloatingPawnMovement.h"
@@ -165,7 +164,6 @@ bool ATowerDefencePlayer::IsMouseOverUI(const APlayerController* PlayerControlle
     const FVector2D ScreenCursorPosition(FSlateApplication::Get().GetCursorPos());
     const FWidgetPath WidgetPath = FSlateApplication::Get().LocateWindowUnderMouse(
         ScreenCursorPosition, FSlateApplication::Get().GetInteractiveTopLevelWindows());
-
     return WidgetPath.IsValid() && WidgetPath.GetLastWidget() != GameViewportWidget;
 }
 
@@ -186,7 +184,6 @@ void ATowerDefencePlayer::DoSelect()
         if (!PlayerController->GetHitResultUnderCursorByChannel(UEngineTypes::ConvertToTraceType(ECC_GameTraceChannel1),
                                                                 true, HitResult))
             return;
-
         if (ADefenderSpot* Spot = Cast<ADefenderSpot>(HitResult.GetActor()))
         {
             CurrentlySelectedDefenderSpot = Spot;

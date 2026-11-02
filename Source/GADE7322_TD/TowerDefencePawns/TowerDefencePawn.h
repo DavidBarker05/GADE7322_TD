@@ -49,6 +49,12 @@ public:
 
     virtual void Tick(float DeltaTime) override;
 
+    static bool IsPawnActiveAndAlive(const ATowerDefencePawn* TowerDefencePawn);
+
+    static bool IsPawnGroundTroop(const ATowerDefencePawn* TowerDefencePawn);
+
+    virtual bool IsOtherPawnFriendly(const ATowerDefencePawn* Other) const;
+
     // Play like an attack animation, or shoot projectile, etc.
     UFUNCTION(BlueprintCallable)
     virtual void StartAttack() { }
@@ -73,7 +79,8 @@ public:
 
     const FName& GetPawnDisplayName() const { return PawnDisplayName; }
 
-    ATowerDefencePawn& SetPawnActive(bool bActive);
+    UFUNCTION(BlueprintCallable)
+    void SetPawnActive(bool bActive);
 
     bool IsPawnActive() const { return bIsPawnActive; }
 
@@ -85,11 +92,12 @@ public:
 
     EAITeam GetCurrentTeam() const { return CurrentTeam; }
 
-    ATowerDefencePawn& SetCurrentTeam(EAITeam NewTeam)
+    UFUNCTION(BlueprintCallable)
+    void SetCurrentTeam(EAITeam NewTeam)
     {
+        if (CurrentTeam == NewTeam) return;
         CurrentTeam = NewTeam;
         DoUpdatePerceptionOnTeamChange();
-        return *this;
     }
 
     virtual FGenericTeamId GetGenericTeamId() const override { return FGenericTeamId(static_cast<uint8>(CurrentTeam)); }

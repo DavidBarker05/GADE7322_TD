@@ -1,8 +1,6 @@
 #include "TowerDefencePawns/Tower/PlayerTower.h"
 
 #include "Components/BoxComponent.h"
-#include "HealthComponent.h"
-#include "HitFlashComponent.h"
 #include "Materials/MaterialInstanceDynamic.h"
 #include "NiagaraComponent.h"
 #include "Perception/AIPerceptionComponent.h"
@@ -10,6 +8,7 @@
 #include "TDCollisionChannels.h"
 #include "TowerDefencePawns/AI/ProximityPerception/AISenseConfig_Proximity.h"
 #include "TowerDefencePawns/AI/TargetSelectionFunctions.h"
+#include "TowerDefencePawns/Components/HitFlashComponent.h"
 
 APlayerTower::APlayerTower()
 {
@@ -95,7 +94,7 @@ void APlayerTower::StartAttack()
 {
     for (int32 i = 0; i < 3; ++i)
     {
-        if (IsValid(AttackTargets[i]) && CanAttackTarget[i])
+        if (IsPawnActiveAndAlive(AttackTargets[i]) && CanAttackTarget[i])
         {
             CanAttackTarget[i] = false;
             Attack(AttackTargets[i]);
@@ -130,7 +129,7 @@ void APlayerTower::OnTargetPerceptionUpdated(AActor* Actor, FAIStimulus Stimulus
     if (ATowerDefencePawn* TDPawn = Cast<ATowerDefencePawn>(Actor))
     {
         if (!Stimulus.WasSuccessfullySensed()) VisiblePawns.Remove(TDPawn);
-        else if (TDPawn->IsPawnActive() && TDPawn->GetHealthComponent()->IsAlive()) VisiblePawns.AddUnique(TDPawn);
+        else if (IsPawnActiveAndAlive(TDPawn)) VisiblePawns.AddUnique(TDPawn);
     }
 }
 
@@ -139,7 +138,7 @@ void APlayerTower::UpdateAttackTargets()
     for (int32 i = 0; i < 3; ++i)
     {
         if (const ATowerDefencePawn* Current = AttackTargets[i];
-            IsValid(Current) && Current->IsPawnActive() && Current->GetHealthComponent()->IsAlive() &&
+            IsPawnActiveAndAlive(Current) &&
             FVector::Dist2D(GetActorLocation(), Current->GetActorLocation()) - Current->GetOccupiedRadius() <=
                 AttackRadius + KINDA_SMALL_NUMBER)
             continue;

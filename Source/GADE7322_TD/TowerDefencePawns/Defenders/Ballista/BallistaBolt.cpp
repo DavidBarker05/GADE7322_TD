@@ -1,6 +1,5 @@
 #include "TowerDefencePawns/Defenders/Ballista/BallistaBolt.h"
 
-#include "Any.h"
 #include "TowerDefencePawns/Components/HealthComponent.h"
 #include "TowerDefencePawns/TowerDefencePawn.h"
 
@@ -22,10 +21,9 @@ void ABallistaBolt::FireProjectile(USceneComponent* InTarget, const FVector& Lau
 
 void ABallistaBolt::DamageTarget(ATowerDefencePawn* TargetToDamage)
 {
-    if (!IsValid(TargetToDamage) || !TargetToDamage->IsPawnActive() || TargetToDamage->GetHealthComponent()->IsDead())
-        return;
-    const bool bIsGroundTroop = TargetToDamage->GetCurrentTeam() != EAITeam::FlyingAttacker;
-    const int32 FinalDamage =
-        bIsGroundTroop ? FMath::RoundToInt(GetDamage() * (1.0f - GroundTroopDamageReduction / 100.0f)) : GetDamage();
+    if (!ATowerDefencePawn::IsPawnActiveAndAlive(TargetToDamage)) return;
+    const int32 FinalDamage = ATowerDefencePawn::IsPawnGroundTroop(TargetToDamage) ?
+                                  FMath::RoundToInt(GetDamage() * (1.0f - GroundTroopDamageReduction / 100.0f)) :
+                                  GetDamage();
     TargetToDamage->GetHealthComponent()->TakeDamage(FinalDamage);
 }

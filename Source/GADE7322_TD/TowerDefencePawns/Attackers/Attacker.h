@@ -39,7 +39,7 @@ public:
 
     void SetCurrentPathIndex(int32 NewIndex) { CurrentPathIndex = FMath::Max(CurrentPathIndex, NewIndex); }
 
-    UFUNCTION(BlueprintCallable, Category = "AI")
+    UFUNCTION(BlueprintPure, Category = "AI")
     FVector GetCurrentPathPoint() const
     {
         return PathPoints.IsValidIndex(CurrentPathIndex) ? PathPoints[CurrentPathIndex] : FVector::ZeroVector;

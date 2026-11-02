@@ -28,7 +28,7 @@ void AProjectile::Tick(float DeltaTime)
     if (!IsValid(Target)) return;
     if (FVector::DistSquared(GetActorLocation(), Target->GetComponentLocation()) > FMath::Square(HitRadius)) return;
     if (ATowerDefencePawn* HitPawn = Cast<ATowerDefencePawn>(Target->GetOwner());
-        IsValid(HitPawn) && HitPawn->IsPawnActive() && HitPawn->GetHealthComponent()->IsAlive())
+        ATowerDefencePawn::IsPawnActiveAndAlive(HitPawn))
     {
         DamageTarget(HitPawn);
         ReturnToPool();
@@ -54,7 +54,8 @@ void AProjectile::FireWithoutLaunch(USceneComponent* InTarget, int32 InDamage)
 
 void AProjectile::DamageTarget(ATowerDefencePawn* TargetToDamage)
 {
-    TargetToDamage->GetHealthComponent()->TakeDamage(Damage);
+    if (ATowerDefencePawn::IsPawnActiveAndAlive(TargetToDamage))
+        TargetToDamage->GetHealthComponent()->TakeDamage(Damage);
 }
 
 void AProjectile::Launch(const FVector& LaunchVelocity)

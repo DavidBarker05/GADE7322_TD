@@ -56,11 +56,25 @@ struct FWarriorLevel
 {
     GENERATED_BODY()
 
+    const FWarriorSkeletalMesh& GetMaleWarrior() const { return MaleWarrior; }
+    FWarriorSkeletalMesh& GetMaleWarrior() { return MaleWarrior; }
+
+    const FWarriorSkeletalMesh& GetFemaleWarrior() const { return MaleWarrior; }
+    FWarriorSkeletalMesh& GetFemaleWarrior() { return MaleWarrior; }
+
     float GetAttackRadius() const { return AttackRadius; }
 
     float GetAttackCooldown() const { return AttackCooldown; }
 
 private:
+    UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Warrior|Upgrades|Mesh",
+              meta = (AllowPrivateAccess = true))
+    FWarriorSkeletalMesh MaleWarrior;
+
+    UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Warrior|Upgrades|Mesh",
+              meta = (AllowPrivateAccess = true))
+    FWarriorSkeletalMesh FemaleWarrior;
+
     UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Warrior|Upgrades|AI",
               meta = (AllowPrivateAccess = true, ClampMin = 0.0, UIMin = 0.0, Units = "Centimeters"))
     float AttackRadius = 0.0f;
@@ -92,13 +106,6 @@ protected:
     virtual void DoOnLevelChanged(int32 Level) override;
 
 public:
-    FWarriorSkeletalMesh GetMaleWarrior() const { return MaleWarrior; }
-    FWarriorSkeletalMesh GetFemaleWarrior() const { return FemaleWarrior; }
-    FWarriorSkeletalMesh GetFinalWarrior() const { return FinalWarrior; }
-
-    UFUNCTION(BlueprintPure)
-    FWarriorSkeletalMesh GetCurrentWarrior() const;
-
     FWarriorLevel GetWarriorBaseLevel() const { return WarriorBaseLevel; }
     FWarriorLevel GetWarriorFirstUpgrade() const { return WarriorFirstUpgrade; }
     FWarriorLevel GetWarriorSecondUpgrade() const { return WarriorSecondUpgrade; }
@@ -137,15 +144,6 @@ private:
     void OnAttackMontageEnded(UAnimMontage* Montage, bool bInterrupted);
 
     void OnDeathMontageEnded(UAnimMontage* Montage, bool bInterrupted);
-
-    UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Warrior", meta = (AllowPrivateAccess = true))
-    FWarriorSkeletalMesh MaleWarrior;
-
-    UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Warrior", meta = (AllowPrivateAccess = true))
-    FWarriorSkeletalMesh FemaleWarrior;
-
-    UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Warrior", meta = (AllowPrivateAccess = true))
-    FWarriorSkeletalMesh FinalWarrior;
 
     UPROPERTY(VisibleAnywhere, Category = "Weapon", meta = (AllowPrivateAccess = true))
     UChildActorComponent* OneHandWeapon;

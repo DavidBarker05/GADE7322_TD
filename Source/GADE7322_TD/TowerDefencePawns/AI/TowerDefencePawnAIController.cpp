@@ -7,7 +7,6 @@
 #include "Perception/AIPerceptionSystem.h"
 #include "Perception/AIPerceptionTypes.h"
 #include "TowerDefencePawns/AI/ProximityPerception/AISenseConfig_Proximity.h"
-#include "TowerDefencePawns/Components/HealthComponent.h"
 #include "TowerDefencePawns/TowerDefencePawn.h"
 
 ATowerDefencePawnAIController::ATowerDefencePawnAIController()
@@ -21,6 +20,7 @@ ATowerDefencePawnAIController::ATowerDefencePawnAIController()
         this, &ATowerDefencePawnAIController::OnTargetPerceptionUpdated);
     if (UPathFollowingComponent* PFC = GetPathFollowingComponent()) PFC->SetBlockDetection(25.0f, 0.5f, 10);
 }
+
 void ATowerDefencePawnAIController::SetControllerActive(bool bActive)
 {
     if (!bActive)
@@ -61,6 +61,6 @@ void ATowerDefencePawnAIController::OnTargetPerceptionUpdated(AActor* Actor, FAI
     if (ATowerDefencePawn* TDPawn = Cast<ATowerDefencePawn>(Actor))
     {
         if (!Stimulus.WasSuccessfullySensed()) VisiblePawns.Remove(TDPawn);
-        else if (TDPawn->IsPawnActive() && TDPawn->GetHealthComponent()->IsAlive()) VisiblePawns.AddUnique(TDPawn);
+        else if (ATowerDefencePawn::IsPawnActiveAndAlive(TDPawn)) VisiblePawns.AddUnique(TDPawn);
     }
 }

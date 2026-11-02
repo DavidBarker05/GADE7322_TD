@@ -2,7 +2,6 @@
 
 #include "CoreMinimal.h"
 
-#include "TowerDefencePawns/Components/HealthComponent.h"
 #include "TowerDefencePawns/TowerDefencePawn.h"
 
 template<typename T>
@@ -15,7 +14,7 @@ ATowerDefencePawn* SelectTarget(TArray<ATowerDefencePawn*>& Array, T BaseLine,
     for (int32 i = Array.Num() - 1; i >= 0; --i)
     {
         ATowerDefencePawn* Enemy = Array[i];
-        if (!IsValid(Enemy) || !Enemy->IsPawnActive() || Enemy->GetHealthComponent()->IsDead())
+        if (!ATowerDefencePawn::IsPawnActiveAndAlive(Enemy))
         {
             Array.RemoveAtSwap(i, EAllowShrinking::No);
             continue;

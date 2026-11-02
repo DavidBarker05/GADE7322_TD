@@ -2,12 +2,11 @@
 
 #include "Animation/AnimInstance.h"
 #include "Components/ChildActorComponent.h"
-#include "HitFlashComponent.h"
 #include "Perception/AIPerceptionComponent.h"
 #include "Perception/AIPerceptionSystem.h"
 #include "TDCollisionChannels.h"
 #include "TowerDefencePawns/Attackers/Skeleton/AI/SkeletonAIController.h"
-#include "Weapon.h"
+#include "TowerDefencePawns/Components/HitFlashComponent.h"
 
 AFlyingEnemy::AFlyingEnemy()
 {

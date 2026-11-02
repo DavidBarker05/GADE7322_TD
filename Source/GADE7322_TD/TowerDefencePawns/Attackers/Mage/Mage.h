@@ -47,7 +47,8 @@ public:
     float GetAttackRadius() const { return AttackRadius; }
 
 private:
-    bool IsOtherPawnFriendly(const ATowerDefencePawn* OtherPawn) const;
+    static void EnableSpellBall(UNiagaraComponent* Spell);
+    static void DisableSpellBall(UNiagaraComponent* Spell);
 
     void OnAttackMontageEnded(UAnimMontage* Montage, bool bInterrupted);
 

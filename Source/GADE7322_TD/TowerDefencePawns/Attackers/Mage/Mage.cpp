@@ -1,6 +1,5 @@
 #include "TowerDefencePawns/Attackers/Mage/Mage.h"
 
-#include "HitFlashComponent.h"
 #include "NiagaraComponent.h"
 #include "Perception/AIPerceptionComponent.h"
 #include "Perception/AIPerceptionSystem.h"
@@ -9,7 +8,7 @@
 #include "TowerDefencePawns/Attackers/Mage/AI/MageAIController.h"
 #include "TowerDefencePawns/Attackers/Mage/DamageSpellProjectile.h"
 #include "TowerDefencePawns/Components/DamageComponent.h"
-#include "TowerDefencePawns/Components/HealthComponent.h"
+#include "TowerDefencePawns/Components/HitFlashComponent.h"
 #include "TowerDefencePawns/ProjectilePoolFactory.h"
 
 AMage::AMage()
@@ -36,10 +35,12 @@ void AMage::Tick(float DeltaTime)
 {
     Super::Tick(DeltaTime);
     if (!IsPawnActive()) return;
-    if (!IsValid(CurrentTarget) || !CurrentTarget->IsPawnActive() || CurrentTarget->GetHealthComponent()->IsDead())
+    if (!IsPawnActiveAndAlive(CurrentTarget))
     {
         if (bIsHoldingSpell)
         {
+            DisableSpellBall(BoostSpellBall);
+            DisableSpellBall(DamageSpellBall);
             BoostSpellBall->SetVisibility(false);
             BoostSpellBall->SetComponentTickEnabled(false);
             DamageSpellBall->SetVisibility(false);
@@ -90,17 +91,17 @@ void AMage::StartAttack()
 
 void AMage::Attack(ATowerDefencePawn* Other)
 {
-    if (!IsValid(Other) || !Other->IsPawnActive()) return;
+    if (!IsPawnActiveAndAlive(Other)) return;
     if (FVector::Dist2D(GetActorLocation(), Other->GetVisualAttackPointLocation()) <=
         AttackNoThrowingRadius + KINDA_SMALL_NUMBER)
         Super::Attack(Other);
     else if (PROJECTILE_POOL_FACTORY_EXISTS)
     {
         const FVector LaunchLocation = SpellSpawnLocation->GetComponentLocation();
-        const FVector TargetLocation = Other->GetVisualAttackPointLocation();
         ADamageSpellProjectile* DamageSpell =
             Cast<ADamageSpellProjectile>(CREATE_PROJECTILE(DamageSpellClass, FTransform(LaunchLocation)));
         if (!DamageSpell) return;
+        const FVector TargetLocation = Other->GetVisualAttackPointLocation();
         const FVector LaunchVelocity = (TargetLocation - LaunchLocation).GetSafeNormal() * DamageSpellSpeed;
         DamageSpell->Fire(Other->GetVisualAttackPoint(), LaunchVelocity, DamageComponent->GetDamage());
     }
@@ -142,10 +143,8 @@ void AMage::DoOnSetActive(bool bActive)
     GetMesh()->SetCollisionEnabled(bActive ? ECollisionEnabled::QueryAndPhysics : ECollisionEnabled::NoCollision);
     GetMesh()->SetCollisionResponseToAllChannels(bActive ? ECR_Block : ECR_Ignore);
     GetMesh()->SetCollisionResponseToChannel(MouseClickTraceChannel, ECR_Ignore);
-    BoostSpellBall->SetVisibility(false);
-    BoostSpellBall->SetComponentTickEnabled(false);
-    DamageSpellBall->SetVisibility(false);
-    DamageSpellBall->SetComponentTickEnabled(false);
+    DisableSpellBall(BoostSpellBall);
+    DisableSpellBall(DamageSpellBall);
     TimeSinceLastVisionUpdate = 0.0f;
     bIsHoldingSpell = false;
     if (bActive)
@@ -178,22 +177,21 @@ void AMage::SetCurrentTarget(ATowerDefencePawn* NewTarget)
     bTargetIsFriendly = IsOtherPawnFriendly(NewTarget);
     if (CurrentTarget && bIsHoldingSpell && OldTarget != CurrentTarget && bOldTargetWasFriendly != bTargetIsFriendly)
     {
-        (bTargetIsFriendly ? DamageSpellBall : BoostSpellBall)->SetVisibility(false);
-        (bTargetIsFriendly ? BoostSpellBall : DamageSpellBall)->SetVisibility(true);
-        (bTargetIsFriendly ? DamageSpellBall : BoostSpellBall)->SetComponentTickEnabled(false);
-        (bTargetIsFriendly ? BoostSpellBall : DamageSpellBall)->SetComponentTickEnabled(true);
+        DisableSpellBall(bTargetIsFriendly ? DamageSpellBall : BoostSpellBall);
+        EnableSpellBall(bTargetIsFriendly ? BoostSpellBall : DamageSpellBall);
     }
 }
 
-bool AMage::IsOtherPawnFriendly(const ATowerDefencePawn* OtherPawn) const
+void AMage::EnableSpellBall(UNiagaraComponent* Spell)
 {
-    if (IsValid(OtherPawn) && OtherPawn->IsPawnActive())
-    {
-        const ETeamAttitude::Type Attitude =
-            ATowerDefenceGameMode::GetAttitudeCustom(CurrentTeam, OtherPawn->GetCurrentTeam());
-        return Attitude == ETeamAttitude::Friendly;
-    }
-    return false;
+    Spell->SetVisibility(true);
+    Spell->SetComponentTickEnabled(true);
+}
+
+void AMage::DisableSpellBall(UNiagaraComponent* Spell)
+{
+    Spell->SetVisibility(false);
+    Spell->SetComponentTickEnabled(false);
 }
 
 void AMage::OnAttackMontageEnded(UAnimMontage* Montage, bool bInterrupted) { EndAttack(); }
@@ -201,9 +199,7 @@ void AMage::OnAttackMontageEnded(UAnimMontage* Montage, bool bInterrupted) { End
 void AMage::OnBoostStartMontageEnded(UAnimMontage* Montage, bool bInterrupted)
 {
     bBoostStarted = false;
-    if (!IsValid(CurrentTarget) || !CurrentTarget->IsPawnActive() || CurrentTarget->GetHealthComponent()->IsDead() ||
-        !bTargetIsFriendly)
-        return;
+    if (!IsPawnActiveAndAlive(CurrentTarget) || !bTargetIsFriendly) return;
     bIsBoosting = true;
     if (UDamageComponent* TargetDamage = CurrentTarget->GetDamageComponent())
     {
@@ -213,11 +209,13 @@ void AMage::OnBoostStartMontageEnded(UAnimMontage* Montage, bool bInterrupted)
     }
 }
 
+void AMage::OnDeathMontageEnded(UAnimMontage* Montage, bool bInterrupted) { OnDeathComplete(); }
+
 void AMage::StopBoosting()
 {
     if (!bIsBoosting) return;
     bIsBoosting = false;
-    if (!IsValid(CurrentTarget)) return;
+    if (!IsPawnActiveAndAlive(CurrentTarget)) return;
     if (UDamageComponent* TargetDamage = CurrentTarget->GetDamageComponent())
     {
         if (TargetDamage->RemoveDamageBoost(DamageBoostAmount)) // Was the last booster
@@ -225,5 +223,3 @@ void AMage::StopBoosting()
                 TargetAttacker->GetBoostEffect()->Deactivate();
     }
 }
-
-void AMage::OnDeathMontageEnded(UAnimMontage* Montage, bool bInterrupted) { OnDeathComplete(); }

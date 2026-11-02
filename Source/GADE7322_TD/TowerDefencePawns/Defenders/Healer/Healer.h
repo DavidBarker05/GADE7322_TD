@@ -116,6 +116,8 @@ public:
 
     virtual void StartAttack() override;
 
+    virtual void Heal(ATowerDefencePawn* Other);
+
     virtual void Attack(ATowerDefencePawn* Other) override;
 
     virtual void EndAttack() override;
@@ -152,7 +154,8 @@ public:
     FHealerLevel GetHealerCurrentLevel() const;
 
 private:
-    bool IsOtherPawnFriendly(const ATowerDefencePawn* OtherPawn) const;
+    static void EnableSpellBall(UNiagaraComponent* Spell);
+    static void DisableSpellBall(UNiagaraComponent* Spell);
 
     void OnAttackMontageEnded(UAnimMontage* Montage, bool bInterrupted);
 

@@ -1,7 +1,5 @@
 #include "TowerDefencePawns/Defenders/Components/DefenderUpgradeComponent.h"
 
-#include "CustomLog.h"
-
 FDefenderLevel UDefenderUpgradeComponent::GetCurrent() const
 {
     if (CurrentLevel == 0) return BaseLevel;

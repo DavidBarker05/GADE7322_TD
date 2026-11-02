@@ -53,7 +53,7 @@ void ABallista::BeginPlay()
 void ABallista::Tick(float DeltaTime)
 {
     Super::Tick(DeltaTime);
-    if (!IsPawnActive() || HealthComponent->IsDead()) return;
+    if (!IsPawnActiveAndAlive(this)) return;
     TimeSinceLastTargetUpdate += DeltaTime;
     if (TimeSinceLastTargetUpdate >= 1.0f / TargetUpdateFrequency)
     {
@@ -66,7 +66,7 @@ void ABallista::Tick(float DeltaTime)
 
 void ABallista::StartAttack()
 {
-    if (!IsValid(CurrentAttackTarget) || !bCanAttack) return;
+    if (!IsPawnActiveAndAlive(CurrentAttackTarget) || !bCanAttack) return;
     bCanAttack = false;
     FireProjectile();
     GetWorldTimerManager().SetTimer(AttackTimerHandle, [this]() -> void { bCanAttack = true; }, AttackCooldown, false);
@@ -130,18 +130,8 @@ void ABallista::DoUpdatePerceptionOnTeamChange()
 
 void ABallista::DoOnLevelChanged(int32 Level)
 {
-    const FDefenderLevel CurrentDefenderLevel = GetUpgradeComponent()->GetCurrent();
     const FBallistaLevel CurrentBallistaLevel = GetBallistaCurrentLevel();
-    if (CurrentTeam != CurrentBallistaLevel.GetTeam())
-    {
-        CurrentTeam = CurrentBallistaLevel.GetTeam();
-        PerceptionComponent->ForgetAll();
-        VisiblePawns.Empty();
-        if (UAIPerceptionSystem* PerceptionSys = UAIPerceptionSystem::GetCurrent(GetWorld()))
-            PerceptionSys->UpdateListener(*PerceptionComponent);
-    }
-    DamageComponent->SetDamage(CurrentDefenderLevel.GetDamage());
-    HealthComponent->SetMaxHealth(CurrentDefenderLevel.GetHealth());
+    SetCurrentTeam(CurrentBallistaLevel.GetTeam());
     AttackRadius = CurrentBallistaLevel.GetAttackRadius();
     AttackCooldown = CurrentBallistaLevel.GetAttackCooldown();
 }
@@ -251,7 +241,7 @@ void ABallista::OnTargetPerceptionUpdated(AActor* Actor, FAIStimulus Stimulus)
 void ABallista::UpdateAttackTarget()
 {
     if (const ATowerDefencePawn* Current = CurrentAttackTarget;
-        IsValid(Current) && Current->IsPawnActive() && Current->GetHealthComponent()->IsAlive() &&
+        IsPawnActiveAndAlive(Current) &&
         FVector::Dist2D(GetActorLocation(), Current->GetActorLocation()) - Current->GetOccupiedRadius() <=
             AttackRadius + KINDA_SMALL_NUMBER)
         return;
@@ -288,9 +278,9 @@ void ABallista::FireProjectile()
     if (PROJECTILE_POOL_FACTORY_EXISTS)
     {
         const FVector LaunchLocation = MuzzlePoint->GetComponentLocation();
-        const FVector TargetLocation = CurrentAttackTarget->GetVisualAttackPointLocation();
         const auto Projectile = CREATE_PROJECTILE(ProjectileClass, FTransform(LaunchLocation));
         if (!Projectile) return;
+        const FVector TargetLocation = CurrentAttackTarget->GetVisualAttackPointLocation();
         const FVector LaunchVelocity = ComputeLaunchVelocity(LaunchLocation, TargetLocation);
         if (!GetBallistaCurrentLevel().DamageGroundTroops())
             Projectile->Fire(CurrentAttackTarget->GetVisualAttackPoint(), LaunchVelocity, DamageComponent->GetDamage(),

@@ -1,8 +1,6 @@
 #include "TowerDefencePawns/Attackers/Mage/AI/MageAIController.h"
 
-#include "HealthComponent.h"
 #include "Perception/AIPerceptionTypes.h"
-#include "TowerDefenceGameMode.h"
 #include "TowerDefencePawns/AI/ProximityPerception/AISenseConfig_Proximity.h"
 #include "TowerDefencePawns/AI/TargetSelectionFunctions.h"
 #include "TowerDefencePawns/Attackers/Mage/Mage.h"
@@ -27,7 +25,7 @@ void AMageAIController::Tick(float DeltaTime)
 {
     Super::Tick(DeltaTime);
     AMage* Mage = GetMage();
-    if (!IsValid(Mage) || !Mage->IsPawnActive()) return;
+    if (!ATowerDefencePawn::IsPawnActiveAndAlive(Mage)) return;
 
     // The logic is a bit tricky for this, so I had to map it out to make my life easier
     // here is that logic:
@@ -80,10 +78,9 @@ void AMageAIController::Tick(float DeltaTime)
     // So need to not target a healer if they are healing someone else
 
     if (const ATowerDefencePawn* Target = Mage->GetCurrentTarget();
-        IsValid(Target) && Target->IsPawnActive() &&
-        Target->GetHealthComponent()->IsAlive()) // Is there a current target?
+        ATowerDefencePawn::IsPawnActiveAndAlive(Target)) // Is there a current target?
     {
-        const float Radius = IsOtherPawnFriendly(Target) ? Mage->GetBoostRadius() : Mage->GetAttackRadius();
+        const float Radius = Mage->IsOtherPawnFriendly(Target) ? Mage->GetBoostRadius() : Mage->GetAttackRadius();
         if (FVector::Dist2D(Mage->GetActorLocation(), Target->GetActorLocation()) <=
             Radius + KINDA_SMALL_NUMBER) // Is the current target in the radius?
         {
@@ -103,8 +100,7 @@ void AMageAIController::Tick(float DeltaTime)
     {
         if (const ATowerDefencePawn* TDPawn = GetVisiblePawns()[i])
         {
-            if (!IsValid(TDPawn) || !TDPawn->IsPawnActive() || TDPawn->GetHealthComponent()->IsDead())
-                GetVisiblePawns().RemoveAt(i);
+            if (!ATowerDefencePawn::IsPawnActiveAndAlive(TDPawn)) GetVisiblePawns().RemoveAt(i);
         }
         else GetVisiblePawns().RemoveAt(i);
     }
@@ -197,16 +193,18 @@ void AMageAIController::OnTargetPerceptionUpdated(AActor* Actor, FAIStimulus Sti
     if (!IsValid(Actor) || Actor == GetPawn()) return;
     if (ATowerDefencePawn* TDPawn = Cast<ATowerDefencePawn>(Actor))
     {
+        const AMage* Mage = GetMage();
+        if (!ATowerDefencePawn::IsPawnActiveAndAlive(Mage)) return;
         if (!Stimulus.WasSuccessfullySensed())
         {
             GetVisiblePawns().Remove(TDPawn);
-            if (IsOtherPawnFriendly(TDPawn)) VisibleFriendlies.Remove(TDPawn);
+            if (Mage->IsOtherPawnFriendly(TDPawn)) VisibleFriendlies.Remove(TDPawn);
             else VisibleEnemies.Remove(TDPawn);
         }
-        else if (TDPawn->IsPawnActive() && TDPawn->GetHealthComponent()->IsAlive())
+        else if (ATowerDefencePawn::IsPawnActiveAndAlive(TDPawn))
         {
             GetVisiblePawns().AddUnique(TDPawn);
-            if (IsOtherPawnFriendly(TDPawn)) VisibleFriendlies.AddUnique(TDPawn);
+            if (Mage->IsOtherPawnFriendly(TDPawn)) VisibleFriendlies.AddUnique(TDPawn);
             else VisibleEnemies.AddUnique(TDPawn);
         }
     }
@@ -214,20 +212,9 @@ void AMageAIController::OnTargetPerceptionUpdated(AActor* Actor, FAIStimulus Sti
 
 AMage* AMageAIController::GetMage() const { return GetPawn<AMage>(); }
 
-bool AMageAIController::IsOtherPawnFriendly(const ATowerDefencePawn* OtherPawn) const
-{
-    if (const AMage* Mage = GetMage(); IsValid(OtherPawn) && OtherPawn->IsPawnActive())
-    {
-        const ETeamAttitude::Type Attitude =
-            ATowerDefenceGameMode::GetAttitudeCustom(Mage->GetCurrentTeam(), OtherPawn->GetCurrentTeam());
-        return Attitude == ETeamAttitude::Friendly;
-    }
-    return false;
-}
-
 bool AMageAIController::IsThisATargetForOtherPawn(const ATowerDefencePawn* OtherPawn) const
 {
-    if (!IsValid(OtherPawn) || !OtherPawn->IsPawnActive() || OtherPawn->GetHealthComponent()->IsDead()) return false;
+    if (!ATowerDefencePawn::IsPawnActiveAndAlive(OtherPawn)) return false;
     const AMage* Mage = GetMage();
     if (!Mage) return false;
     // I hate doing it like this, but ATowerDefencePawn doesn't have a current target

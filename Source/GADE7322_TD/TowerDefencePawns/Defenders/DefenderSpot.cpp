@@ -1,10 +1,10 @@
 #include "TowerDefencePawns/Defenders/DefenderSpot.h"
 
 #include "Components/BoxComponent.h"
-#include "DefenderUpgradeComponent.h"
 #include "Events/EventBus.h"
-#include "HealthComponent.h"
 #include "TDCollisionChannels.h"
+#include "TowerDefencePawns/Components/HealthComponent.h"
+#include "TowerDefencePawns/Defenders/Components/DefenderUpgradeComponent.h"
 #include "TowerDefencePawns/Defenders/Defender.h"
 #include "TowerDefencePawns/TowerDefencePawnFactory.h"
 
@@ -62,7 +62,7 @@ bool ADefenderSpot::IsOccupied() const { return IsValid(CurrentDefender); }
 
 void ADefenderSpot::PurchaseDefender(const TSubclassOf<ADefender>& DefenderBlueprint)
 {
-    if (!IsValid(DefenderBlueprint) || IsValid(CurrentDefender)) return;
+    if (!IsValid(DefenderBlueprint) || ATowerDefencePawn::IsPawnActiveAndAlive(CurrentDefender)) return;
     if (TOWER_DEFENCE_PAWN_FACTORY_EXISTS)
     {
         CurrentDefender = Cast<ADefender>(CREATE_PAWN(DefenderBlueprint, GetTransform()));
@@ -75,7 +75,7 @@ void ADefenderSpot::PurchaseDefender(const TSubclassOf<ADefender>& DefenderBluep
 
 void ADefenderSpot::SellDefender()
 {
-    if (!IsValid(CurrentDefender)) return;
+    if (!ATowerDefencePawn::IsPawnActiveAndAlive(CurrentDefender)) return;
     if (TOWER_DEFENCE_PAWN_FACTORY_EXISTS)
     {
         BROADCAST_EVENT(TEXT("SellEvent"), CurrentDefender->GetSellPrice());

@@ -7,6 +7,7 @@
 #include "Kismet/GameplayStatics.h"
 #include "Kismet/KismetMathLibrary.h"
 #include "Perception/AIPerceptionStimuliSourceComponent.h"
+#include "TowerDefenceGameMode.h"
 #include "TowerDefencePawns/AI/ProximityPerception/AISense_Proximity.h"
 #include "TowerDefencePawns/AI/TowerDefencePawnAIController.h"
 #include "TowerDefencePawns/Components/DamageComponent.h"
@@ -64,7 +65,53 @@ void ATowerDefencePawn::Tick(float DeltaTime)
     HealthBar->SetWorldRotation(DesiredRot);
 }
 
-ATowerDefencePawn& ATowerDefencePawn::SetPawnActive(bool bActive)
+bool ATowerDefencePawn::IsPawnActiveAndAlive(const ATowerDefencePawn* TowerDefencePawn)
+{
+    return IsValid(TowerDefencePawn) && TowerDefencePawn->IsPawnActive() &&
+           TowerDefencePawn->GetHealthComponent()->IsAlive();
+}
+
+bool ATowerDefencePawn::IsPawnGroundTroop(const ATowerDefencePawn* TowerDefencePawn)
+{
+    if (!IsPawnActiveAndAlive(TowerDefencePawn)) return false;
+    switch (TowerDefencePawn->GetCurrentTeam())
+    {
+        case EAITeam::FlyingAttacker:
+            return true;
+        default:
+            return false;
+    }
+}
+
+bool ATowerDefencePawn::IsOtherPawnFriendly(const ATowerDefencePawn* Other) const
+{
+    if (!IsPawnActiveAndAlive(Other)) return false;
+    const ETeamAttitude::Type Attitude = ATowerDefenceGameMode::GetAttitudeCustom(CurrentTeam, Other->GetCurrentTeam());
+    return Attitude == ETeamAttitude::Friendly;
+}
+
+void ATowerDefencePawn::Attack(ATowerDefencePawn* Other)
+{
+    if (IsPawnActiveAndAlive(Other)) DamageComponent->DamageOther(Other->HealthComponent);
+}
+
+void ATowerDefencePawn::OnDeath(TFunction<void()>&& Func)
+{
+    if (bDeathStarted) return;
+    bDeathStarted = true;
+    DestroyDelegate = MoveTemp(Func);
+    OnDeathComplete();
+}
+
+void ATowerDefencePawn::OnDeathComplete()
+{
+    if (!DestroyDelegate) return;
+    bDeathStarted = false;
+    DestroyDelegate();
+    DestroyDelegate = nullptr;
+}
+
+void ATowerDefencePawn::SetPawnActive(bool bActive)
 {
     bIsPawnActive = bActive;
     GetCapsuleComponent()->SetCollisionEnabled(bActive ? ECollisionEnabled::QueryAndPhysics :
@@ -94,7 +141,6 @@ ATowerDefencePawn& ATowerDefencePawn::SetPawnActive(bool bActive)
         if (ATowerDefencePawnAIController* AIController = Cast<ATowerDefencePawnAIController>(GetController()))
             AIController->SetControllerActive(bActive);
     DoOnSetActive(bActive);
-    return *this;
 }
 
 void ATowerDefencePawn::UpdateHealthDisplay()
@@ -125,25 +171,4 @@ void ATowerDefencePawn::HideHealthBar()
 {
     bIsHealthBarShowing = false;
     HealthBar->SetVisibility(false);
-}
-
-void ATowerDefencePawn::Attack(ATowerDefencePawn* Other)
-{
-    if (IsValid(Other)) DamageComponent->DamageOther(Other->HealthComponent);
-}
-
-void ATowerDefencePawn::OnDeath(TFunction<void()>&& Func)
-{
-    if (bDeathStarted) return;
-    bDeathStarted = true;
-    DestroyDelegate = MoveTemp(Func);
-    OnDeathComplete();
-}
-
-void ATowerDefencePawn::OnDeathComplete()
-{
-    if (!DestroyDelegate) return;
-    bDeathStarted = false;
-    DestroyDelegate();
-    DestroyDelegate = nullptr;
 }

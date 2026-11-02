@@ -2,12 +2,12 @@
 
 #include "Animation/AnimInstance.h"
 #include "Components/ChildActorComponent.h"
-#include "HitFlashComponent.h"
 #include "Perception/AIPerceptionComponent.h"
 #include "Perception/AIPerceptionSystem.h"
 #include "TDCollisionChannels.h"
 #include "TowerDefencePawns/Attackers/Skeleton/AI/SkeletonAIController.h"
-#include "Weapon.h"
+#include "TowerDefencePawns/Components/HitFlashComponent.h"
+#include "TowerDefencePawns/Weapon.h"
 
 ASkeletonPawn::ASkeletonPawn()
 {
@@ -17,15 +17,12 @@ ASkeletonPawn::ASkeletonPawn()
     Weapon->SetupAttachment(RootComponent);
     CurrentTeam = EAITeam::MeleeAttacker;
 }
+
 void ASkeletonPawn::BeginPlay()
 {
     Super::BeginPlay();
     HitFlashComponent->BindMaterials();
 }
-
-const AWeapon* ASkeletonPawn::GetWeapon() const { return Cast<AWeapon>(Weapon ? Weapon->GetChildActor() : nullptr); }
-
-AWeapon* ASkeletonPawn::GetWeapon() { return Cast<AWeapon>(Weapon ? Weapon->GetChildActor() : nullptr); }
 
 void ASkeletonPawn::StartAttack()
 {
@@ -99,6 +96,9 @@ void ASkeletonPawn::DoUpdatePerceptionOnTeamChange()
     }
 }
 
+const AWeapon* ASkeletonPawn::GetWeapon() const { return Cast<AWeapon>(Weapon ? Weapon->GetChildActor() : nullptr); }
+
+AWeapon* ASkeletonPawn::GetWeapon() { return Cast<AWeapon>(Weapon ? Weapon->GetChildActor() : nullptr); }
 void ASkeletonPawn::OnAttackMontageEnded(UAnimMontage*, bool) { EndAttack(); }
 
 void ASkeletonPawn::OnDeathMontageEnded(UAnimMontage*, bool) { OnDeathComplete(); }
