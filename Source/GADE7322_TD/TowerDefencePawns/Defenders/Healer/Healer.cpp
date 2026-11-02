@@ -199,7 +199,6 @@ void AHealer::DoOnLevelChanged(int32 Level)
     // ^^^ Reset animation, detach held items and unbind materials because the mesh is about to change ^^^
 
     const FHealerLevel CurrentHealerLevel = GetHealerCurrentLevel();
-    const int32 CurrentLevel = GetUpgradeComponent()->GetCurrentLevel();
     FHealerSkeletalMesh CurrentSkeletalMesh = CurrentHealerLevel.GetHealerSkeletalMesh();
     GetMesh()->SetSkeletalMesh(CurrentSkeletalMesh.GetSkeletalMesh());
     GetMesh()->SetAnimInstanceClass(CurrentSkeletalMesh.GetAnimationBlueprint());
@@ -214,7 +213,7 @@ void AHealer::DoOnLevelChanged(int32 Level)
                                           TEXT("spell"));
     HealSpellBall->AttachToComponent(SpellSpawnLocation, FAttachmentTransformRules::SnapToTargetNotIncludingScale);
     FireSpellBall->AttachToComponent(SpellSpawnLocation, FAttachmentTransformRules::SnapToTargetNotIncludingScale);
-    if (CurrentLevel == 1)
+    if (Level == 1)
     {
         SpellBook->AttachToComponent(GetMesh(), FAttachmentTransformRules::SnapToTargetNotIncludingScale, "spellBook");
         SpellBook->SetVisibility(true);
