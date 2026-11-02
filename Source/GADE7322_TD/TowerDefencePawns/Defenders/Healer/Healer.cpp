@@ -150,6 +150,11 @@ void AHealer::DoOnSetActive(bool bActive)
 {
     Super::DoOnSetActive(bActive);
     if (bActive) GetUpgradeComponent()->SetLevel(0); // Reset to base level
+    else
+    {
+        SpellBook->SetVisibility(false);
+        SpellBook->SetComponentTickEnabled(false);
+    }
     SetCurrentTarget(nullptr);
     GetMesh()->SetVisibility(bActive);
     GetMesh()->SetComponentTickEnabled(bActive);

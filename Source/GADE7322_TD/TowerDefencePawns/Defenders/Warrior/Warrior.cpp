@@ -65,6 +65,29 @@ void AWarrior::DoOnSetActive(bool bActive)
     Super::DoOnSetActive(bActive);
     CurrentAttackTarget = nullptr;
     if (bActive) GetUpgradeComponent()->SetLevel(0); // Reset to base level
+    else
+    {
+        if (UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance())
+        {
+            AnimInstance->StopAllMontages(0.0f);
+            AnimInstance->InitializeAnimation();
+        }
+        if (AWeapon* OneHandSword = GetOneHandSword(); IsValid(OneHandSword))
+        {
+            OneHandSword->GetMesh()->SetVisibility(false);
+            OneHandSword->GetMesh()->SetComponentTickEnabled(false);
+        }
+        if (AWarriorShield* Shield = GetShield(); IsValid(Shield))
+        {
+            Shield->GetMesh()->SetVisibility(false);
+            Shield->GetMesh()->SetComponentTickEnabled(false);
+        }
+        if (AWeapon* TwoHandSword = GetTwoHandSword(); IsValid(TwoHandSword))
+        {
+            TwoHandSword->GetMesh()->SetVisibility(false);
+            TwoHandSword->GetMesh()->SetComponentTickEnabled(false);
+        }
+    }
     GetMesh()->SetVisibility(bActive);
     GetMesh()->SetComponentTickEnabled(bActive);
     GetMesh()->SetCollisionEnabled(bActive ? ECollisionEnabled::QueryAndPhysics : ECollisionEnabled::NoCollision);
