@@ -161,32 +161,36 @@ private:
 
     void OnDeathMontageEnded(UAnimMontage* Montage, bool bInterrupted);
 
-    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Spell", meta = (AllowPrivateAccess = true))
+    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Healer|Spell", meta = (AllowPrivateAccess = true))
     USceneComponent* SpellSpawnLocation;
 
-    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Spell", meta = (AllowPrivateAccess = true))
+    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Healer|Spell", meta = (AllowPrivateAccess = true))
     UNiagaraComponent* HealSpellBall;
 
-    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Spell", meta = (AllowPrivateAccess = true))
+    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Healer|Spell", meta = (AllowPrivateAccess = true))
     UNiagaraComponent* FireSpellBall;
 
-    UPROPERTY(EditDefaultsOnly, Category = "AI",
+    UPROPERTY(EditDefaultsOnly, Category = "Healer|AI",
               meta = (AllowPrivateAccess = true, ClampMin = 0.0, UIMin = 0.0, ClampMax = 16.667, UIMax = 16.667,
                       Units = "Hertz"))
     float SpellDistanceCheckUpdateFrequency = 5.0f;
 
+    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Healer|Spell", meta = (AllowPrivateAccess = true))
+    UStaticMeshComponent* SpellBook;
+
     float TimeSinceLastVisionUpdate = 0.0f;
 
-    UPROPERTY(BlueprintReadOnly, Category = "Spell", meta = (AllowPrivateAccess = true, ClampMin = 1.0, UIMin = 1.0))
+    UPROPERTY(BlueprintReadOnly, Category = "Healer|Spell",
+              meta = (AllowPrivateAccess = true, ClampMin = 1.0, UIMin = 1.0))
     float SpellShowRadiusMultiplier = 2.0f;
 
-    UPROPERTY(BlueprintReadOnly, Category = "Spell", meta = (AllowPrivateAccess = true))
+    UPROPERTY(BlueprintReadOnly, Category = "Healer|Spell", meta = (AllowPrivateAccess = true))
     bool bIsHoldingSpell = false;
 
-    UPROPERTY(EditDefaultsOnly, Category = "Spell", meta = (AllowPrivateAccess = true))
+    UPROPERTY(EditDefaultsOnly, Category = "Healer|Spell", meta = (AllowPrivateAccess = true))
     TSubclassOf<AFireballProjectile> FireballClass;
 
-    UPROPERTY(EditDefaultsOnly, Category = "Spell",
+    UPROPERTY(EditDefaultsOnly, Category = "Healer|Spell",
               meta = (AllowPrivateAccess = true, ClampMin = 0.0, UIMin = 0.0, Units = "cm/s"))
     float FireballSpeed = 2000.0f;
 
@@ -205,11 +209,11 @@ private:
     UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Healer|Upgrades", meta = (AllowPrivateAccess = true))
     FHealerLevel HealerSecondUpgrade;
 
-    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "AI",
+    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Healer|AI",
               meta = (AllowPrivateAccess = true, Units = "Centimeters"))
     float HealRadius;
 
-    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "AI",
+    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Healer|AI",
               meta = (AllowPrivateAccess = true, Units = "Centimeters"))
     float AttackRadius;
 
@@ -219,7 +223,7 @@ private:
               meta = (AllowPrivateAccess = true, Units = "Centimeters"))
     float AttackNoThrowingRadius;
 
-    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "AI",
+    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Healer|AI",
               meta = (AllowPrivateAccess = true, Units = "Seconds"))
     float AttackCooldown;
 

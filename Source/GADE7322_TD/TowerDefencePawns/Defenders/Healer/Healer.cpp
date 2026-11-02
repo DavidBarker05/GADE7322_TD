@@ -20,8 +20,13 @@ AHealer::AHealer()
     OccupiedRadius = 40.0f;
     CurrentTeam = EAITeam::SupportDefender;
     SpellSpawnLocation = CreateDefaultSubobject<USceneComponent>(TEXT("Spell Spawn Location"));
+    SpellSpawnLocation->SetupAttachment(RootComponent);
     HealSpellBall = CreateDefaultSubobject<UNiagaraComponent>(TEXT("Heal Spell Ball"));
+    HealSpellBall->SetupAttachment(RootComponent);
     FireSpellBall = CreateDefaultSubobject<UNiagaraComponent>(TEXT("Fire Spell Ball"));
+    FireSpellBall->SetupAttachment(RootComponent);
+    SpellBook = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Spell Book"));
+    SpellBook->SetupAttachment(RootComponent);
     PrimaryRadiusColour = FLinearColor(0.0f, 1.0f, 0.0f, 1.0f);
     SecondaryRadiusColour = FLinearColor(1.0f, 0.0f, 0.0f, 1.0f);
 }
@@ -187,10 +192,14 @@ void AHealer::DoOnLevelChanged(int32 Level)
     SpellSpawnLocation->AttachToComponent(RootComponent, FAttachmentTransformRules::SnapToTargetNotIncludingScale);
     HealSpellBall->AttachToComponent(RootComponent, FAttachmentTransformRules::SnapToTargetNotIncludingScale);
     FireSpellBall->AttachToComponent(RootComponent, FAttachmentTransformRules::SnapToTargetNotIncludingScale);
+    SpellBook->AttachToComponent(RootComponent, FAttachmentTransformRules::SnapToTargetNotIncludingScale);
+    SpellBook->SetVisibility(false);
+    SpellBook->SetComponentTickEnabled(false);
     HitFlashComponent->UnbindMaterials();
     // ^^^ Reset animation, detach held items and unbind materials because the mesh is about to change ^^^
 
     const FHealerLevel CurrentHealerLevel = GetHealerCurrentLevel();
+    const int32 CurrentLevel = GetUpgradeComponent()->GetCurrentLevel();
     FHealerSkeletalMesh CurrentSkeletalMesh = CurrentHealerLevel.GetHealerSkeletalMesh();
     GetMesh()->SetSkeletalMesh(CurrentSkeletalMesh.GetSkeletalMesh());
     GetMesh()->SetAnimInstanceClass(CurrentSkeletalMesh.GetAnimationBlueprint());
@@ -205,6 +214,12 @@ void AHealer::DoOnLevelChanged(int32 Level)
                                           TEXT("spell"));
     HealSpellBall->AttachToComponent(SpellSpawnLocation, FAttachmentTransformRules::SnapToTargetNotIncludingScale);
     FireSpellBall->AttachToComponent(SpellSpawnLocation, FAttachmentTransformRules::SnapToTargetNotIncludingScale);
+    if (CurrentLevel == 1)
+    {
+        SpellBook->AttachToComponent(GetMesh(), FAttachmentTransformRules::SnapToTargetNotIncludingScale, "spellBook");
+        SpellBook->SetVisibility(true);
+        SpellBook->SetComponentTickEnabled(true);
+    }
     HitFlashComponent->BindMaterials();
     HealRadius = CurrentHealerLevel.GetHealRadius();
     AttackRadius = CurrentHealerLevel.GetAttackRadius();
