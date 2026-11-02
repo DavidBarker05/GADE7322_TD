@@ -65,28 +65,6 @@ void AWarrior::DoOnSetActive(bool bActive)
     Super::DoOnSetActive(bActive);
     CurrentAttackTarget = nullptr;
     if (bActive) GetUpgradeComponent()->SetLevel(0); // Reset to base level
-    else
-    {
-        if (AWeapon* OneHandSword = GetOneHandSword(); IsValid(OneHandSword))
-        {
-            OneHandSword->AttachToComponent(OneHandWeapon, FAttachmentTransformRules::SnapToTargetNotIncludingScale);
-            OneHandSword->GetMesh()->SetVisibility(false);
-            OneHandSword->GetMesh()->SetComponentTickEnabled(false);
-        }
-        if (AWarriorShield* Shield = GetShield(); IsValid(Shield))
-        {
-            Shield->AttachToComponent(WarriorShield, FAttachmentTransformRules::SnapToTargetNotIncludingScale);
-            Shield->GetMesh()->SetVisibility(false);
-            Shield->GetMesh()->SetComponentTickEnabled(false);
-        }
-        if (AWeapon* TwoHandSword = GetTwoHandSword(); IsValid(TwoHandSword))
-        {
-            TwoHandSword->AttachToComponent(TwoHandWeapon, FAttachmentTransformRules::SnapToTargetNotIncludingScale);
-            TwoHandSword->GetMesh()->SetVisibility(false);
-            TwoHandSword->GetMesh()->SetComponentTickEnabled(false);
-        }
-        HitFlashComponent->UnbindMaterials();
-    }
     GetMesh()->SetVisibility(bActive);
     GetMesh()->SetComponentTickEnabled(bActive);
     GetMesh()->SetCollisionEnabled(bActive ? ECollisionEnabled::QueryAndPhysics : ECollisionEnabled::NoCollision);
@@ -114,15 +92,37 @@ void AWarrior::DoUpdatePerceptionOnTeamChange()
 
 void AWarrior::DoOnLevelChanged(int32 Level)
 {
-    const FWarriorLevel CurrentWarriorLevel = GetWarriorCurrentLevel();
-    bIsFemale = FMath::RandBool();
-    FWarriorSkeletalMesh CurrentWarrior =
-        bIsFemale ? CurrentWarriorLevel.GetFemaleWarrior() : CurrentWarriorLevel.GetMaleWarrior();
+    // vvv Reset animation, detach held items and unbind materials because the mesh is about to change vvv
     if (UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance())
     {
         AnimInstance->StopAllMontages(0.0f);
         AnimInstance->InitializeAnimation();
     }
+    if (AWeapon* OneHandSword = GetOneHandSword(); IsValid(OneHandSword))
+    {
+        OneHandSword->AttachToComponent(OneHandWeapon, FAttachmentTransformRules::SnapToTargetNotIncludingScale);
+        OneHandSword->GetMesh()->SetVisibility(false);
+        OneHandSword->GetMesh()->SetComponentTickEnabled(false);
+    }
+    if (AWarriorShield* Shield = GetShield(); IsValid(Shield))
+    {
+        Shield->AttachToComponent(WarriorShield, FAttachmentTransformRules::SnapToTargetNotIncludingScale);
+        Shield->GetMesh()->SetVisibility(false);
+        Shield->GetMesh()->SetComponentTickEnabled(false);
+    }
+    if (AWeapon* TwoHandSword = GetTwoHandSword(); IsValid(TwoHandSword))
+    {
+        TwoHandSword->AttachToComponent(TwoHandWeapon, FAttachmentTransformRules::SnapToTargetNotIncludingScale);
+        TwoHandSword->GetMesh()->SetVisibility(false);
+        TwoHandSword->GetMesh()->SetComponentTickEnabled(false);
+    }
+    HitFlashComponent->UnbindMaterials();
+    // ^^^ Reset animation, detach held items and unbind materials because the mesh is about to change ^^^
+
+    const FWarriorLevel CurrentWarriorLevel = GetWarriorCurrentLevel();
+    bIsFemale = FMath::RandBool();
+    FWarriorSkeletalMesh CurrentWarrior =
+        bIsFemale ? CurrentWarriorLevel.GetFemaleWarrior() : CurrentWarriorLevel.GetMaleWarrior();
     GetMesh()->SetSkeletalMesh(CurrentWarrior.GetSkeletalMesh());
     GetMesh()->SetAnimInstanceClass(CurrentWarrior.GetAnimationBlueprint());
     GetCapsuleComponent()->SetCapsuleHalfHeight(CurrentWarrior.GetHalfHeight());
@@ -133,8 +133,6 @@ void AWarrior::DoOnLevelChanged(int32 Level)
     NewBoxExtent.Z = CurrentWarrior.GetHalfHeight();
     GetBoxCollider()->SetBoxExtent(NewBoxExtent);
     HitFlashComponent->BindMaterials();
-    AttackRadius = CurrentWarriorLevel.GetAttackRadius();
-    AttackCooldown = CurrentWarriorLevel.GetAttackCooldown();
     if (Level == 1)
     {
         if (AWarriorShield* Shield = GetShield(); IsValid(Shield))
@@ -144,13 +142,14 @@ void AWarrior::DoOnLevelChanged(int32 Level)
             Shield->GetMesh()->SetComponentTickEnabled(Shield->DoesMeshTick());
         }
     }
-
     if (AWeapon* Sword = GetWeapon(); IsValid(Sword))
     {
         Sword->AttachToSkeleton(GetMesh());
         Sword->GetMesh()->SetVisibility(true);
         Sword->GetMesh()->SetComponentTickEnabled(Sword->DoesMeshTick());
     }
+    AttackRadius = CurrentWarriorLevel.GetAttackRadius();
+    AttackCooldown = CurrentWarriorLevel.GetAttackCooldown();
 }
 
 FWarriorLevel AWarrior::GetWarriorCurrentLevel() const

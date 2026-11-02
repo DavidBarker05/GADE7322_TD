@@ -144,27 +144,17 @@ void AHealer::OnDeath(TFunction<void()>&& Func)
 void AHealer::DoOnSetActive(bool bActive)
 {
     Super::DoOnSetActive(bActive);
-    if (bActive)
-    {
-        SetCurrentTarget(nullptr);
-        GetUpgradeComponent()->SetLevel(0); // Reset to base level
-    }
-    else
-    {
-        SpellSpawnLocation->AttachToComponent(RootComponent, FAttachmentTransformRules::SnapToTargetNotIncludingScale);
-        HealSpellBall->AttachToComponent(RootComponent, FAttachmentTransformRules::SnapToTargetNotIncludingScale);
-        FireSpellBall->AttachToComponent(RootComponent, FAttachmentTransformRules::SnapToTargetNotIncludingScale);
-        HitFlashComponent->UnbindMaterials();
-    }
+    if (bActive) GetUpgradeComponent()->SetLevel(0); // Reset to base level
+    SetCurrentTarget(nullptr);
     GetMesh()->SetVisibility(bActive);
     GetMesh()->SetComponentTickEnabled(bActive);
     GetMesh()->SetCollisionEnabled(bActive ? ECollisionEnabled::QueryAndPhysics : ECollisionEnabled::NoCollision);
     GetMesh()->SetCollisionResponseToAllChannels(bActive ? ECR_Block : ECR_Ignore);
     GetMesh()->SetCollisionResponseToChannel(MouseClickTraceChannel, ECR_Ignore);
-    DisableSpellBall(HealSpellBall);
-    DisableSpellBall(FireSpellBall);
     TimeSinceLastVisionUpdate = 0.0f;
     bIsHoldingSpell = false;
+    DisableSpellBall(HealSpellBall);
+    DisableSpellBall(FireSpellBall);
     if (bActive)
     {
         GetMesh()->SetCollisionResponseToChannel(ECC_WorldStatic, ECR_Ignore);
@@ -188,13 +178,20 @@ void AHealer::DoUpdatePerceptionOnTeamChange()
 
 void AHealer::DoOnLevelChanged(int32 Level)
 {
-    const FHealerLevel CurrentHealerLevel = GetHealerCurrentLevel();
-    FHealerSkeletalMesh CurrentSkeletalMesh = CurrentHealerLevel.GetHealerSkeletalMesh();
+    // vvv Reset animation, detach held items and unbind materials because the mesh is about to change vvv
     if (UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance())
     {
         AnimInstance->StopAllMontages(0.0f);
         AnimInstance->InitializeAnimation();
     }
+    SpellSpawnLocation->AttachToComponent(RootComponent, FAttachmentTransformRules::SnapToTargetNotIncludingScale);
+    HealSpellBall->AttachToComponent(RootComponent, FAttachmentTransformRules::SnapToTargetNotIncludingScale);
+    FireSpellBall->AttachToComponent(RootComponent, FAttachmentTransformRules::SnapToTargetNotIncludingScale);
+    HitFlashComponent->UnbindMaterials();
+    // ^^^ Reset animation, detach held items and unbind materials because the mesh is about to change ^^^
+
+    const FHealerLevel CurrentHealerLevel = GetHealerCurrentLevel();
+    FHealerSkeletalMesh CurrentSkeletalMesh = CurrentHealerLevel.GetHealerSkeletalMesh();
     GetMesh()->SetSkeletalMesh(CurrentSkeletalMesh.GetSkeletalMesh());
     GetMesh()->SetAnimInstanceClass(CurrentSkeletalMesh.GetAnimationBlueprint());
     GetCapsuleComponent()->SetCapsuleHalfHeight(CurrentSkeletalMesh.GetHalfHeight());
@@ -211,8 +208,6 @@ void AHealer::DoOnLevelChanged(int32 Level)
     HitFlashComponent->BindMaterials();
     HealRadius = CurrentHealerLevel.GetHealRadius();
     AttackRadius = CurrentHealerLevel.GetAttackRadius();
-    HealRadius = CurrentHealerLevel.GetHealRadius();
-    AttackCooldown = CurrentHealerLevel.GetAttackCooldown();
     HealAmount = CurrentHealerLevel.GetHealAmount();
 }
 
