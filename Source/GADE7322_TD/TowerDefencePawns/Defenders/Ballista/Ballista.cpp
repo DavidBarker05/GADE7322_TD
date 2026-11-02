@@ -1,5 +1,6 @@
 #include "TowerDefencePawns/Defenders/Ballista/Ballista.h"
 
+#include "Components/ChildActorComponent.h"
 #include "Perception/AIPerceptionComponent.h"
 #include "Perception/AIPerceptionTypes.h"
 #include "TDCollisionChannels.h"
@@ -8,6 +9,7 @@
 #include "TowerDefencePawns/Components/DamageComponent.h"
 #include "TowerDefencePawns/Components/HealthComponent.h"
 #include "TowerDefencePawns/Components/HitFlashComponent.h"
+#include "TowerDefencePawns/Defenders/Ballista/BallistaBarrel.h"
 #include "TowerDefencePawns/Defenders/Components/DefenderUpgradeComponent.h"
 #include "TowerDefencePawns/Projectile.h"
 #include "TowerDefencePawns/ProjectilePoolFactory.h"
@@ -20,11 +22,6 @@ ABallista::ABallista()
     StandMesh->SetupAttachment(RootComponent);
     PivotPoint = CreateDefaultSubobject<USceneComponent>(TEXT("Pivot Point"));
     PivotPoint->SetupAttachment(RootComponent); // Don't attach to stand so doesn't affect scale if resize stand
-    BallistaMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Ballista Mesh"));
-    BallistaMesh->SetupAttachment(PivotPoint);
-    // ^ So that we can pivot around the point rather than the mesh because mesh isn't centred
-    MuzzlePoint = CreateDefaultSubobject<USceneComponent>(TEXT("Muzzle Point"));
-    MuzzlePoint->SetupAttachment(PivotPoint); // So it turns with the mesh, position at the tip in the Blueprint
     PerceptionComponent = CreateDefaultSubobject<UAIPerceptionComponent>(TEXT("Perception Component"));
     ProximityConfig = CreateDefaultSubobject<UAISenseConfig_Proximity>(TEXT("Proximity Config"));
     ProximityConfig->DetectionRadius = AttackRadius;
@@ -34,6 +31,10 @@ ABallista::ABallista()
     PerceptionComponent->ConfigureSense(*ProximityConfig);
     PerceptionComponent->SetDominantSense(ProximityConfig->GetSenseImplementation());
     PerceptionComponent->OnTargetPerceptionUpdated.AddDynamic(this, &ABallista::OnTargetPerceptionUpdated);
+    BallistaBarrel = CreateDefaultSubobject<UChildActorComponent>(TEXT("Ballista Barrel"));
+    BallistaBarrel->SetupAttachment(PivotPoint);
+    CannonBarrel = CreateDefaultSubobject<UChildActorComponent>(TEXT("Cannon Barrel"));
+    CannonBarrel->SetupAttachment(PivotPoint);
     CurrentTeam = EAITeam::RangedDefender;
     PrimaryRadiusColour = FLinearColor(1.0f, 0.0f, 0.0f, 1.0f);
 }
@@ -41,13 +42,19 @@ ABallista::ABallista()
 void ABallista::BeginPlay()
 {
     Super::BeginPlay();
-    HitFlashComponent->BindMaterials();
     if (PivotPoint) DefaultPivotRotation = PivotPoint->GetRelativeRotation();
-    if (OccupiedRadius <= 0.0f && BallistaMesh)
+    HitFlashComponent->BindMaterials();
+    if (ABallistaBarrel* Ballista = GetBallistaBarrel(); IsValid(Ballista))
     {
-        const FVector Extent = BallistaMesh->Bounds.BoxExtent;
-        OccupiedRadius = FMath::Min(Extent.X, Extent.Y);
+        Ballista->GetHitFlashComponent()->BindMaterials();
+        Ballista->GetMesh()->SetCollisionResponseToChannel(MouseClickTraceChannel, ECR_Ignore);
     }
+    if (ABallistaBarrel* Cannon = GetCannonBarrel(); IsValid(Cannon))
+    {
+        Cannon->GetHitFlashComponent()->BindMaterials();
+        Cannon->GetMesh()->SetCollisionResponseToChannel(MouseClickTraceChannel, ECR_Ignore);
+    }
+    StandMesh->SetCollisionResponseToChannel(MouseClickTraceChannel, ECR_Ignore);
 }
 
 void ABallista::Tick(float DeltaTime)
@@ -72,12 +79,24 @@ void ABallista::StartAttack()
     GetWorldTimerManager().SetTimer(AttackTimerHandle, [this]() -> void { bCanAttack = true; }, AttackCooldown, false);
 }
 
+void ABallista::DoFlash() const
+{
+    Super::DoFlash();
+    if (ABallistaBarrel* CurrentBarrel = GetBarrel()) CurrentBarrel->GetHitFlashComponent()->DoFlash();
+}
+
 FBallistaLevel ABallista::GetBallistaCurrentLevel() const
 {
     const int32 CurrentLevel = GetUpgradeComponent()->GetCurrentLevel();
     if (CurrentLevel == 0) return BallistaBaseLevel;
     if (CurrentLevel == 1) return BallistaFirstUpgrade;
     return BallistaSecondUpgrade;
+}
+
+ABallistaBarrel* ABallista::GetBarrel() const
+{
+    if (GetUpgradeComponent()->GetCurrentLevel() == 2) return GetCannonBarrel();
+    return GetBallistaBarrel();
 }
 
 void ABallista::DoOnSetActive(bool bActive)
@@ -96,6 +115,20 @@ void ABallista::DoOnSetActive(bool bActive)
     {
         PerceptionComponent->ForgetAll();
         PerceptionComponent->SetActive(false);
+        if (ABallistaBarrel* Ballista = GetBallistaBarrel(); IsValid(Ballista))
+        {
+            Ballista->GetMesh()->SetVisibility(false);
+            Ballista->GetMesh()->SetComponentTickEnabled(false);
+            Ballista->GetMesh()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+            Ballista->GetMesh()->SetCollisionResponseToAllChannels(ECR_Ignore);
+        }
+        if (ABallistaBarrel* Cannon = GetCannonBarrel(); IsValid(Cannon))
+        {
+            Cannon->GetMesh()->SetVisibility(false);
+            Cannon->GetMesh()->SetComponentTickEnabled(false);
+            Cannon->GetMesh()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+            Cannon->GetMesh()->SetCollisionResponseToAllChannels(ECR_Ignore);
+        }
     }
     VisiblePawns.Empty();
     TimeSinceLastTargetUpdate = 0.0f;
@@ -103,18 +136,10 @@ void ABallista::DoOnSetActive(bool bActive)
     StandMesh->SetComponentTickEnabled(bActive);
     StandMesh->SetCollisionEnabled(bActive ? ECollisionEnabled::QueryAndPhysics : ECollisionEnabled::NoCollision);
     StandMesh->SetCollisionResponseToAllChannels(bActive ? ECR_Block : ECR_Ignore);
-    StandMesh->SetCollisionResponseToChannel(MouseClickTraceChannel, ECR_Ignore);
-    BallistaMesh->SetVisibility(bActive);
-    BallistaMesh->SetComponentTickEnabled(bActive);
-    BallistaMesh->SetCollisionEnabled(bActive ? ECollisionEnabled::QueryAndPhysics : ECollisionEnabled::NoCollision);
-    BallistaMesh->SetCollisionResponseToAllChannels(bActive ? ECR_Block : ECR_Ignore);
-    BallistaMesh->SetCollisionResponseToChannel(MouseClickTraceChannel, ECR_Ignore);
     if (bActive)
     {
         StandMesh->SetCollisionResponseToChannel(ECC_WorldStatic, ECR_Ignore);
         StandMesh->SetCollisionResponseToChannel(ECC_Pawn, ECR_Overlap);
-        BallistaMesh->SetCollisionResponseToChannel(ECC_WorldStatic, ECR_Ignore);
-        BallistaMesh->SetCollisionResponseToChannel(ECC_Pawn, ECR_Overlap);
     }
     bCanAttack = bActive;
 }
@@ -130,10 +155,33 @@ void ABallista::DoUpdatePerceptionOnTeamChange()
 
 void ABallista::DoOnLevelChanged(int32 Level)
 {
+    if (ABallistaBarrel* Ballista = GetBallistaBarrel(); IsValid(Ballista))
+    {
+        Ballista->GetMesh()->SetVisibility(false);
+        Ballista->GetMesh()->SetComponentTickEnabled(false);
+        Ballista->GetMesh()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+        Ballista->GetMesh()->SetCollisionResponseToAllChannels(ECR_Ignore);
+    }
+    if (ABallistaBarrel* Cannon = GetCannonBarrel(); IsValid(Cannon))
+    {
+        Cannon->GetMesh()->SetVisibility(false);
+        Cannon->GetMesh()->SetComponentTickEnabled(false);
+        Cannon->GetMesh()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+        Cannon->GetMesh()->SetCollisionResponseToAllChannels(ECR_Ignore);
+    }
     const FBallistaLevel CurrentBallistaLevel = GetBallistaCurrentLevel();
     SetCurrentTeam(CurrentBallistaLevel.GetTeam());
     AttackRadius = CurrentBallistaLevel.GetAttackRadius();
     AttackCooldown = CurrentBallistaLevel.GetAttackCooldown();
+    if (ABallistaBarrel* Barrel = GetBallistaBarrel(); IsValid(Barrel))
+    {
+        Barrel->GetMesh()->SetVisibility(true);
+        Barrel->GetMesh()->SetComponentTickEnabled(true);
+        Barrel->GetMesh()->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
+        Barrel->GetMesh()->SetCollisionResponseToAllChannels(ECR_Block);
+        Barrel->GetMesh()->SetCollisionResponseToChannel(ECC_WorldStatic, ECR_Ignore);
+        Barrel->GetMesh()->SetCollisionResponseToChannel(ECC_Pawn, ECR_Overlap);
+    }
 }
 
 float ABallista::GetAngleToFireProjectile(const UObject* WorldContextObject, FVector LaunchLocation,
@@ -273,11 +321,15 @@ void ABallista::UpdatePivotRotation(float DeltaTime)
 void ABallista::FireProjectile()
 {
     const FBallistaLevel Current = GetBallistaCurrentLevel();
-    auto ProjectileClass = Current.GetProjectile().GetProjectileClass();
+    const auto ProjectileClass = Current.GetProjectile().GetProjectileClass();
+    const ABallistaBarrel* Barrel = GetBarrel();
+    if (!IsValid(Barrel)) return;
+    const USceneComponent* Muzzle = Barrel->GetMuzzle();
+    if (!Muzzle) return;
     if (!IsValid(CurrentAttackTarget) || !ProjectileClass) return;
     if (PROJECTILE_POOL_FACTORY_EXISTS)
     {
-        const FVector LaunchLocation = MuzzlePoint->GetComponentLocation();
+        const FVector LaunchLocation = Muzzle->GetComponentLocation();
         const auto Projectile = CREATE_PROJECTILE(ProjectileClass, FTransform(LaunchLocation));
         if (!Projectile) return;
         const FVector TargetLocation = CurrentAttackTarget->GetVisualAttackPointLocation();
@@ -305,4 +357,14 @@ FVector ABallista::ComputeLaunchVelocity(const FVector& LaunchLocation, const FV
         GetAngleToFireProjectile(this, LaunchLocation, TargetLocation, ProjectileSpeed, ProjectileGravityScale);
     return (HorizontalDirection * FMath::Cos(ThetaRadians) + FVector::UpVector * FMath::Sin(ThetaRadians)) *
            ProjectileSpeed;
+}
+
+ABallistaBarrel* ABallista::GetBallistaBarrel() const
+{
+    return Cast<ABallistaBarrel>(BallistaBarrel ? BallistaBarrel->GetChildActor() : nullptr);
+}
+
+ABallistaBarrel* ABallista::GetCannonBarrel() const
+{
+    return Cast<ABallistaBarrel>(CannonBarrel ? CannonBarrel->GetChildActor() : nullptr);
 }

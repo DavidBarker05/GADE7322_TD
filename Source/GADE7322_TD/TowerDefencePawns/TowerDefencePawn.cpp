@@ -161,6 +161,8 @@ void ATowerDefencePawn::UpdateHealthDisplay()
     }
 }
 
+void ATowerDefencePawn::DoFlash() const { HitFlashComponent->DoFlash(); }
+
 void ATowerDefencePawn::ShowHealthBar()
 {
     bIsHealthBarShowing = true;

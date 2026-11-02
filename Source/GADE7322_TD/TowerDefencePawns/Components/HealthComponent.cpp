@@ -3,7 +3,6 @@
 #include "Events/EventBus.h"
 #include "Kismet/GameplayStatics.h"
 #include "TowerDefenceGameMode.h"
-#include "TowerDefencePawns/Components/HitFlashComponent.h"
 #include "TowerDefencePawns/Defenders/Defender.h"
 #include "TowerDefencePawns/TowerDefencePawn.h"
 
@@ -25,7 +24,7 @@ void UHealthComponent::TakeDamage(int32 Damage)
     if (ATowerDefencePawn* TDP = GetOwner<ATowerDefencePawn>())
     {
         TDP->UpdateHealthDisplay();
-        TDP->GetHitFlashComponent()->DoFlash();
+        TDP->DoFlash();
     }
     if (CurrentHealth == 0)
     {

@@ -6,10 +6,12 @@
 
 #include "Ballista.generated.h"
 
-struct FAIStimulus;
+class ABallistaBarrel;
 class AProjectile;
+struct FAIStimulus;
 class UAIPerceptionComponent;
 class UAISenseConfig_Proximity;
+class UChildActorComponent;
 class UStaticMeshComponent;
 
 USTRUCT(BlueprintType)
@@ -82,6 +84,8 @@ public:
 
     virtual void StartAttack() override;
 
+    virtual void DoFlash() const override;
+
     const ATowerDefencePawn* GetAttackTarget() const { return CurrentAttackTarget; }
 
     ATowerDefencePawn* GetAttackTarget() { return CurrentAttackTarget; }
@@ -101,6 +105,9 @@ public:
 
     UFUNCTION(BlueprintPure)
     FBallistaLevel GetBallistaCurrentLevel() const;
+
+    UFUNCTION(BlueprintPure)
+    ABallistaBarrel* GetBarrel() const;
 
 protected:
     virtual void DoOnSetActive(bool bActive) override;
@@ -125,18 +132,20 @@ private:
 
     FVector ComputeLaunchVelocity(const FVector& LaunchLocation, const FVector& TargetLocation) const;
 
+    ABallistaBarrel* GetBallistaBarrel() const;
+    ABallistaBarrel* GetCannonBarrel() const;
+
     UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components", meta = (AllowPrivateAccess = true))
     UStaticMeshComponent* StandMesh;
 
     UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components", meta = (AllowPrivateAccess = true))
     USceneComponent* PivotPoint;
 
-    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components", meta = (AllowPrivateAccess = true))
-    UStaticMeshComponent* BallistaMesh;
+    UPROPERTY(VisibleAnywhere, Category = "Barrel", meta = (AllowPrivateAccess = true))
+    UChildActorComponent* BallistaBarrel;
 
-    // Where bolts actually spawn/launch from
-    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components", meta = (AllowPrivateAccess = true))
-    USceneComponent* MuzzlePoint;
+    UPROPERTY(VisibleAnywhere, Category = "Barrel", meta = (AllowPrivateAccess = true))
+    UChildActorComponent* CannonBarrel;
 
     UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components", meta = (AllowPrivateAccess = true))
     UAIPerceptionComponent* PerceptionComponent;

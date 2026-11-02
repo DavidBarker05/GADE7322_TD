@@ -1,0 +1,41 @@
+#pragma once
+
+#include "CoreMinimal.h"
+
+#include "GameFramework/Actor.h"
+
+#include "BallistaBarrel.generated.h"
+
+class UHitFlashComponent;
+
+// Ballista barrel for lack of a better name :/
+UCLASS(Abstract)
+class ABallistaBarrel : public AActor
+{
+    GENERATED_BODY()
+
+public:
+    ABallistaBarrel();
+
+    const UStaticMeshComponent* GetMesh() const { return Mesh; }
+    UStaticMeshComponent* GetMesh() { return Mesh; }
+
+    const USceneComponent* GetMuzzle() const { return Muzzle; }
+    USceneComponent* GetMuzzle() { return Muzzle; }
+
+    const UHitFlashComponent* GetHitFlashComponent() const { return HitFlashComponent; }
+    UHitFlashComponent* GetHitFlashComponent() { return HitFlashComponent; }
+
+private:
+    UPROPERTY()
+    USceneComponent* Pivot;
+
+    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components", meta = (AllowPrivateAccess = true))
+    UStaticMeshComponent* Mesh;
+
+    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components", meta = (AllowPrivateAccess = true))
+    USceneComponent* Muzzle;
+
+    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components", meta = (AllowPrivateAccess = true))
+    UHitFlashComponent* HitFlashComponent;
+};
