@@ -10,6 +10,7 @@
 #include "TowerDefencePawns/Components/HealthComponent.h"
 #include "TowerDefencePawns/Components/HitFlashComponent.h"
 #include "TowerDefencePawns/Defenders/Ballista/BallistaBarrel.h"
+#include "TowerDefencePawns/Defenders/Ballista/BallistaDecoration.h"
 #include "TowerDefencePawns/Defenders/Components/DefenderUpgradeComponent.h"
 #include "TowerDefencePawns/Projectile.h"
 #include "TowerDefencePawns/ProjectilePoolFactory.h"
@@ -55,6 +56,15 @@ void ABallista::BeginPlay()
         Cannon->GetMesh()->SetCollisionResponseToChannel(MouseClickTraceChannel, ECR_Ignore);
     }
     StandMesh->SetCollisionResponseToChannel(MouseClickTraceChannel, ECR_Ignore);
+    for (auto& Ref : BallistaFirstUpgradeDecorations)
+    {
+        const UChildActorComponent* Comp = Cast<UChildActorComponent>(Ref.GetComponent(this));
+        if (!IsValid(Comp)) continue;
+        ABallistaDecoration* Deco = Cast<ABallistaDecoration>(Comp->GetChildActor());
+        if (!IsValid(Deco)) continue;
+        Deco->GetHitFlashComponent()->BindMaterials();
+        Deco->GetMesh()->SetCollisionResponseToChannel(MouseClickTraceChannel, ECR_Ignore);
+    }
 }
 
 void ABallista::Tick(float DeltaTime)
@@ -79,10 +89,18 @@ void ABallista::StartAttack()
     GetWorldTimerManager().SetTimer(AttackTimerHandle, [this]() -> void { bCanAttack = true; }, AttackCooldown, false);
 }
 
-void ABallista::DoFlash() const
+void ABallista::DoFlash()
 {
     Super::DoFlash();
     if (ABallistaBarrel* CurrentBarrel = GetBarrel()) CurrentBarrel->GetHitFlashComponent()->DoFlash();
+    if (GetUpgradeComponent()->GetCurrentLevel() != 1) return;
+    for (auto& Ref : BallistaFirstUpgradeDecorations)
+    {
+        const UChildActorComponent* Comp = Cast<UChildActorComponent>(Ref.GetComponent(this));
+        if (!IsValid(Comp)) continue;
+        if (ABallistaDecoration* Deco = Cast<ABallistaDecoration>(Comp->GetChildActor()); IsValid(Deco))
+            Deco->GetHitFlashComponent()->BindMaterials();
+    }
 }
 
 FBallistaLevel ABallista::GetBallistaCurrentLevel() const
@@ -129,6 +147,17 @@ void ABallista::DoOnSetActive(bool bActive)
             Cannon->GetMesh()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
             Cannon->GetMesh()->SetCollisionResponseToAllChannels(ECR_Ignore);
         }
+        for (auto& Ref : BallistaFirstUpgradeDecorations)
+        {
+            const UChildActorComponent* Comp = Cast<UChildActorComponent>(Ref.GetComponent(this));
+            if (!IsValid(Comp)) continue;
+            ABallistaDecoration* Deco = Cast<ABallistaDecoration>(Comp->GetChildActor());
+            if (!IsValid(Deco)) continue;
+            Deco->GetMesh()->SetVisibility(false);
+            Deco->GetMesh()->SetComponentTickEnabled(false);
+            Deco->GetMesh()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+            Deco->GetMesh()->SetCollisionResponseToAllChannels(ECR_Ignore);
+        }
     }
     VisiblePawns.Empty();
     TimeSinceLastTargetUpdate = 0.0f;
@@ -169,6 +198,17 @@ void ABallista::DoOnLevelChanged(int32 Level)
         Cannon->GetMesh()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
         Cannon->GetMesh()->SetCollisionResponseToAllChannels(ECR_Ignore);
     }
+    for (auto& Ref : BallistaFirstUpgradeDecorations)
+    {
+        const UChildActorComponent* Comp = Cast<UChildActorComponent>(Ref.GetComponent(this));
+        if (!IsValid(Comp)) continue;
+        ABallistaDecoration* Deco = Cast<ABallistaDecoration>(Comp->GetChildActor());
+        if (!IsValid(Deco)) continue;
+        Deco->GetMesh()->SetVisibility(false);
+        Deco->GetMesh()->SetComponentTickEnabled(false);
+        Deco->GetMesh()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+        Deco->GetMesh()->SetCollisionResponseToAllChannels(ECR_Ignore);
+    }
     const FBallistaLevel CurrentBallistaLevel = GetBallistaCurrentLevel();
     SetCurrentTeam(CurrentBallistaLevel.GetTeam());
     AttackRadius = CurrentBallistaLevel.GetAttackRadius();
@@ -181,6 +221,20 @@ void ABallista::DoOnLevelChanged(int32 Level)
         Barrel->GetMesh()->SetCollisionResponseToAllChannels(ECR_Block);
         Barrel->GetMesh()->SetCollisionResponseToChannel(ECC_WorldStatic, ECR_Ignore);
         Barrel->GetMesh()->SetCollisionResponseToChannel(ECC_Pawn, ECR_Overlap);
+    }
+    if (Level != 1) return;
+    for (auto& Ref : BallistaFirstUpgradeDecorations)
+    {
+        const UChildActorComponent* Comp = Cast<UChildActorComponent>(Ref.GetComponent(this));
+        if (!IsValid(Comp)) continue;
+        ABallistaDecoration* Deco = Cast<ABallistaDecoration>(Comp->GetChildActor());
+        if (!IsValid(Deco)) continue;
+        Deco->GetMesh()->SetVisibility(true);
+        Deco->GetMesh()->SetComponentTickEnabled(true);
+        Deco->GetMesh()->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
+        Deco->GetMesh()->SetCollisionResponseToAllChannels(ECR_Block);
+        Deco->GetMesh()->SetCollisionResponseToChannel(ECC_WorldStatic, ECR_Ignore);
+        Deco->GetMesh()->SetCollisionResponseToChannel(ECC_Pawn, ECR_Overlap);
     }
 }
 

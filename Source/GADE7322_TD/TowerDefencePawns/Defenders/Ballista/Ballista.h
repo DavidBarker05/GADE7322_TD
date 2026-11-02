@@ -2,6 +2,7 @@
 
 #include "CoreMinimal.h"
 
+#include "Engine/EngineTypes.h"
 #include "TowerDefencePawns/Defenders/Defender.h"
 
 #include "Ballista.generated.h"
@@ -84,7 +85,7 @@ public:
 
     virtual void StartAttack() override;
 
-    virtual void DoFlash() const override;
+    virtual void DoFlash() override;
 
     const ATowerDefencePawn* GetAttackTarget() const { return CurrentAttackTarget; }
 
@@ -146,6 +147,10 @@ private:
 
     UPROPERTY(VisibleAnywhere, Category = "Barrel", meta = (AllowPrivateAccess = true))
     UChildActorComponent* CannonBarrel;
+
+    // Decorations for the first ballista upgrade to make it look visually disctinct
+    UPROPERTY(EditAnywhere, Category = "Ballista|Upgrades", meta = (AllowPrivateAccess = true))
+    TArray<FComponentReference> BallistaFirstUpgradeDecorations;
 
     UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components", meta = (AllowPrivateAccess = true))
     UAIPerceptionComponent* PerceptionComponent;

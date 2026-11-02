@@ -110,7 +110,7 @@ public:
 
     virtual void UpdateHealthDisplay();
 
-    virtual void DoFlash() const;
+    virtual void DoFlash();
 
     const UHitFlashComponent* GetHitFlashComponent() const { return HitFlashComponent; }
     UHitFlashComponent* GetHitFlashComponent() { return HitFlashComponent; }
