@@ -1,6 +1,5 @@
 #include "TowerDefencePawns/Defenders/Healer/Healer.h"
 
-#include "HitFlashComponent.h"
 #include "NiagaraComponent.h"
 #include "Perception/AIPerceptionComponent.h"
 #include "Perception/AIPerceptionSystem.h"
@@ -8,6 +7,8 @@
 #include "TowerDefenceGameMode.h"
 #include "TowerDefencePawns/Components/DamageComponent.h"
 #include "TowerDefencePawns/Components/HealthComponent.h"
+#include "TowerDefencePawns/Components/HitFlashComponent.h"
+#include "TowerDefencePawns/Defenders/Components/DefenderUpgradeComponent.h"
 #include "TowerDefencePawns/Defenders/Healer/AI/HealerAIController.h"
 #include "TowerDefencePawns/Defenders/Healer/FireballProjectile.h"
 #include "TowerDefencePawns/ProjectilePoolFactory.h"
@@ -19,7 +20,6 @@ AHealer::AHealer()
     OccupiedRadius = 40.0f;
     CurrentTeam = EAITeam::SupportDefender;
     SpellSpawnLocation = CreateDefaultSubobject<USceneComponent>(TEXT("Spell Spawn Location"));
-    SpellSpawnLocation->SetupAttachment(GetMesh(), "spell");
     HealSpellBall = CreateDefaultSubobject<UNiagaraComponent>(TEXT("Heal Spell Ball"));
     FireSpellBall = CreateDefaultSubobject<UNiagaraComponent>(TEXT("Fire Spell Ball"));
     PrimaryRadiusColour = FLinearColor(0.0f, 1.0f, 0.0f, 1.0f);
@@ -29,10 +29,7 @@ AHealer::AHealer()
 void AHealer::BeginPlay()
 {
     Super::BeginPlay();
-    HealSpellBall->AttachToComponent(SpellSpawnLocation, FAttachmentTransformRules::SnapToTargetNotIncludingScale);
-    FireSpellBall->AttachToComponent(SpellSpawnLocation, FAttachmentTransformRules::SnapToTargetNotIncludingScale);
     TowerDefenceGameMode = Cast<ATowerDefenceGameMode>(UGameplayStatics::GetGameMode(this));
-    HitFlashComponent->BindMaterials();
 }
 
 void AHealer::Tick(float DeltaTime)
@@ -76,7 +73,9 @@ void AHealer::StartAttack()
         return; // Don't heal while a wave is in progress
     bCanAttack = false;
     UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
-    UAnimMontage* SpellMontage = bTargetIsFriendly ? HealMontage : AttackMontage;
+    FHealerSkeletalMesh CurrentSkeletalMesh = GetHealerCurrentLevel().GetHealerSkeletalMesh();
+    UAnimMontage* SpellMontage =
+        bTargetIsFriendly ? CurrentSkeletalMesh.GetHealMontage() : CurrentSkeletalMesh.GetAttackMontage();
     AnimInstance->Montage_Play(SpellMontage, 1.0f);
     FOnMontageEnded EndDelegate;
     EndDelegate.BindUObject(this, &AHealer::OnAttackMontageEnded);
@@ -88,8 +87,35 @@ void AHealer::Attack(ATowerDefencePawn* Other)
     if (!IsValid(Other) || !Other->IsPawnActive()) return;
     if (IsOtherPawnFriendly(Other))
     {
-        Other->GetHealthComponent()->ReceiveHealth(HealAmount);
-        if (ADefender* Defender = Cast<ADefender>(Other)) Defender->GetHealEffect()->Activate(true);
+        auto Heal = [this](ADefender* Defender) -> void
+        {
+            Defender->GetHealthComponent()->ReceiveHealth(HealAmount);
+            Defender->GetHealEffect()->Activate(true);
+        };
+        const int32 CurrentLevel = GetUpgradeComponent()->GetCurrentLevel();
+        if (CurrentLevel == 2) // Heal in a radius
+        {
+            TArray<AActor*> OutActors;
+            TArray<TEnumAsByte<EObjectTypeQuery>> ObjectTypes;
+            ObjectTypes.Add(UEngineTypes::ConvertToObjectType(ECC_Pawn));
+            if (UKismetSystemLibrary::SphereOverlapActors(this, GetActorLocation(), HealRadius, ObjectTypes,
+                                                          ADefender::StaticClass(), {}, OutActors))
+            {
+                for (AActor* Actor : OutActors)
+                {
+                    ADefender* Defender = Cast<ADefender>(Actor);
+                    if (!IsValid(Defender) || !Defender->IsPawnActive() || Defender->GetHealthComponent()->IsDead())
+                        continue;
+                    Heal(Defender);
+                }
+            }
+        }
+        else
+        {
+            ADefender* Defender = Cast<ADefender>(Other);
+            if (!IsValid(Defender) || !Defender->IsPawnActive() || Defender->GetHealthComponent()->IsDead()) return;
+            Heal(Defender);
+        }
     }
     else
     {
@@ -121,6 +147,7 @@ void AHealer::OnDeath(TFunction<void()>&& Func)
     bDeathStarted = true;
     DestroyDelegate = MoveTemp(Func);
     UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
+    UAnimMontage* DeathMontage = GetHealerCurrentLevel().GetHealerSkeletalMesh().GetDeathMontage();
     AnimInstance->Montage_Play(DeathMontage, 1.0f);
     FOnMontageBlendingOutStarted EndDelegate;
     EndDelegate.BindUObject(this, &AHealer::OnDeathMontageEnded);
@@ -133,11 +160,14 @@ void AHealer::DoOnSetActive(bool bActive)
     if (bActive)
     {
         SetCurrentTarget(nullptr);
-        if (UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance())
-        {
-            AnimInstance->StopAllMontages(0.0f);
-            AnimInstance->InitializeAnimation();
-        }
+        GetUpgradeComponent()->SetLevel(0); // Reset to base level
+    }
+    else
+    {
+        SpellSpawnLocation->AttachToComponent(RootComponent, FAttachmentTransformRules::SnapToTargetNotIncludingScale);
+        HealSpellBall->AttachToComponent(RootComponent, FAttachmentTransformRules::SnapToTargetNotIncludingScale);
+        FireSpellBall->AttachToComponent(RootComponent, FAttachmentTransformRules::SnapToTargetNotIncludingScale);
+        HitFlashComponent->UnbindMaterials();
     }
     GetMesh()->SetVisibility(bActive);
     GetMesh()->SetComponentTickEnabled(bActive);
@@ -171,6 +201,39 @@ void AHealer::DoUpdatePerceptionOnTeamChange()
     }
 }
 
+void AHealer::DoOnLevelChanged(int32 Level)
+{
+    const FDefenderLevel CurrentDefenderLevel = GetUpgradeComponent()->GetCurrent();
+    const FHealerLevel CurrentHealerLevel = GetHealerCurrentLevel();
+    FHealerSkeletalMesh CurrentSkeletalMesh = CurrentHealerLevel.GetHealerSkeletalMesh();
+    GetMesh()->SetSkeletalMesh(CurrentSkeletalMesh.GetSkeletalMesh());
+    GetMesh()->SetAnimInstanceClass(CurrentSkeletalMesh.GetAnimationBlueprint());
+    GetCapsuleComponent()->SetCapsuleHalfHeight(CurrentSkeletalMesh.GetHalfHeight());
+    FVector NewMeshLoc = GetMesh()->GetRelativeLocation();
+    NewMeshLoc.Z = -CurrentSkeletalMesh.GetHalfHeight();
+    GetMesh()->SetRelativeLocation(NewMeshLoc);
+    FVector NewBoxExtent = GetBoxCollider()->GetUnscaledBoxExtent();
+    NewBoxExtent.Z = CurrentSkeletalMesh.GetHalfHeight();
+    GetBoxCollider()->SetBoxExtent(NewBoxExtent);
+    SpellSpawnLocation->AttachToComponent(GetMesh(), FAttachmentTransformRules::SnapToTargetNotIncludingScale,
+                                          TEXT("spell"));
+    HealSpellBall->AttachToComponent(SpellSpawnLocation, FAttachmentTransformRules::SnapToTargetNotIncludingScale);
+    FireSpellBall->AttachToComponent(SpellSpawnLocation, FAttachmentTransformRules::SnapToTargetNotIncludingScale);
+    if (UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance())
+    {
+        AnimInstance->StopAllMontages(0.0f);
+        AnimInstance->InitializeAnimation();
+    }
+    HitFlashComponent->BindMaterials();
+    DamageComponent->SetDamage(CurrentDefenderLevel.GetDamage());
+    HealthComponent->SetMaxHealth(CurrentDefenderLevel.GetHealth());
+    HealRadius = CurrentHealerLevel.GetHealRadius();
+    AttackRadius = CurrentHealerLevel.GetAttackRadius();
+    HealRadius = CurrentHealerLevel.GetHealRadius();
+    AttackCooldown = CurrentHealerLevel.GetAttackCooldown();
+    HealAmount = CurrentHealerLevel.GetHealAmount();
+}
+
 void AHealer::SetCurrentTarget(ATowerDefencePawn* NewTarget)
 {
     const ATowerDefencePawn* OldTarget = CurrentTarget;
@@ -184,6 +247,14 @@ void AHealer::SetCurrentTarget(ATowerDefencePawn* NewTarget)
         (bTargetIsFriendly ? FireSpellBall : HealSpellBall)->SetComponentTickEnabled(false);
         (bTargetIsFriendly ? HealSpellBall : FireSpellBall)->SetComponentTickEnabled(true);
     }
+}
+
+FHealerLevel AHealer::GetHealerCurrentLevel() const
+{
+    const int32 CurrentLevel = GetUpgradeComponent()->GetCurrentLevel();
+    if (CurrentLevel == 0) return HealerBaseLevel;
+    if (CurrentLevel == 1) return HealerFirstUpgrade;
+    return HealerSecondUpgrade;
 }
 
 bool AHealer::IsOtherPawnFriendly(const ATowerDefencePawn* OtherPawn) const
