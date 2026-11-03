@@ -18,7 +18,7 @@ Upgrades:
     - Give upgrades values
 
 Shaders:
-- Vertex Displacement Shader: Inverse hull outline shader when selecting defenders
+- Create instance of outline material for each defender
 
 Visual Effects:
 - Particle System: Cannon ball explosion

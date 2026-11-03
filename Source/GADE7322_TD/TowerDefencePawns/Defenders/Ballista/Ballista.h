@@ -87,6 +87,13 @@ public:
 
     virtual void DoFlash() override;
 
+    virtual void ShowOutline() override;
+
+    virtual void HideOutline() override;
+
+    virtual float GetDetectionRadius() const override { return AttackRadius; }
+    virtual float GetPrimaryRadius() const override { return AttackRadius; }
+
     const ATowerDefencePawn* GetAttackTarget() const { return CurrentAttackTarget; }
 
     ATowerDefencePawn* GetAttackTarget() { return CurrentAttackTarget; }
@@ -96,9 +103,6 @@ public:
         CurrentAttackTarget = Target;
         return *this;
     }
-
-    virtual float GetDetectionRadius() const override { return AttackRadius; }
-    virtual float GetPrimaryRadius() const override { return AttackRadius; }
 
     FBallistaLevel GetBallistaBaseLevel() const { return BallistaBaseLevel; }
     FBallistaLevel GetBallistaFirstUpgrade() const { return BallistaFirstUpgrade; }

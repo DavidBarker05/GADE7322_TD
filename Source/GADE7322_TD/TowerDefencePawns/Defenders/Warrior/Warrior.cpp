@@ -7,6 +7,7 @@
 #include "Perception/AIPerceptionComponent.h"
 #include "TDCollisionChannels.h"
 #include "TowerDefencePawns/Components/HitFlashComponent.h"
+#include "TowerDefencePawns/Components/OutlineComponent.h"
 #include "TowerDefencePawns/Defenders/Components/DefenderUpgradeComponent.h"
 #include "TowerDefencePawns/Defenders/Warrior/AI/WarriorAIController.h"
 #include "TowerDefencePawns/Defenders/Warrior/WarriorShield.h"
@@ -144,6 +145,8 @@ void AWarrior::DoOnLevelChanged(int32 Level)
         TwoHandSword->GetMesh()->SetComponentTickEnabled(false);
     }
     HitFlashComponent->UnbindMaterials();
+    OutlineComponent->UnbindMaterials();
+    OutlineComponent->DisableOutline();
     // ^^^ Reset animation, detach held items and unbind materials because the mesh is about to change ^^^
 
     const FWarriorLevel CurrentWarriorLevel = GetWarriorCurrentLevel();
@@ -159,6 +162,7 @@ void AWarrior::DoOnLevelChanged(int32 Level)
     NewBoxExtent.Z = CurrentWarrior.GetHalfHeight();
     GetBoxCollider()->SetBoxExtent(NewBoxExtent);
     HitFlashComponent->BindMaterials();
+    OutlineComponent->BindMaterials();
     if (Level == 1)
     {
         if (AWarriorShield* Shield = GetShield(); IsValid(Shield))
@@ -176,6 +180,8 @@ void AWarrior::DoOnLevelChanged(int32 Level)
     }
     AttackRadius = CurrentWarriorLevel.GetAttackRadius();
     AttackCooldown = CurrentWarriorLevel.GetAttackCooldown();
+    if (bShowingRadius) ShowRadiusDisplay(); // Update radius display to match any new values
+    if (bShowingOutline) ShowOutline(); // Reshow outline because was hidden when unbound materials
 }
 
 FWarriorLevel AWarrior::GetWarriorCurrentLevel() const

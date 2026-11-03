@@ -4,6 +4,7 @@
 #include "Kismet/GameplayStatics.h"
 #include "Materials/MaterialInstanceDynamic.h"
 #include "NiagaraComponent.h"
+#include "OutlineComponent.h"
 #include "Perception/AIPerceptionComponent.h"
 #include "TDCollisionChannels.h"
 #include "TowerDefenceGameMode.h"
@@ -11,6 +12,7 @@
 #include "TowerDefencePawns/AI/ProximityPerception/AISenseConfig_Proximity.h"
 #include "TowerDefencePawns/Components/DamageComponent.h"
 #include "TowerDefencePawns/Components/HealthComponent.h"
+#include "TowerDefencePawns/Components/OutlineComponent.h"
 #include "TowerDefencePawns/Defenders/AI/DefenderAIController.h"
 #include "TowerDefencePawns/Defenders/Components/DefenderUpgradeComponent.h"
 
@@ -31,6 +33,7 @@ ADefender::ADefender()
     DefenderRadiusDisplay->SetCollisionEnabled(ECollisionEnabled::NoCollision);
     DefenderRadiusDisplay->SetCastShadow(false);
     DefenderRadiusDisplay->SetVisibility(false);
+    OutlineComponent = CreateDefaultSubobject<UOutlineComponent>(TEXT("Outline Component"));
     UpgradeComponent = CreateDefaultSubobject<UDefenderUpgradeComponent>(TEXT("Upgrade Component"));
 }
 
@@ -51,6 +54,7 @@ void ADefender::BeginPlay()
 void ADefender::ShowRadiusDisplay()
 {
     if (!DefenderRadiusMaterial) return;
+    bShowingRadius = true;
     const auto Pack = [](const FLinearColor& Colour, float Radius) -> FLinearColor
     { return FLinearColor(Colour.R, Colour.G, Colour.B, Radius); };
     DefenderRadiusMaterial->SetVectorParameterValue(TEXT("Detection Radius"),
@@ -62,7 +66,23 @@ void ADefender::ShowRadiusDisplay()
     DefenderRadiusDisplay->SetVisibility(true);
 }
 
-void ADefender::HideRadiusDisplay() { DefenderRadiusDisplay->SetVisibility(false); }
+void ADefender::ShowOutline()
+{
+    OutlineComponent->EnableOutline();
+    bShowingOutline = true;
+}
+
+void ADefender::HideRadiusDisplay()
+{
+    DefenderRadiusDisplay->SetVisibility(false);
+    bShowingRadius = false;
+}
+
+void ADefender::HideOutline()
+{
+    OutlineComponent->DisableOutline();
+    bShowingOutline = false;
+}
 
 float ADefender::GetDetectionRadius() const
 {

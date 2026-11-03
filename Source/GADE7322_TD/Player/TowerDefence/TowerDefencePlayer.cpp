@@ -51,7 +51,21 @@ static void SetRadiusDisplayVisible(AActor* Actor, bool bVisible)
     }
 }
 
-void ATowerDefencePlayer::UpdateRadiusDisplay()
+static void SetOutlineVisible(AActor* Actor, bool bVisible)
+{
+    if (ADefender* Defender = Cast<ADefender>(Actor))
+    {
+        if (bVisible) Defender->ShowOutline();
+        else Defender->HideOutline();
+    }
+    else if (APlayerTower* Tower = Cast<APlayerTower>(Actor))
+    {
+        if (bVisible) Tower->ShowOutline();
+        else Tower->HideOutline();
+    }
+}
+
+void ATowerDefencePlayer::UpdateSelectedTargetDisplay()
 {
     AActor* Desired = CurrentFocusTarget;
     if (ADefenderSpot* Spot = Cast<ADefenderSpot>(Desired)) Desired = Spot->GetCurrentDefender();
@@ -59,11 +73,19 @@ void ATowerDefencePlayer::UpdateRadiusDisplay()
     if (const ATowerDefencePawn* Pawn = Cast<ATowerDefencePawn>(Desired); Pawn && !Pawn->IsPawnActive())
         Desired = nullptr;
     if (!IsValid(Desired)) Desired = nullptr;
-    AActor* Previous = RadiusDisplayedTarget.Get();
+    AActor* Previous = DisplayedSelectTarget.Get();
     if (Desired == Previous) return;
-    if (Previous) SetRadiusDisplayVisible(Previous, false);
-    RadiusDisplayedTarget = Desired;
-    if (Desired) SetRadiusDisplayVisible(Desired, true);
+    if (Previous)
+    {
+        SetRadiusDisplayVisible(Previous, false);
+        SetOutlineVisible(Previous, false);
+    }
+    DisplayedSelectTarget = Desired;
+    if (Desired)
+    {
+        SetRadiusDisplayVisible(Desired, true);
+        SetOutlineVisible(Desired, true);
+    }
 }
 
 void ATowerDefencePlayer::ClampToPlayArea()
@@ -85,7 +107,7 @@ void ATowerDefencePlayer::ClampToPlayArea()
 void ATowerDefencePlayer::Tick(float DeltaTime)
 {
     Super::Tick(DeltaTime);
-    UpdateRadiusDisplay();
+    UpdateSelectedTargetDisplay();
     ClampToPlayArea();
     // This will probably lag behind, but Unreal doesn't really have a late update
     // like unity. There are tick groups, but I'm not sure which group to go in.

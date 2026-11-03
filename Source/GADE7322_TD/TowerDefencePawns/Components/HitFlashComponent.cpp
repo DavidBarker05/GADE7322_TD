@@ -13,10 +13,10 @@ void UHitFlashComponent::BindMaterials()
         TArray<UMaterialInstanceDynamic*> MaterialInstances;
         for (int32 i = 0; i < MeshComponent->GetNumMaterials(); ++i)
         {
-            UMaterialInterface* MaterialInterfaceI = MeshComponent->GetMaterial(i);
-            if (!IsValid(MaterialInterfaceI)) continue;
+            UMaterialInterface* MaterialInterface = MeshComponent->GetMaterial(i);
+            if (!IsValid(MaterialInterface)) continue;
             UMaterialInstanceDynamic* MaterialInstanceDynamic =
-                UMaterialInstanceDynamic::Create(MaterialInterfaceI, this);
+                UMaterialInstanceDynamic::Create(MaterialInterface, this);
             MeshComponent->SetMaterial(i, MaterialInstanceDynamic);
             FlashMaterials.Add(MaterialInstanceDynamic);
             MaterialInstances.Add(MaterialInstanceDynamic);

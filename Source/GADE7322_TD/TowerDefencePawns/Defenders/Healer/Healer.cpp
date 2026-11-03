@@ -8,6 +8,7 @@
 #include "TowerDefencePawns/Components/DamageComponent.h"
 #include "TowerDefencePawns/Components/HealthComponent.h"
 #include "TowerDefencePawns/Components/HitFlashComponent.h"
+#include "TowerDefencePawns/Components/OutlineComponent.h"
 #include "TowerDefencePawns/Defenders/Components/DefenderUpgradeComponent.h"
 #include "TowerDefencePawns/Defenders/Healer/AI/HealerAIController.h"
 #include "TowerDefencePawns/Defenders/Healer/FireballProjectile.h"
@@ -195,6 +196,8 @@ void AHealer::DoOnLevelChanged(int32 Level)
     SpellBook->SetVisibility(false);
     SpellBook->SetComponentTickEnabled(false);
     HitFlashComponent->UnbindMaterials();
+    OutlineComponent->UnbindMaterials();
+    OutlineComponent->DisableOutline();
     // ^^^ Reset animation, detach held items and unbind materials because the mesh is about to change ^^^
 
     const FHealerLevel CurrentHealerLevel = GetHealerCurrentLevel();
@@ -219,9 +222,12 @@ void AHealer::DoOnLevelChanged(int32 Level)
         SpellBook->SetComponentTickEnabled(true);
     }
     HitFlashComponent->BindMaterials();
+    OutlineComponent->BindMaterials();
     HealRadius = CurrentHealerLevel.GetHealRadius();
     AttackRadius = CurrentHealerLevel.GetAttackRadius();
     HealAmount = CurrentHealerLevel.GetHealAmount();
+    if (bShowingRadius) ShowRadiusDisplay(); // Update radius display to match any new values
+    if (bShowingOutline) ShowOutline(); // Reshow outline because was hidden when unbound materials
 }
 
 void AHealer::SetCurrentTarget(ATowerDefencePawn* NewTarget)

@@ -13,6 +13,7 @@ class UBoxComponent;
 class UMaterialInstanceDynamic;
 class UMeshComponent;
 class UNiagaraComponent;
+class UOutlineComponent;
 class UStaticMeshComponent;
 
 UCLASS(Abstract)
@@ -33,7 +34,11 @@ public:
 
     void ShowRadiusDisplay();
 
+    void ShowOutline();
+
     void HideRadiusDisplay();
+
+    void HideOutline();
 
     int32 GetHealAmountPerPurchase() const { return HealAmountPerPurchase; }
 
@@ -97,6 +102,9 @@ private:
 
     UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components", meta = (AllowPrivateAccess = true))
     UStaticMeshComponent* RadiusDisplay;
+
+    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components", meta = (AllowPrivateAccess = true))
+    UOutlineComponent* OutlineComponent;
 
     UPROPERTY()
     UMaterialInstanceDynamic* RadiusMaterial;

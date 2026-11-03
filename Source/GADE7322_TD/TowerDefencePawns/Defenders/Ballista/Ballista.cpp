@@ -9,6 +9,7 @@
 #include "TowerDefencePawns/Components/DamageComponent.h"
 #include "TowerDefencePawns/Components/HealthComponent.h"
 #include "TowerDefencePawns/Components/HitFlashComponent.h"
+#include "TowerDefencePawns/Components/OutlineComponent.h"
 #include "TowerDefencePawns/Defenders/Ballista/BallistaBarrel.h"
 #include "TowerDefencePawns/Defenders/Ballista/BallistaDecoration.h"
 #include "TowerDefencePawns/Defenders/Components/DefenderUpgradeComponent.h"
@@ -45,14 +46,20 @@ void ABallista::BeginPlay()
     Super::BeginPlay();
     if (PivotPoint) DefaultPivotRotation = PivotPoint->GetRelativeRotation();
     HitFlashComponent->BindMaterials();
+    OutlineComponent->BindMaterials();
+    OutlineComponent->DisableOutline();
     if (ABallistaBarrel* Ballista = GetBallistaBarrel(); IsValid(Ballista))
     {
         Ballista->GetHitFlashComponent()->BindMaterials();
+        Ballista->GetOutlineComponent()->BindMaterials();
+        Ballista->GetOutlineComponent()->DisableOutline();
         Ballista->GetMesh()->SetCollisionResponseToChannel(MouseClickTraceChannel, ECR_Ignore);
     }
     if (ABallistaBarrel* Cannon = GetCannonBarrel(); IsValid(Cannon))
     {
         Cannon->GetHitFlashComponent()->BindMaterials();
+        Cannon->GetOutlineComponent()->BindMaterials();
+        Cannon->GetOutlineComponent()->DisableOutline();
         Cannon->GetMesh()->SetCollisionResponseToChannel(MouseClickTraceChannel, ECR_Ignore);
     }
     StandMesh->SetCollisionResponseToChannel(MouseClickTraceChannel, ECR_Ignore);
@@ -63,6 +70,8 @@ void ABallista::BeginPlay()
         ABallistaDecoration* Deco = Cast<ABallistaDecoration>(Comp->GetChildActor());
         if (!IsValid(Deco)) continue;
         Deco->GetHitFlashComponent()->BindMaterials();
+        Deco->GetOutlineComponent()->BindMaterials();
+        Deco->GetOutlineComponent()->DisableOutline();
         Deco->GetMesh()->SetCollisionResponseToChannel(MouseClickTraceChannel, ECR_Ignore);
     }
 }
@@ -99,7 +108,35 @@ void ABallista::DoFlash()
         const UChildActorComponent* Comp = Cast<UChildActorComponent>(Ref.GetComponent(this));
         if (!IsValid(Comp)) continue;
         if (ABallistaDecoration* Deco = Cast<ABallistaDecoration>(Comp->GetChildActor()); IsValid(Deco))
-            Deco->GetHitFlashComponent()->BindMaterials();
+            Deco->GetHitFlashComponent()->DoFlash();
+    }
+}
+
+void ABallista::ShowOutline()
+{
+    Super::ShowOutline();
+    if (ABallistaBarrel* CurrentBarrel = GetBarrel()) CurrentBarrel->GetOutlineComponent()->EnableOutline();
+    if (GetUpgradeComponent()->GetCurrentLevel() != 1) return;
+    for (auto& Ref : BallistaFirstUpgradeDecorations)
+    {
+        const UChildActorComponent* Comp = Cast<UChildActorComponent>(Ref.GetComponent(this));
+        if (!IsValid(Comp)) continue;
+        if (ABallistaDecoration* Deco = Cast<ABallistaDecoration>(Comp->GetChildActor()); IsValid(Deco))
+            Deco->GetOutlineComponent()->EnableOutline();
+    }
+}
+
+void ABallista::HideOutline()
+{
+    Super::HideOutline();
+    if (ABallistaBarrel* CurrentBarrel = GetBarrel()) CurrentBarrel->GetOutlineComponent()->DisableOutline();
+    if (GetUpgradeComponent()->GetCurrentLevel() != 1) return;
+    for (auto& Ref : BallistaFirstUpgradeDecorations)
+    {
+        const UChildActorComponent* Comp = Cast<UChildActorComponent>(Ref.GetComponent(this));
+        if (!IsValid(Comp)) continue;
+        if (ABallistaDecoration* Deco = Cast<ABallistaDecoration>(Comp->GetChildActor()); IsValid(Deco))
+            Deco->GetOutlineComponent()->DisableOutline();
     }
 }
 
@@ -213,6 +250,7 @@ void ABallista::DoOnLevelChanged(int32 Level)
     SetCurrentTeam(CurrentBallistaLevel.GetTeam());
     AttackRadius = CurrentBallistaLevel.GetAttackRadius();
     AttackCooldown = CurrentBallistaLevel.GetAttackCooldown();
+    if (bShowingRadius) ShowRadiusDisplay(); // Update radius display to match any new values
     if (ABallistaBarrel* Barrel = GetBallistaBarrel(); IsValid(Barrel))
     {
         Barrel->GetMesh()->SetVisibility(true);

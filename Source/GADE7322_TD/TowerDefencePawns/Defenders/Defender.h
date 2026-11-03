@@ -10,7 +10,7 @@ class ADefenderSpot;
 class UBoxComponent;
 class UDefenderUpgradeComponent;
 class UNiagaraComponent;
-class ATowerDefenceGameMode;
+class UOutlineComponent;
 
 UCLASS(Abstract)
 class GADE7322_TD_API ADefender : public ATowerDefencePawn
@@ -26,7 +26,11 @@ public:
 
     void ShowRadiusDisplay();
 
+    virtual void ShowOutline();
+
     void HideRadiusDisplay();
+
+    virtual void HideOutline();
 
     virtual float GetDetectionRadius() const;
     virtual float GetPrimaryRadius() const { return 0.0f; }
@@ -87,6 +91,12 @@ protected:
 
     UPROPERTY(EditDefaultsOnly, Category = "Defender", meta = (AllowPrivateAccess = true))
     FLinearColor SecondaryRadiusColour;
+
+    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components", meta = (AllowPrivateAccess = true))
+    UOutlineComponent* OutlineComponent;
+
+    bool bShowingRadius = false;
+    bool bShowingOutline = false;
 
 private:
     UFUNCTION()

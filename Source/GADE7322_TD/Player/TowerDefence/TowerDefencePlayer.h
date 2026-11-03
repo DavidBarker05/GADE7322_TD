@@ -66,9 +66,9 @@ private:
 
     bool IsGamePaused() const;
 
-    void UpdateRadiusDisplay();
+    void UpdateSelectedTargetDisplay();
 
-    TWeakObjectPtr<AActor> RadiusDisplayedTarget;
+    TWeakObjectPtr<AActor> DisplayedSelectTarget;
 
     void ClampToPlayArea();
 

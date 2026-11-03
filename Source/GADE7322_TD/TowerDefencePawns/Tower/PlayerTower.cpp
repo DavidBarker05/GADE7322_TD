@@ -10,6 +10,7 @@
 #include "TowerDefencePawns/AI/ProximityPerception/AISenseConfig_Proximity.h"
 #include "TowerDefencePawns/AI/TargetSelectionFunctions.h"
 #include "TowerDefencePawns/Components/HitFlashComponent.h"
+#include "TowerDefencePawns/Components/OutlineComponent.h"
 
 APlayerTower::APlayerTower()
 {
@@ -24,6 +25,7 @@ APlayerTower::APlayerTower()
     RadiusDisplay->SetCollisionEnabled(ECollisionEnabled::NoCollision);
     RadiusDisplay->SetCastShadow(false);
     RadiusDisplay->SetVisibility(false);
+    OutlineComponent = CreateDefaultSubobject<UOutlineComponent>(TEXT("Outline Component"));
     AttackTargets.Init(nullptr, 3);
     TimerHandles.SetNum(3);
     PerceptionComponent = CreateDefaultSubobject<UAIPerceptionComponent>(TEXT("Perception Component"));
@@ -64,7 +66,11 @@ void APlayerTower::ShowRadiusDisplay()
     RadiusDisplay->SetVisibility(true);
 }
 
+void APlayerTower::ShowOutline() { OutlineComponent->EnableOutline(); }
+
 void APlayerTower::HideRadiusDisplay() { RadiusDisplay->SetVisibility(false); }
+
+void APlayerTower::HideOutline() { OutlineComponent->DisableOutline(); }
 
 void APlayerTower::PostInitializeComponents()
 {
@@ -80,6 +86,8 @@ void APlayerTower::BeginPlay()
     SetPawnActive(true);
     HitFlashComponent->BindMaterials();
     UpdateCrystalMaterial();
+    OutlineComponent->BindMaterials();
+    OutlineComponent->DisableOutline();
 }
 
 void APlayerTower::Tick(float DeltaTime)
