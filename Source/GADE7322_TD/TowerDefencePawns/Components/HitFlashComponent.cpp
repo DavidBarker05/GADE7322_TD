@@ -1,7 +1,5 @@
 #include "TowerDefencePawns/Components/HitFlashComponent.h"
 
-#include "Components/MeshComponent.h"
-
 void UHitFlashComponent::BindMaterials()
 {
     UnbindMaterials(); // Unbind in case any materials already
@@ -9,17 +7,21 @@ void UHitFlashComponent::BindMaterials()
     if (!Owner) return;
     for (const FComponentReference& Ref : MeshComponents)
     {
-        UMeshComponent* MC = Cast<UMeshComponent>(Ref.GetComponent(Owner));
-        if (!IsValid(MC)) continue;
-        MC->EmptyOverrideMaterials();
-        for (int32 i = 0; i < MC->GetNumMaterials(); ++i)
+        UMeshComponent* MeshComponent = Cast<UMeshComponent>(Ref.GetComponent(Owner));
+        if (!IsValid(MeshComponent)) continue;
+        MeshComponent->EmptyOverrideMaterials();
+        TArray<UMaterialInstanceDynamic*> MaterialInstances;
+        for (int32 i = 0; i < MeshComponent->GetNumMaterials(); ++i)
         {
-            UMaterialInterface* MI = MC->GetMaterial(i);
-            if (!IsValid(MI)) continue;
-            UMaterialInstanceDynamic* MID = UMaterialInstanceDynamic::Create(MI, this);
-            MC->SetMaterial(i, MID);
-            FlashMaterials.Add(MID);
+            UMaterialInterface* MaterialInterfaceI = MeshComponent->GetMaterial(i);
+            if (!IsValid(MaterialInterfaceI)) continue;
+            UMaterialInstanceDynamic* MaterialInstanceDynamic =
+                UMaterialInstanceDynamic::Create(MaterialInterfaceI, this);
+            MeshComponent->SetMaterial(i, MaterialInstanceDynamic);
+            FlashMaterials.Add(MaterialInstanceDynamic);
+            MaterialInstances.Add(MaterialInstanceDynamic);
         }
+        OnMeshMaterialsAdded.Broadcast(MeshComponent, MaterialInstances);
     }
 }
 

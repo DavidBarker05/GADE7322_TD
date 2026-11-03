@@ -7,12 +7,13 @@
 #include "PlayerTower.generated.h"
 
 struct FAIStimulus;
-class UBoxComponent;
 class UAIPerceptionComponent;
 class UAISenseConfig_Proximity;
-class UStaticMeshComponent;
+class UBoxComponent;
 class UMaterialInstanceDynamic;
+class UMeshComponent;
 class UNiagaraComponent;
+class UStaticMeshComponent;
 
 UCLASS(Abstract)
 class GADE7322_TD_API APlayerTower : public ATowerDefencePawn
@@ -21,6 +22,8 @@ class GADE7322_TD_API APlayerTower : public ATowerDefencePawn
 
 public:
     APlayerTower();
+
+    virtual void PostInitializeComponents() override;
 
     virtual void BeginPlay() override;
 
@@ -69,6 +72,12 @@ private:
     void UpdateAttackTargets();
 
     void FireAttackBeam(int32 Index, const FVector& TargetLocation);
+
+    UFUNCTION()
+    void OnHitFlashMaterialsAdded(UMeshComponent* MeshComponent, TArray<UMaterialInstanceDynamic*> MaterialInstances);
+
+    UFUNCTION()
+    void UpdateCrystalMaterial();
 
     // The amount of health the tower heals by with each purchase of health
     UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Tower",
@@ -136,4 +145,7 @@ private:
 
     UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components|Beams", meta = (AllowPrivateAccess = true))
     TArray<UNiagaraComponent*> BeamComponents;
+
+    UPROPERTY()
+    TArray<UMaterialInstanceDynamic*> CrystalMaterials;
 };

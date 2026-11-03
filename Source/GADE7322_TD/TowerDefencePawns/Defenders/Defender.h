@@ -10,6 +10,7 @@ class ADefenderSpot;
 class UBoxComponent;
 class UDefenderUpgradeComponent;
 class UNiagaraComponent;
+class ATowerDefenceGameMode;
 
 UCLASS(Abstract)
 class GADE7322_TD_API ADefender : public ATowerDefencePawn
@@ -19,9 +20,9 @@ class GADE7322_TD_API ADefender : public ATowerDefencePawn
 public:
     ADefender();
 
-    virtual void BeginPlay() override;
-
     virtual void PostInitializeComponents() override;
+
+    virtual void BeginPlay() override;
 
     void ShowRadiusDisplay();
 
@@ -90,6 +91,12 @@ protected:
 private:
     UFUNCTION()
     virtual void LevelChanged(int32 Level);
+
+    UFUNCTION()
+    void OnHealthLostValue(int32 Amount);
+
+    UFUNCTION()
+    void OnHealthGainedValue(int32 Amount);
 
     UPROPERTY(BlueprintReadWrite, Category = "Defender", meta = (AllowPrivateAccess = true))
     ADefenderSpot* SpawnPoint = nullptr;

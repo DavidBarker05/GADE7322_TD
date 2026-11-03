@@ -99,6 +99,7 @@ ETeamAttitude::Type ATowerDefenceGameMode::GetAttitudeCustom(EAITeam TeamA, EAIT
                 case EAITeam::RangedDefender:
                 case EAITeam::SupportDefender:
                 case EAITeam::PlayerTower:
+                case EAITeam::GroundAirDefender:
                     return ETeamAttitude::Friendly; // Friendly to all defenders
                 case EAITeam::MeleeAttacker:
                 case EAITeam::SupportAttacker:
@@ -115,6 +116,7 @@ ETeamAttitude::Type ATowerDefenceGameMode::GetAttitudeCustom(EAITeam TeamA, EAIT
                 case EAITeam::RangedDefender:
                 case EAITeam::SupportDefender:
                 case EAITeam::PlayerTower:
+                case EAITeam::GroundAirDefender:
                     return ETeamAttitude::Friendly; // Friendly to all defenders
                 case EAITeam::MeleeAttacker:
                 case EAITeam::SupportAttacker:
@@ -133,6 +135,7 @@ ETeamAttitude::Type ATowerDefenceGameMode::GetAttitudeCustom(EAITeam TeamA, EAIT
                 case EAITeam::RangedDefender:
                 case EAITeam::SupportDefender:
                 case EAITeam::PlayerTower:
+                case EAITeam::GroundAirDefender:
                     return ETeamAttitude::Friendly; // Friendly to all defenders
                 case EAITeam::MeleeAttacker:
                 case EAITeam::SupportAttacker:
@@ -149,6 +152,8 @@ ETeamAttitude::Type ATowerDefenceGameMode::GetAttitudeCustom(EAITeam TeamA, EAIT
                 case EAITeam::MeleeDefender:
                 case EAITeam::RangedDefender:
                 case EAITeam::SupportDefender:
+                case EAITeam::PlayerTower:
+                case EAITeam::GroundAirDefender:
                     return ETeamAttitude::Hostile; // Hostile to all defenders
                 case EAITeam::MeleeAttacker:
                 case EAITeam::SupportAttacker:

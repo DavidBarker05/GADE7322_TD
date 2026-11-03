@@ -110,8 +110,6 @@ class GADE7322_TD_API AHealer : public ADefender
 public:
     AHealer();
 
-    virtual void BeginPlay() override;
-
     virtual void Tick(float DeltaTime) override;
 
     virtual void StartAttack() override;
@@ -229,9 +227,6 @@ private:
 
     UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Healer", meta = (AllowPrivateAccess = true))
     int32 HealAmount;
-
-    UPROPERTY()
-    ATowerDefenceGameMode* TowerDefenceGameMode;
 
     FTimerHandle AttackCooldownHandle;
 };

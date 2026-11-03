@@ -3,9 +3,13 @@
 #include "CoreMinimal.h"
 
 #include "Components/ActorComponent.h"
+#include "Components/MeshComponent.h"
 #include "Engine/EngineTypes.h"
 
 #include "HitFlashComponent.generated.h"
+
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnMeshMaterialsAdded, UMeshComponent*, MeshComponent,
+                                             TArray<UMaterialInstanceDynamic*>, MaterialInstances);
 
 UCLASS(ClassGroup = (TowerDefencePawn), meta = (BlueprintSpawnableComponent))
 class GADE7322_TD_API UHitFlashComponent : public UActorComponent
@@ -26,6 +30,11 @@ protected:
     UFUNCTION()
     virtual void EndFlash();
 
+public:
+    UPROPERTY(BlueprintAssignable)
+    FOnMeshMaterialsAdded OnMeshMaterialsAdded;
+
+protected:
     FTimerHandle FlashHandle;
 
 private:

@@ -1,6 +1,7 @@
 #include "TowerDefencePawns/Tower/PlayerTower.h"
 
 #include "Components/BoxComponent.h"
+#include "HealthComponent.h"
 #include "Materials/MaterialInstanceDynamic.h"
 #include "NiagaraComponent.h"
 #include "Perception/AIPerceptionComponent.h"
@@ -65,17 +66,20 @@ void APlayerTower::ShowRadiusDisplay()
 
 void APlayerTower::HideRadiusDisplay() { RadiusDisplay->SetVisibility(false); }
 
+void APlayerTower::PostInitializeComponents()
+{
+    Super::PostInitializeComponents();
+    HitFlashComponent->OnMeshMaterialsAdded.AddUniqueDynamic(this, &APlayerTower::OnHitFlashMaterialsAdded);
+    HealthComponent->OnHealthChanged.AddUniqueDynamic(this, &APlayerTower::UpdateCrystalMaterial);
+}
+
 void APlayerTower::BeginPlay()
 {
     Super::BeginPlay();
     RadiusMaterial = RadiusDisplay->CreateAndSetMaterialInstanceDynamic(0);
     SetPawnActive(true);
     HitFlashComponent->BindMaterials();
-    if (OccupiedRadius <= 0.0f && TowerMesh)
-    {
-        const FVector Extent = TowerMesh->Bounds.BoxExtent;
-        OccupiedRadius = FMath::Min(Extent.X, Extent.Y);
-    }
+    UpdateCrystalMaterial();
 }
 
 void APlayerTower::Tick(float DeltaTime)
@@ -112,6 +116,24 @@ void APlayerTower::FireAttackBeam(int32 Index, const FVector& TargetLocation)
     Beam->SetVariablePosition(TEXT("Beam Start"), Beam->GetComponentLocation());
     Beam->SetVariablePosition(TEXT("Beam End"), TargetLocation);
     Beam->Activate(true);
+}
+
+void APlayerTower::OnHitFlashMaterialsAdded(UMeshComponent* MeshComponent,
+                                            TArray<UMaterialInstanceDynamic*> MaterialInstances)
+{
+    if (!IsValid(MeshComponent) || MaterialInstances.IsEmpty()) return;
+    CrystalMaterials = MaterialInstances;
+}
+
+void APlayerTower::UpdateCrystalMaterial()
+{
+    const float Health01 =
+        static_cast<float>(HealthComponent->GetCurrentHealth()) / static_cast<float>(HealthComponent->GetMaxHealth());
+    for (const auto Material : CrystalMaterials)
+    {
+        if (!IsValid(Material)) continue;
+        Material->SetScalarParameterValue(TEXT("Health01"), Health01);
+    }
 }
 
 void APlayerTower::DoUpdatePerceptionOnTeamChange()

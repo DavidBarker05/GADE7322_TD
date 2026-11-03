@@ -6,7 +6,11 @@
 
 #include "HealthComponent.generated.h"
 
-class ATowerDefenceGameMode;
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnHealthChanged);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnHealthLost);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnHealthGained);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnHealthLostValue, int32, Amount);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnHealthGainedValue, int32, Amount);
 
 UCLASS(ClassGroup = (TowerDefencePawn), meta = (BlueprintSpawnableComponent))
 class GADE7322_TD_API UHealthComponent : public UActorComponent
@@ -14,13 +18,12 @@ class GADE7322_TD_API UHealthComponent : public UActorComponent
     GENERATED_BODY()
 
 public:
-    virtual void BeginPlay() override;
-
     int32 GetMaxHealth() const { return MaxHealth; }
     UHealthComponent& SetMaxHealth(int32 Health)
     {
         MaxHealth = FMath::Max(0, Health);
         CurrentHealth = FMath::Clamp(CurrentHealth, 0, MaxHealth);
+        OnHealthChanged.Broadcast();
         return *this;
     }
 
@@ -28,6 +31,7 @@ public:
     UHealthComponent& SetCurrentHealth(int32 Health)
     {
         CurrentHealth = FMath::Clamp(Health, 0, MaxHealth);
+        OnHealthChanged.Broadcast();
         return *this;
     }
 
@@ -49,6 +53,21 @@ public:
 
     bool IsDead() const { return bDead; }
 
+    UPROPERTY(BlueprintAssignable)
+    FOnHealthChanged OnHealthChanged;
+
+    UPROPERTY(BlueprintAssignable)
+    FOnHealthLost OnHealthLost;
+
+    UPROPERTY(BlueprintAssignable)
+    FOnHealthGained OnHealthGained;
+
+    UPROPERTY(BlueprintAssignable)
+    FOnHealthLostValue OnHealthLostValue;
+
+    UPROPERTY(BlueprintAssignable)
+    FOnHealthGainedValue OnHealthGainedValue;
+
 private:
     UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Health",
               meta = (AllowPrivateAccess = true, UIMin = 0, ClampMin = 0))
@@ -63,11 +82,4 @@ private:
 
     UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Health", meta = (AllowPrivateAccess = true))
     bool bDead = false;
-
-    bool bOwnerIsDefender = false;
-
-    UPROPERTY()
-    ATowerDefenceGameMode* TowerDefenceGameMode;
-    // If going to be updating game mode every time take damage then accessing directly
-    // is better than broadcasting because of how often it happens
 };

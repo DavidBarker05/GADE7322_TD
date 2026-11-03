@@ -31,12 +31,6 @@ AHealer::AHealer()
     SecondaryRadiusColour = FLinearColor(1.0f, 0.0f, 0.0f, 1.0f);
 }
 
-void AHealer::BeginPlay()
-{
-    Super::BeginPlay();
-    TowerDefenceGameMode = Cast<ATowerDefenceGameMode>(UGameplayStatics::GetGameMode(this));
-}
-
 void AHealer::Tick(float DeltaTime)
 {
     Super::Tick(DeltaTime);

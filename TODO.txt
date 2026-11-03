@@ -19,7 +19,6 @@ Upgrades:
 
 Shaders:
 - Vertex Displacement Shader: Inverse hull outline shader when selecting defenders
-- Colour Changing Shader: Make main tower crystal change colour the lower the health is (might then not always display the health bar and it only shows when attacked like other tower defence pawns)
 
 Visual Effects:
 - Particle System: Cannon ball explosion

@@ -39,9 +39,17 @@ ATowerDefencePawn::ATowerDefencePawn()
     BaseEyeHeight = 0.0f;
 }
 
+void ATowerDefencePawn::PostInitializeComponents()
+{
+    Super::PostInitializeComponents();
+    HealthComponent->OnHealthChanged.AddUniqueDynamic(this, &ATowerDefencePawn::UpdateHealthDisplay);
+    HealthComponent->OnHealthLost.AddUniqueDynamic(this, &ATowerDefencePawn::DoFlash);
+}
+
 void ATowerDefencePawn::BeginPlay()
 {
     Super::BeginPlay();
+    TowerDefenceGameMode = Cast<ATowerDefenceGameMode>(UGameplayStatics::GetGameMode(this));
     if (!bIsPawnActive)
     {
         HideHealthBar();

@@ -1,10 +1,12 @@
 #include "TowerDefencePawns/Defenders/Defender.h"
 
 #include "Components/BoxComponent.h"
+#include "Kismet/GameplayStatics.h"
 #include "Materials/MaterialInstanceDynamic.h"
 #include "NiagaraComponent.h"
 #include "Perception/AIPerceptionComponent.h"
 #include "TDCollisionChannels.h"
+#include "TowerDefenceGameMode.h"
 #include "TowerDefencePawns/AI/ProximityPerception/AISense_Proximity.h"
 #include "TowerDefencePawns/AI/ProximityPerception/AISenseConfig_Proximity.h"
 #include "TowerDefencePawns/Components/DamageComponent.h"
@@ -32,16 +34,18 @@ ADefender::ADefender()
     UpgradeComponent = CreateDefaultSubobject<UDefenderUpgradeComponent>(TEXT("Upgrade Component"));
 }
 
-void ADefender::BeginPlay()
-{
-    Super::BeginPlay();
-    DefenderRadiusMaterial = DefenderRadiusDisplay->CreateAndSetMaterialInstanceDynamic(0);
-}
-
 void ADefender::PostInitializeComponents()
 {
     Super::PostInitializeComponents();
     UpgradeComponent->OnLevelChanged.AddUniqueDynamic(this, &ADefender::LevelChanged);
+    HealthComponent->OnHealthLostValue.AddUniqueDynamic(this, &ADefender::OnHealthLostValue);
+    HealthComponent->OnHealthGainedValue.AddUniqueDynamic(this, &ADefender::OnHealthGainedValue);
+}
+
+void ADefender::BeginPlay()
+{
+    Super::BeginPlay();
+    DefenderRadiusMaterial = DefenderRadiusDisplay->CreateAndSetMaterialInstanceDynamic(0);
 }
 
 void ADefender::ShowRadiusDisplay()
@@ -112,4 +116,14 @@ void ADefender::LevelChanged(int32 Level)
     DamageComponent->SetDamage(CurrentDefenderLevel.GetDamage());
     HealthComponent->SetMaxHealth(CurrentDefenderLevel.GetHealth());
     DoOnLevelChanged(Level);
+}
+
+void ADefender::OnHealthLostValue(int32 Amount)
+{
+    if (TowerDefenceGameMode) TowerDefenceGameMode->DefenderLostHealth(Amount);
+}
+
+void ADefender::OnHealthGainedValue(int32 Amount)
+{
+    if (TowerDefenceGameMode) TowerDefenceGameMode->DefenderGainedHealth(Amount);
 }

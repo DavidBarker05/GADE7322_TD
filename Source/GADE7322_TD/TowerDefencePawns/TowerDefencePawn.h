@@ -7,6 +7,7 @@
 
 #include "TowerDefencePawn.generated.h"
 
+class ATowerDefenceGameMode;
 class ATowerDefencePawnAIController;
 class UAIPerceptionStimuliSourceComponent;
 class UDamageComponent;
@@ -44,6 +45,8 @@ class GADE7322_TD_API ATowerDefencePawn : public ACharacter,
 
 public:
     ATowerDefencePawn();
+
+    virtual void PostInitializeComponents() override;
 
     virtual void BeginPlay() override;
 
@@ -108,8 +111,10 @@ public:
         DoUpdatePerceptionOnTeamChange();
     }
 
+    UFUNCTION()
     virtual void UpdateHealthDisplay();
 
+    UFUNCTION()
     virtual void DoFlash();
 
     const UHitFlashComponent* GetHitFlashComponent() const { return HitFlashComponent; }
@@ -167,6 +172,10 @@ protected:
 
     UFUNCTION()
     virtual void HideHealthBar();
+
+    UPROPERTY()
+    ATowerDefenceGameMode* TowerDefenceGameMode;
+    // A few pawns need access to the game mode so beneficial to do it in the base class in case
 
 private:
     UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "TD Pawn", meta = (AllowPrivateAccess = true))
