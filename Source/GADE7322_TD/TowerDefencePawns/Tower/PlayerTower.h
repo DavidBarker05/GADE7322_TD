@@ -11,6 +11,7 @@ struct FAIStimulus;
 class UAIPerceptionComponent;
 class UAISenseConfig_Proximity;
 class UBoxComponent;
+class UDecalComponent;
 class UMaterialInstanceDynamic;
 class UMeshComponent;
 class UNiagaraComponent;
@@ -107,7 +108,7 @@ private:
     UStaticMeshComponent* CrystalMesh;
 
     UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components", meta = (AllowPrivateAccess = true))
-    UStaticMeshComponent* RadiusDisplay;
+    UDecalComponent* RadiusDisplay;
 
     UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components", meta = (AllowPrivateAccess = true))
     UOutlineComponent* OutlineComponent;

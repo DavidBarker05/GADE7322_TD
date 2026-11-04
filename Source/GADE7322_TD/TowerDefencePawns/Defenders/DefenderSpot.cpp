@@ -1,6 +1,7 @@
 #include "TowerDefencePawns/Defenders/DefenderSpot.h"
 
 #include "Components/BoxComponent.h"
+#include "Components/DecalComponent.h"
 #include "Events/EventBus.h"
 #include "TowerDefencePawns/Components/HealthComponent.h"
 #include "TowerDefencePawns/Defenders/Components/DefenderUpgradeComponent.h"
@@ -18,6 +19,8 @@ ADefenderSpot::ADefenderSpot()
     BoxCollider->SetCollisionObjectType(ECC_WorldDynamic);
     BoxCollider->SetCollisionResponseToAllChannels(ECR_Ignore);
     BoxCollider->SetCollisionResponseToChannel(MouseClickTraceChannel, ECR_Block);
+    SpotVisual = CreateDefaultSubobject<UDecalComponent>(TEXT("Spot Visual"));
+    SpotVisual->SetupAttachment(Root);
 }
 
 void ADefenderSpot::BeginPlay()

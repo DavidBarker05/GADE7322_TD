@@ -4,6 +4,7 @@
 #include "Components/BoxComponent.h"
 #include "Components/CapsuleComponent.h"
 #include "Components/ChildActorComponent.h"
+#include "Components/DecalComponent.h"
 #include "Perception/AIPerceptionComponent.h"
 #include "TowerDefencePawns/Components/HitFlashComponent.h"
 #include "TowerDefencePawns/Components/OutlineComponent.h"
@@ -160,6 +161,7 @@ void AWarrior::DoOnLevelChanged(int32 Level)
     FVector NewBoxExtent = GetBoxCollider()->GetUnscaledBoxExtent();
     NewBoxExtent.Z = CurrentWarrior.GetHalfHeight();
     GetBoxCollider()->SetBoxExtent(NewBoxExtent);
+    GetDefenderRadiusDisplay()->SetRelativeLocation(NewMeshLoc);
     HitFlashComponent->BindMaterials();
     OutlineComponent->BindMaterials();
     if (Level == 1)

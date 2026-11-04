@@ -1,6 +1,7 @@
 #include "TowerDefencePawns/Tower/PlayerTower.h"
 
 #include "Components/BoxComponent.h"
+#include "Components/DecalComponent.h"
 #include "Engine/PostProcessVolume.h"
 #include "Materials/MaterialInstanceDynamic.h"
 #include "NiagaraComponent.h"
@@ -20,10 +21,8 @@ APlayerTower::APlayerTower()
     TowerMesh->SetupAttachment(RootComponent);
     CrystalMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Crystal Mesh"));
     CrystalMesh->SetupAttachment(RootComponent);
-    RadiusDisplay = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Radius Display"));
+    RadiusDisplay = CreateDefaultSubobject<UDecalComponent>(TEXT("Radius Display"));
     RadiusDisplay->SetupAttachment(RootComponent);
-    RadiusDisplay->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-    RadiusDisplay->SetCastShadow(false);
     RadiusDisplay->SetVisibility(false);
     OutlineComponent = CreateDefaultSubobject<UOutlineComponent>(TEXT("Outline Component"));
     AttackTargets.Init(nullptr, 3);
@@ -66,7 +65,7 @@ void APlayerTower::PostInitializeComponents()
 void APlayerTower::BeginPlay()
 {
     Super::BeginPlay();
-    RadiusMaterial = RadiusDisplay->CreateAndSetMaterialInstanceDynamic(0);
+    RadiusMaterial = RadiusDisplay->CreateDynamicMaterialInstance();
     SetPawnActive(true);
     HitFlashComponent->BindMaterials();
     UpdateCrystalMaterial();
@@ -130,6 +129,7 @@ void APlayerTower::ShowRadiusDisplay()
     RadiusMaterial->SetVectorParameterValue(TEXT("Detection Radius"), Pack(DetectionRadiusColour, AttackRadius));
     RadiusMaterial->SetVectorParameterValue(TEXT("Primary Radius"), Pack(PrimaryRadiusColour, AttackRadius));
     RadiusMaterial->SetVectorParameterValue(TEXT("Secondary Radius"), Pack(SecondaryRadiusColour, 0.0f));
+    RadiusDisplay->DecalSize = FVector(AttackRadius, AttackRadius, AttackRadius);
     RadiusDisplay->SetVisibility(true);
 }
 

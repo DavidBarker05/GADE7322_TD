@@ -8,6 +8,7 @@
 
 class ADefenderSpot;
 class UBoxComponent;
+class UDecalComponent;
 class UDefenderUpgradeComponent;
 class UNiagaraComponent;
 class UOutlineComponent;
@@ -61,8 +62,8 @@ public:
     const UNiagaraComponent* GetHealEffect() const { return HealEffect; }
     UNiagaraComponent* GetHealEffect() { return HealEffect; }
 
-    const UStaticMeshComponent* GetDefenderRadiusDisplay() const { return DefenderRadiusDisplay; }
-    UStaticMeshComponent* GetDefenderRadiusDisplay() { return DefenderRadiusDisplay; }
+    const UDecalComponent* GetDefenderRadiusDisplay() const { return DefenderRadiusDisplay; }
+    UDecalComponent* GetDefenderRadiusDisplay() { return DefenderRadiusDisplay; }
 
     const UMaterialInstanceDynamic* GetDefenderRadiusMaterial() const { return DefenderRadiusMaterial; }
     UMaterialInstanceDynamic* GetDefenderRadiusMaterial() { return DefenderRadiusMaterial; }
@@ -118,7 +119,7 @@ private:
     UNiagaraComponent* HealEffect;
 
     UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components", meta = (AllowPrivateAccess = true))
-    UStaticMeshComponent* DefenderRadiusDisplay;
+    UDecalComponent* DefenderRadiusDisplay;
 
     UPROPERTY(BlueprintReadOnly, Category = "Defender", meta = (AllowPrivateAccess = true))
     UMaterialInstanceDynamic* DefenderRadiusMaterial;

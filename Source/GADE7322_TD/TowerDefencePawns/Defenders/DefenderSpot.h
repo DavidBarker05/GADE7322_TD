@@ -9,6 +9,7 @@
 
 class ADefender;
 class UBoxComponent;
+class UDecalComponent;
 
 UCLASS(Abstract)
 class GADE7322_TD_API ADefenderSpot : public AActor,
@@ -48,6 +49,9 @@ private:
 
     UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components", meta = (AllowPrivateAccess = true))
     UBoxComponent* BoxCollider = nullptr;
+
+    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components", meta = (AllowPrivateAccess = true))
+    UDecalComponent* SpotVisual = nullptr;
 
     UPROPERTY(BlueprintReadOnly, Category = "Defender", meta = (AllowPrivateAccess = true))
     ADefender* CurrentDefender = nullptr;

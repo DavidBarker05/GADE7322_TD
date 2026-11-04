@@ -1,6 +1,7 @@
 #include "TowerDefencePawns/Defenders/Defender.h"
 
 #include "Components/BoxComponent.h"
+#include "Components/DecalComponent.h"
 #include "Materials/MaterialInstanceDynamic.h"
 #include "NiagaraComponent.h"
 #include "Perception/AIPerceptionComponent.h"
@@ -25,10 +26,8 @@ ADefender::ADefender()
     HealEffect = CreateDefaultSubobject<UNiagaraComponent>(TEXT("Heal Effect"));
     HealEffect->SetupAttachment(RootComponent);
     HealEffect->bAutoActivate = false;
-    DefenderRadiusDisplay = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Defender Radius Display"));
+    DefenderRadiusDisplay = CreateDefaultSubobject<UDecalComponent>(TEXT("Defender Radius Display"));
     DefenderRadiusDisplay->SetupAttachment(RootComponent);
-    DefenderRadiusDisplay->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-    DefenderRadiusDisplay->SetCastShadow(false);
     DefenderRadiusDisplay->SetVisibility(false);
     OutlineComponent = CreateDefaultSubobject<UOutlineComponent>(TEXT("Outline Component"));
     UpgradeComponent = CreateDefaultSubobject<UDefenderUpgradeComponent>(TEXT("Upgrade Component"));
@@ -45,7 +44,7 @@ void ADefender::PostInitializeComponents()
 void ADefender::BeginPlay()
 {
     Super::BeginPlay();
-    DefenderRadiusMaterial = DefenderRadiusDisplay->CreateAndSetMaterialInstanceDynamic(0);
+    DefenderRadiusMaterial = DefenderRadiusDisplay->CreateDynamicMaterialInstance();
 }
 
 void ADefender::ShowRadiusDisplay()
@@ -60,6 +59,7 @@ void ADefender::ShowRadiusDisplay()
                                                     Pack(PrimaryRadiusColour, GetPrimaryRadius()));
     DefenderRadiusMaterial->SetVectorParameterValue(TEXT("Secondary Radius"),
                                                     Pack(SecondaryRadiusColour, GetSecondaryRadius()));
+    DefenderRadiusDisplay->DecalSize = FVector(GetDetectionRadius(), GetDetectionRadius(), GetDetectionRadius());
     DefenderRadiusDisplay->SetVisibility(true);
 }
 

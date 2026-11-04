@@ -1,5 +1,6 @@
 #include "TowerDefencePawns/Defenders/Healer/Healer.h"
 
+#include "Components/DecalComponent.h"
 #include "NiagaraComponent.h"
 #include "Perception/AIPerceptionComponent.h"
 #include "Perception/AIPerceptionSystem.h"
@@ -210,6 +211,7 @@ void AHealer::DoOnLevelChanged(int32 Level)
     FVector NewBoxExtent = GetBoxCollider()->GetUnscaledBoxExtent();
     NewBoxExtent.Z = CurrentSkeletalMesh.GetHalfHeight();
     GetBoxCollider()->SetBoxExtent(NewBoxExtent);
+    GetDefenderRadiusDisplay()->SetRelativeLocation(NewMeshLoc);
     SpellSpawnLocation->AttachToComponent(GetMesh(), FAttachmentTransformRules::SnapToTargetNotIncludingScale,
                                           TEXT("spell"));
     HealSpellBall->AttachToComponent(SpellSpawnLocation, FAttachmentTransformRules::SnapToTargetNotIncludingScale);
