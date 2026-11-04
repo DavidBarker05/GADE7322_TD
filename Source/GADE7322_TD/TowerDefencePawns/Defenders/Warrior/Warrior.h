@@ -7,7 +7,7 @@
 #include "Warrior.generated.h"
 
 class AWarriorShield;
-class AWeapon;
+class AWarriorWeapon;
 class UAnimInstance;
 class UChildActorComponent;
 class USkeletalMesh;
@@ -92,11 +92,19 @@ class GADE7322_TD_API AWarrior : public ADefender
 public:
     AWarrior();
 
+    virtual void BeginPlay() override;
+
     virtual void StartAttack() override;
 
     virtual void EndAttack() override;
 
     virtual void OnDeath(TFunction<void()>&& Func) override;
+
+    virtual void DoFlash() override;
+
+    virtual void ShowOutline() override;
+
+    virtual void HideOutline() override;
 
 protected:
     virtual void DoOnSetActive(bool bActive) override;
@@ -125,21 +133,21 @@ public:
 
     virtual float GetPrimaryRadius() const override { return AttackRadius; }
 
-    const AWeapon* GetWeapon() const;
-    AWeapon* GetWeapon();
+    const AWarriorWeapon* GetWeapon() const;
+    AWarriorWeapon* GetWeapon();
 
     UFUNCTION(BlueprintPure, Category = "Warrior|Weapon", meta = (DisplayName = "Get Weapon"))
-    AWeapon* Blueprint_GetWeapon() const;
+    AWarriorWeapon* Blueprint_GetWeapon() const;
 
 private:
     UFUNCTION(BlueprintPure, Category = "Warrior|Weapon")
-    AWeapon* GetOneHandSword() const;
+    AWarriorWeapon* GetOneHandSword() const;
 
     UFUNCTION(BlueprintPure, Category = "Warrior|Shield")
     AWarriorShield* GetShield() const;
 
     UFUNCTION(BlueprintPure, Category = "Warrior|Weapon")
-    AWeapon* GetTwoHandSword() const;
+    AWarriorWeapon* GetTwoHandSword() const;
 
     void OnAttackMontageEnded(UAnimMontage* Montage, bool bInterrupted);
 

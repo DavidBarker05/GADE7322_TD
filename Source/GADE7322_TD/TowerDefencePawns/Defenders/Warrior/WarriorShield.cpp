@@ -1,5 +1,8 @@
 #include "TowerDefencePawns/Defenders/Warrior/WarriorShield.h"
 
+#include "TowerDefencePawns/Components/HitFlashComponent.h"
+#include "TowerDefencePawns/Components/OutlineComponent.h"
+
 AWarriorShield::AWarriorShield()
 {
     Root = CreateDefaultSubobject<USceneComponent>(TEXT("Root"));
@@ -7,6 +10,8 @@ AWarriorShield::AWarriorShield()
     ShieldMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Shield Mesh"));
     ShieldMesh->SetupAttachment(RootComponent);
     ShieldMesh->SetCollisionProfileName(TEXT("NoCollision"));
+    HitFlashComponent = CreateDefaultSubobject<UHitFlashComponent>(TEXT("Hit Flash Component"));
+    OutlineComponent = CreateDefaultSubobject<UOutlineComponent>(TEXT("Outline Component"));
     bMeshTicks = ShieldMesh && ShieldMesh->IsComponentTickEnabled();
 }
 

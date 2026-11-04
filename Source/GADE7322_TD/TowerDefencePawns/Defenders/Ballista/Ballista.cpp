@@ -175,6 +175,7 @@ void ABallista::DoOnSetActive(bool bActive)
             Ballista->GetMesh()->SetComponentTickEnabled(false);
             Ballista->GetMesh()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
             Ballista->GetMesh()->SetCollisionResponseToAllChannels(ECR_Ignore);
+            Ballista->GetHitFlashComponent()->ForceStopFlash();
         }
         if (ABallistaBarrel* Cannon = GetCannonBarrel(); IsValid(Cannon))
         {
@@ -182,6 +183,7 @@ void ABallista::DoOnSetActive(bool bActive)
             Cannon->GetMesh()->SetComponentTickEnabled(false);
             Cannon->GetMesh()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
             Cannon->GetMesh()->SetCollisionResponseToAllChannels(ECR_Ignore);
+            Cannon->GetHitFlashComponent()->ForceStopFlash();
         }
         for (auto& Ref : BallistaFirstUpgradeDecorations)
         {
@@ -193,7 +195,9 @@ void ABallista::DoOnSetActive(bool bActive)
             Deco->GetMesh()->SetComponentTickEnabled(false);
             Deco->GetMesh()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
             Deco->GetMesh()->SetCollisionResponseToAllChannels(ECR_Ignore);
+            Deco->GetHitFlashComponent()->ForceStopFlash();
         }
+        HitFlashComponent->ForceStopFlash();
     }
     VisiblePawns.Empty();
     TimeSinceLastTargetUpdate = 0.0f;
@@ -220,12 +224,16 @@ void ABallista::DoUpdatePerceptionOnTeamChange()
 
 void ABallista::DoOnLevelChanged(int32 Level)
 {
+    const bool bMustResumeFlash = HitFlashComponent->PauseFlash();
+    const float RemainingFlashDuration = bMustResumeFlash ? HitFlashComponent->GetRemainingFlashDuration() : 0.0f;
     if (ABallistaBarrel* Ballista = GetBallistaBarrel(); IsValid(Ballista))
     {
         Ballista->GetMesh()->SetVisibility(false);
         Ballista->GetMesh()->SetComponentTickEnabled(false);
         Ballista->GetMesh()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
         Ballista->GetMesh()->SetCollisionResponseToAllChannels(ECR_Ignore);
+        Ballista->GetHitFlashComponent()->ForceStopFlash();
+        Ballista->GetOutlineComponent()->DisableOutline();
     }
     if (ABallistaBarrel* Cannon = GetCannonBarrel(); IsValid(Cannon))
     {
@@ -233,6 +241,8 @@ void ABallista::DoOnLevelChanged(int32 Level)
         Cannon->GetMesh()->SetComponentTickEnabled(false);
         Cannon->GetMesh()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
         Cannon->GetMesh()->SetCollisionResponseToAllChannels(ECR_Ignore);
+        Cannon->GetHitFlashComponent()->ForceStopFlash();
+        Cannon->GetOutlineComponent()->DisableOutline();
     }
     for (auto& Ref : BallistaFirstUpgradeDecorations)
     {
@@ -244,11 +254,14 @@ void ABallista::DoOnLevelChanged(int32 Level)
         Deco->GetMesh()->SetComponentTickEnabled(false);
         Deco->GetMesh()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
         Deco->GetMesh()->SetCollisionResponseToAllChannels(ECR_Ignore);
+        Deco->GetHitFlashComponent()->ForceStopFlash();
+        Deco->GetOutlineComponent()->DisableOutline();
     }
     const FBallistaLevel CurrentBallistaLevel = GetBallistaCurrentLevel();
     SetCurrentTeam(CurrentBallistaLevel.GetTeam());
     AttackRadius = CurrentBallistaLevel.GetAttackRadius();
     AttackCooldown = CurrentBallistaLevel.GetAttackCooldown();
+    if (bMustResumeFlash) HitFlashComponent->ResumeFlash();
     if (bShowingRadius) ShowRadiusDisplay(); // Update radius display to match any new values
     if (ABallistaBarrel* Barrel = GetBallistaBarrel(); IsValid(Barrel))
     {
@@ -258,6 +271,12 @@ void ABallista::DoOnLevelChanged(int32 Level)
         Barrel->GetMesh()->SetCollisionResponseToAllChannels(ECR_Block);
         Barrel->GetMesh()->SetCollisionResponseToChannel(ECC_WorldStatic, ECR_Ignore);
         Barrel->GetMesh()->SetCollisionResponseToChannel(ECC_Pawn, ECR_Overlap);
+        if (bMustResumeFlash)
+        {
+            Barrel->GetHitFlashComponent()->SetRemainingFlashDuration(RemainingFlashDuration);
+            Barrel->GetHitFlashComponent()->ResumeFlash();
+        }
+        if (bShowingOutline) Barrel->GetOutlineComponent()->EnableOutline();
     }
     if (Level != 1) return;
     for (auto& Ref : BallistaFirstUpgradeDecorations)
@@ -272,6 +291,12 @@ void ABallista::DoOnLevelChanged(int32 Level)
         Deco->GetMesh()->SetCollisionResponseToAllChannels(ECR_Block);
         Deco->GetMesh()->SetCollisionResponseToChannel(ECC_WorldStatic, ECR_Ignore);
         Deco->GetMesh()->SetCollisionResponseToChannel(ECC_Pawn, ECR_Overlap);
+        if (bMustResumeFlash)
+        {
+            Deco->GetHitFlashComponent()->SetRemainingFlashDuration(RemainingFlashDuration);
+            Deco->GetHitFlashComponent()->ResumeFlash();
+        }
+        if (bShowingOutline) Deco->GetOutlineComponent()->EnableOutline();
     }
 }
 

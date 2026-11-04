@@ -21,6 +21,7 @@ void ASkeletonPawn::BeginPlay()
 {
     Super::BeginPlay();
     HitFlashComponent->BindMaterials();
+    if (AWeapon* Sword = GetWeapon(); IsValid(Sword)) Sword->GetHitFlashComponent()->BindMaterials();
 }
 
 void ASkeletonPawn::StartAttack()
@@ -51,6 +52,12 @@ void ASkeletonPawn::OnDeath(TFunction<void()>&& Func)
     AnimInstance->Montage_SetBlendingOutDelegate(BlendingOutDelegate, DeathMontage);
 }
 
+void ASkeletonPawn::DoFlash()
+{
+    Super::DoFlash();
+    if (AWeapon* Sword = GetWeapon(); IsValid(Sword)) Sword->GetHitFlashComponent()->DoFlash();
+}
+
 void ASkeletonPawn::DoOnSetActive(bool bActive)
 {
     if (bActive)
@@ -63,8 +70,12 @@ void ASkeletonPawn::DoOnSetActive(bool bActive)
         }
     }
     AWeapon* Sword = GetWeapon();
-    if (bActive && IsValid(Sword)) Sword->AttachToSkeleton(GetMesh());
-    else Sword->AttachToComponent(Weapon, FAttachmentTransformRules::SnapToTargetNotIncludingScale);
+    if (IsValid(Sword))
+    {
+        if (bActive) Sword->AttachToSkeleton(GetMesh());
+        else Sword->AttachToComponent(Weapon, FAttachmentTransformRules::SnapToTargetNotIncludingScale);
+        Sword->GetHitFlashComponent()->ForceStopFlash();
+    }
     GetMesh()->SetVisibility(bActive);
     GetMesh()->SetComponentTickEnabled(bActive);
     GetMesh()->SetCollisionEnabled(bActive ? ECollisionEnabled::QueryAndPhysics : ECollisionEnabled::NoCollision);

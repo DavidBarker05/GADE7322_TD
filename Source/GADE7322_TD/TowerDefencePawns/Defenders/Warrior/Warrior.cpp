@@ -11,7 +11,7 @@
 #include "TowerDefencePawns/Defenders/Components/DefenderUpgradeComponent.h"
 #include "TowerDefencePawns/Defenders/Warrior/AI/WarriorAIController.h"
 #include "TowerDefencePawns/Defenders/Warrior/WarriorShield.h"
-#include "TowerDefencePawns/Weapon.h"
+#include "TowerDefencePawns/Defenders/Warrior/WarriorWeapon.h"
 
 AWarrior::AWarrior()
 {
@@ -25,6 +25,26 @@ AWarrior::AWarrior()
     TwoHandWeapon->SetupAttachment(RootComponent);
     CurrentTeam = EAITeam::MeleeDefender;
     PrimaryRadiusColour = FLinearColor(1.0f, 0.0f, 0.0f, 1.0f);
+}
+
+void AWarrior::BeginPlay()
+{
+    Super::BeginPlay();
+    if (AWarriorWeapon* OneHandSword = GetOneHandSword(); IsValid(OneHandSword))
+    {
+        OneHandSword->GetHitFlashComponent()->BindMaterials();
+        OneHandSword->GetOutlineComponent()->BindMaterials();
+    }
+    if (AWarriorShield* Shield = GetShield(); IsValid(Shield))
+    {
+        Shield->GetHitFlashComponent()->BindMaterials();
+        Shield->GetOutlineComponent()->BindMaterials();
+    }
+    if (AWarriorWeapon* TwoHandSword = GetTwoHandSword(); IsValid(TwoHandSword))
+    {
+        TwoHandSword->GetHitFlashComponent()->BindMaterials();
+        TwoHandSword->GetOutlineComponent()->BindMaterials();
+    }
 }
 
 void AWarrior::StartAttack()
@@ -61,6 +81,30 @@ void AWarrior::OnDeath(TFunction<void()>&& Func)
     AnimInstance->Montage_SetBlendingOutDelegate(EndDelegate, DeathMontage);
 }
 
+void AWarrior::DoFlash()
+{
+    Super::DoFlash();
+    if (AWarriorWeapon* Sword = GetWeapon(); IsValid(Sword)) Sword->GetHitFlashComponent()->DoFlash();
+    if (GetUpgradeComponent()->GetCurrentLevel() != 1) return;
+    if (AWarriorShield* Shield = GetShield(); IsValid(Shield)) Shield->GetHitFlashComponent()->DoFlash();
+}
+
+void AWarrior::ShowOutline()
+{
+    Super::ShowOutline();
+    if (AWarriorWeapon* Sword = GetWeapon(); IsValid(Sword)) Sword->GetOutlineComponent()->EnableOutline();
+    if (GetUpgradeComponent()->GetCurrentLevel() != 1) return;
+    if (AWarriorShield* Shield = GetShield(); IsValid(Shield)) Shield->GetOutlineComponent()->EnableOutline();
+}
+
+void AWarrior::HideOutline()
+{
+    Super::HideOutline();
+    if (AWarriorWeapon* Sword = GetWeapon(); IsValid(Sword)) Sword->GetOutlineComponent()->DisableOutline();
+    if (GetUpgradeComponent()->GetCurrentLevel() != 1) return;
+    if (AWarriorShield* Shield = GetShield(); IsValid(Shield)) Shield->GetOutlineComponent()->DisableOutline();
+}
+
 void AWarrior::DoOnSetActive(bool bActive)
 {
     Super::DoOnSetActive(bActive);
@@ -77,21 +121,25 @@ void AWarrior::DoOnSetActive(bool bActive)
             AnimInstance->StopAllMontages(0.0f);
             AnimInstance->InitializeAnimation();
         }
-        if (AWeapon* OneHandSword = GetOneHandSword(); IsValid(OneHandSword))
+        if (AWarriorWeapon* OneHandSword = GetOneHandSword(); IsValid(OneHandSword))
         {
             OneHandSword->GetMesh()->SetVisibility(false);
             OneHandSword->GetMesh()->SetComponentTickEnabled(false);
+            OneHandSword->GetHitFlashComponent()->ForceStopFlash();
         }
         if (AWarriorShield* Shield = GetShield(); IsValid(Shield))
         {
             Shield->GetMesh()->SetVisibility(false);
             Shield->GetMesh()->SetComponentTickEnabled(false);
+            Shield->GetHitFlashComponent()->ForceStopFlash();
         }
-        if (AWeapon* TwoHandSword = GetTwoHandSword(); IsValid(TwoHandSword))
+        if (AWarriorWeapon* TwoHandSword = GetTwoHandSword(); IsValid(TwoHandSword))
         {
             TwoHandSword->GetMesh()->SetVisibility(false);
             TwoHandSword->GetMesh()->SetComponentTickEnabled(false);
+            TwoHandSword->GetHitFlashComponent()->ForceStopFlash();
         }
+        HitFlashComponent->ForceStopFlash();
     }
     GetMesh()->SetVisibility(bActive);
     GetMesh()->SetComponentTickEnabled(bActive);
@@ -126,27 +174,35 @@ void AWarrior::DoOnLevelChanged(int32 Level)
         AnimInstance->StopAllMontages(0.0f);
         AnimInstance->InitializeAnimation();
     }
-    if (AWeapon* OneHandSword = GetOneHandSword(); IsValid(OneHandSword))
+    const bool bMustResumeFlash = HitFlashComponent->PauseFlash();
+    const float RemainingFlashDuration = bMustResumeFlash ? HitFlashComponent->GetRemainingFlashDuration() : 0.0f;
+    if (AWarriorWeapon* OneHandSword = GetOneHandSword(); IsValid(OneHandSword))
     {
         OneHandSword->AttachToComponent(OneHandWeapon, FAttachmentTransformRules::SnapToTargetNotIncludingScale);
         OneHandSword->GetMesh()->SetVisibility(false);
         OneHandSword->GetMesh()->SetComponentTickEnabled(false);
+        OneHandSword->GetHitFlashComponent()->ForceStopFlash();
+        OneHandSword->GetOutlineComponent()->DisableOutline();
     }
-    if (AWarriorShield* Shield = GetShield(); IsValid(Shield))
+    AWarriorShield* Shield = GetShield();
+    if (IsValid(Shield))
     {
         Shield->AttachToComponent(WarriorShield, FAttachmentTransformRules::SnapToTargetNotIncludingScale);
         Shield->GetMesh()->SetVisibility(false);
         Shield->GetMesh()->SetComponentTickEnabled(false);
+        Shield->GetHitFlashComponent()->ForceStopFlash();
+        Shield->GetOutlineComponent()->DisableOutline();
     }
-    if (AWeapon* TwoHandSword = GetTwoHandSword(); IsValid(TwoHandSword))
+    if (AWarriorWeapon* TwoHandSword = GetTwoHandSword(); IsValid(TwoHandSword))
     {
         TwoHandSword->AttachToComponent(TwoHandWeapon, FAttachmentTransformRules::SnapToTargetNotIncludingScale);
         TwoHandSword->GetMesh()->SetVisibility(false);
         TwoHandSword->GetMesh()->SetComponentTickEnabled(false);
+        TwoHandSword->GetHitFlashComponent()->ForceStopFlash();
+        TwoHandSword->GetOutlineComponent()->DisableOutline();
     }
     HitFlashComponent->UnbindMaterials();
     OutlineComponent->UnbindMaterials();
-    OutlineComponent->DisableOutline();
     // ^^^ Reset animation, detach held items and unbind materials because the mesh is about to change ^^^
 
     const FWarriorLevel CurrentWarriorLevel = GetWarriorCurrentLevel();
@@ -163,21 +219,36 @@ void AWarrior::DoOnLevelChanged(int32 Level)
     GetBoxCollider()->SetBoxExtent(NewBoxExtent);
     GetDefenderRadiusDisplay()->SetRelativeLocation(NewMeshLoc);
     HitFlashComponent->BindMaterials();
+    if (bMustResumeFlash)
+    {
+        HitFlashComponent->SetRemainingFlashDuration(RemainingFlashDuration);
+        HitFlashComponent->ResumeFlash();
+    }
     OutlineComponent->BindMaterials();
     if (Level == 1)
     {
-        if (AWarriorShield* Shield = GetShield(); IsValid(Shield))
+        if (IsValid(Shield))
         {
             Shield->AttachToSkeleton(GetMesh());
             Shield->GetMesh()->SetVisibility(true);
             Shield->GetMesh()->SetComponentTickEnabled(Shield->DoesMeshTick());
+            if (bMustResumeFlash)
+            {
+                Shield->GetHitFlashComponent()->SetRemainingFlashDuration(RemainingFlashDuration);
+                Shield->GetHitFlashComponent()->ResumeFlash();
+            }
         }
     }
-    if (AWeapon* Sword = GetWeapon(); IsValid(Sword))
+    if (AWarriorWeapon* Sword = GetWeapon(); IsValid(Sword))
     {
         Sword->AttachToSkeleton(GetMesh());
         Sword->GetMesh()->SetVisibility(true);
         Sword->GetMesh()->SetComponentTickEnabled(Sword->DoesMeshTick());
+        if (bMustResumeFlash)
+        {
+            Sword->GetHitFlashComponent()->SetRemainingFlashDuration(RemainingFlashDuration);
+            Sword->GetHitFlashComponent()->ResumeFlash();
+        }
     }
     AttackRadius = CurrentWarriorLevel.GetAttackRadius();
     AttackCooldown = CurrentWarriorLevel.GetAttackCooldown();
@@ -193,30 +264,30 @@ FWarriorLevel AWarrior::GetWarriorCurrentLevel() const
     return WarriorSecondUpgrade;
 }
 
-const AWeapon* AWarrior::GetWeapon() const
+const AWarriorWeapon* AWarrior::GetWeapon() const
 {
     const int32 CurrentLevel = GetUpgradeComponent()->GetCurrentLevel();
     const UChildActorComponent* Weapon = CurrentLevel == 0 || CurrentLevel == 1 ? OneHandWeapon : TwoHandWeapon;
-    return Cast<AWeapon>(Weapon ? Weapon->GetChildActor() : nullptr);
+    return Cast<AWarriorWeapon>(Weapon ? Weapon->GetChildActor() : nullptr);
 }
 
-AWeapon* AWarrior::GetWeapon()
+AWarriorWeapon* AWarrior::GetWeapon()
 {
     const int32 CurrentLevel = GetUpgradeComponent()->GetCurrentLevel();
     const UChildActorComponent* Weapon = CurrentLevel == 0 || CurrentLevel == 1 ? OneHandWeapon : TwoHandWeapon;
-    return Cast<AWeapon>(Weapon ? Weapon->GetChildActor() : nullptr);
+    return Cast<AWarriorWeapon>(Weapon ? Weapon->GetChildActor() : nullptr);
 }
 
-AWeapon* AWarrior::Blueprint_GetWeapon() const
+AWarriorWeapon* AWarrior::Blueprint_GetWeapon() const
 {
     const int32 CurrentLevel = GetUpgradeComponent()->GetCurrentLevel();
     const UChildActorComponent* Weapon = CurrentLevel == 0 || CurrentLevel == 1 ? OneHandWeapon : TwoHandWeapon;
-    return Cast<AWeapon>(Weapon ? Weapon->GetChildActor() : nullptr);
+    return Cast<AWarriorWeapon>(Weapon ? Weapon->GetChildActor() : nullptr);
 }
 
-AWeapon* AWarrior::GetOneHandSword() const
+AWarriorWeapon* AWarrior::GetOneHandSword() const
 {
-    return Cast<AWeapon>(OneHandWeapon ? OneHandWeapon->GetChildActor() : nullptr);
+    return Cast<AWarriorWeapon>(OneHandWeapon ? OneHandWeapon->GetChildActor() : nullptr);
 }
 
 AWarriorShield* AWarrior::GetShield() const
@@ -224,9 +295,9 @@ AWarriorShield* AWarrior::GetShield() const
     return Cast<AWarriorShield>(WarriorShield ? WarriorShield->GetChildActor() : nullptr);
 }
 
-AWeapon* AWarrior::GetTwoHandSword() const
+AWarriorWeapon* AWarrior::GetTwoHandSword() const
 {
-    return Cast<AWeapon>(TwoHandWeapon ? TwoHandWeapon->GetChildActor() : nullptr);
+    return Cast<AWarriorWeapon>(TwoHandWeapon ? TwoHandWeapon->GetChildActor() : nullptr);
 }
 
 void AWarrior::OnAttackMontageEnded(UAnimMontage*, bool) { EndAttack(); }

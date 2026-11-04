@@ -1,5 +1,7 @@
 #include "TowerDefencePawns/Weapon.h"
 
+#include "TowerDefencePawns/Components/HitFlashComponent.h"
+
 AWeapon::AWeapon()
 {
     Root = CreateDefaultSubobject<USceneComponent>(TEXT("Root"));
@@ -7,6 +9,7 @@ AWeapon::AWeapon()
     WeaponMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Weapon Mesh"));
     WeaponMesh->SetupAttachment(RootComponent);
     WeaponMesh->SetCollisionProfileName(TEXT("NoCollision"));
+    HitFlashComponent = CreateDefaultSubobject<UHitFlashComponent>(TEXT("Hit Flash Component"));
     bMeshTicks = WeaponMesh && WeaponMesh->IsComponentTickEnabled();
 }
 

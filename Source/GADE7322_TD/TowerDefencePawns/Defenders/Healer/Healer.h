@@ -7,8 +7,10 @@
 #include "Healer.generated.h"
 
 class AFireballProjectile;
+class ASpellBook;
 class ATowerDefenceGameMode;
 class UAnimInstance;
+class UChildActorComponent;
 class UNiagaraComponent;
 
 USTRUCT(BlueprintType)
@@ -122,6 +124,12 @@ public:
 
     virtual void OnDeath(TFunction<void()>&& Func) override;
 
+    virtual void DoFlash() override;
+
+    virtual void ShowOutline() override;
+
+    virtual void HideOutline() override;
+
 protected:
     virtual void DoOnSetActive(bool bActive) override;
 
@@ -130,6 +138,11 @@ protected:
     virtual void DoOnLevelChanged(int32 Level) override;
 
 public:
+    const ASpellBook* GetSpellBook() const;
+    ASpellBook* GetSpellBook();
+    UFUNCTION(BlueprintPure, Category = "Healer|Spell", meta = (DisplayName = "Get Spell Book"))
+    ASpellBook* GetSpellBook_Blueprint() const;
+
     const ATowerDefencePawn* GetCurrentTarget() const { return CurrentTarget; }
     ATowerDefencePawn* GetCurrentTarget() { return CurrentTarget; }
 
@@ -173,8 +186,8 @@ private:
                       Units = "Hertz"))
     float SpellDistanceCheckUpdateFrequency = 5.0f;
 
-    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Healer|Spell", meta = (AllowPrivateAccess = true))
-    UStaticMeshComponent* SpellBook;
+    UPROPERTY(VisibleAnywhere, Category = "Healer|Spell", meta = (AllowPrivateAccess = true))
+    UChildActorComponent* SpellBookComponent;
 
     float TimeSinceLastVisionUpdate = 0.0f;
 

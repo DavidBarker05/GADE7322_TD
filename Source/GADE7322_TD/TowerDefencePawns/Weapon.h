@@ -13,6 +13,7 @@ enum class EWeaponHand : uint8
     Left
 };
 
+class UHitFlashComponent;
 class USkeletalMeshComponent;
 
 UCLASS(Abstract)
@@ -26,17 +27,23 @@ public:
     const UStaticMeshComponent* GetMesh() const { return WeaponMesh; }
     UStaticMeshComponent* GetMesh() { return WeaponMesh; }
 
+    const UHitFlashComponent* GetHitFlashComponent() const { return HitFlashComponent; }
+    UHitFlashComponent* GetHitFlashComponent() { return HitFlashComponent; }
+
     bool DoesMeshTick() const { return bMeshTicks; }
 
     UFUNCTION(BlueprintCallable)
     bool AttachToSkeleton(USkeletalMeshComponent* Skeleton, EWeaponHand Hand = EWeaponHand::Right);
 
 private:
-    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = true))
+    UPROPERTY(VisibleAnywhere, meta = (AllowPrivateAccess = true))
     USceneComponent* Root;
 
-    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = true))
+    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components", meta = (AllowPrivateAccess = true))
     UStaticMeshComponent* WeaponMesh;
+
+    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components", meta = (AllowPrivateAccess = true))
+    UHitFlashComponent* HitFlashComponent;
 
     UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = true))
     bool bMeshTicks;

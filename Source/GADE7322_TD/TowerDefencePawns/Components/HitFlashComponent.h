@@ -26,6 +26,25 @@ public:
     UFUNCTION(BlueprintCallable)
     virtual void DoFlash();
 
+    UFUNCTION(BlueprintCallable)
+    virtual void ForceStopFlash();
+
+    UFUNCTION(BlueprintPure)
+    virtual bool IsStillFlashing() const;
+
+    UFUNCTION(BlueprintCallable)
+    virtual bool PauseFlash();
+
+    bool IsPaused() const { return bPaused; }
+
+    float GetRemainingFlashDuration() const { return RemainingFlashDuration; }
+
+    UFUNCTION(BlueprintCallable)
+    virtual void SetRemainingFlashDuration(float InRemainingFlashDuration);
+
+    UFUNCTION(BlueprintCallable)
+    virtual void ResumeFlash();
+
 protected:
     UFUNCTION()
     virtual void EndFlash();
@@ -36,6 +55,12 @@ public:
 
 protected:
     FTimerHandle FlashHandle;
+
+    UPROPERTY(BlueprintReadOnly, meta = (AllowPrivateAccess = true))
+    bool bPaused = false;
+
+    UPROPERTY(BlueprintReadOnly, meta = (AllowPrivateAccess = true))
+    float RemainingFlashDuration;
 
 private:
     // The mesh components to flash for the AActor that owns this component

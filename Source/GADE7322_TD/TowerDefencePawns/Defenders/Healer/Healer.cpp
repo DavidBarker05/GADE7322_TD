@@ -1,5 +1,6 @@
 #include "TowerDefencePawns/Defenders/Healer/Healer.h"
 
+#include "Components/ChildActorComponent.h"
 #include "Components/DecalComponent.h"
 #include "NiagaraComponent.h"
 #include "Perception/AIPerceptionComponent.h"
@@ -12,6 +13,7 @@
 #include "TowerDefencePawns/Defenders/Components/DefenderUpgradeComponent.h"
 #include "TowerDefencePawns/Defenders/Healer/AI/HealerAIController.h"
 #include "TowerDefencePawns/Defenders/Healer/FireballProjectile.h"
+#include "TowerDefencePawns/Defenders/Healer/SpellBook.h"
 #include "TowerDefencePawns/ProjectilePoolFactory.h"
 
 AHealer::AHealer()
@@ -26,8 +28,8 @@ AHealer::AHealer()
     HealSpellBall->SetupAttachment(RootComponent);
     FireSpellBall = CreateDefaultSubobject<UNiagaraComponent>(TEXT("Fire Spell Ball"));
     FireSpellBall->SetupAttachment(RootComponent);
-    SpellBook = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Spell Book"));
-    SpellBook->SetupAttachment(RootComponent);
+    SpellBookComponent = CreateDefaultSubobject<UChildActorComponent>(TEXT("Spell Book"));
+    SpellBookComponent->SetupAttachment(RootComponent);
     PrimaryRadiusColour = FLinearColor(0.0f, 1.0f, 0.0f, 1.0f);
     SecondaryRadiusColour = FLinearColor(1.0f, 0.0f, 0.0f, 1.0f);
 }
@@ -141,14 +143,40 @@ void AHealer::OnDeath(TFunction<void()>&& Func)
     AnimInstance->Montage_SetBlendingOutDelegate(EndDelegate, DeathMontage);
 }
 
+void AHealer::DoFlash()
+{
+    Super::DoFlash();
+    if (GetUpgradeComponent()->GetCurrentLevel() != 1) return;
+    if (ASpellBook* SpellBook = GetSpellBook(); IsValid(SpellBook)) SpellBook->GetHitFlashComponent()->DoFlash();
+}
+
+void AHealer::ShowOutline()
+{
+    Super::ShowOutline();
+    if (GetUpgradeComponent()->GetCurrentLevel() != 1) return;
+    if (ASpellBook* SpellBook = GetSpellBook(); IsValid(SpellBook)) SpellBook->GetOutlineComponent()->EnableOutline();
+}
+
+void AHealer::HideOutline()
+{
+    Super::HideOutline();
+    if (GetUpgradeComponent()->GetCurrentLevel() != 1) return;
+    if (ASpellBook* SpellBook = GetSpellBook(); IsValid(SpellBook)) SpellBook->GetOutlineComponent()->DisableOutline();
+}
+
 void AHealer::DoOnSetActive(bool bActive)
 {
     Super::DoOnSetActive(bActive);
     if (bActive) GetUpgradeComponent()->SetLevel(0); // Reset to base level
     else
     {
-        SpellBook->SetVisibility(false);
-        SpellBook->SetComponentTickEnabled(false);
+        if (ASpellBook* SpellBook = GetSpellBook(); IsValid(SpellBook))
+        {
+            SpellBook->GetMesh()->SetVisibility(false);
+            SpellBook->GetMesh()->SetComponentTickEnabled(false);
+            SpellBook->GetHitFlashComponent()->ForceStopFlash();
+        }
+        HitFlashComponent->ForceStopFlash();
     }
     SetCurrentTarget(nullptr);
     GetMesh()->SetVisibility(bActive);
@@ -189,15 +217,22 @@ void AHealer::DoOnLevelChanged(int32 Level)
         AnimInstance->StopAllMontages(0.0f);
         AnimInstance->InitializeAnimation();
     }
+    const bool bMustResumeFlash = HitFlashComponent->PauseFlash();
+    const float RemainingFlashDuration = bMustResumeFlash ? HitFlashComponent->GetRemainingFlashDuration() : 0.0f;
     SpellSpawnLocation->AttachToComponent(RootComponent, FAttachmentTransformRules::SnapToTargetNotIncludingScale);
     HealSpellBall->AttachToComponent(RootComponent, FAttachmentTransformRules::SnapToTargetNotIncludingScale);
     FireSpellBall->AttachToComponent(RootComponent, FAttachmentTransformRules::SnapToTargetNotIncludingScale);
-    SpellBook->AttachToComponent(RootComponent, FAttachmentTransformRules::SnapToTargetNotIncludingScale);
-    SpellBook->SetVisibility(false);
-    SpellBook->SetComponentTickEnabled(false);
+    ASpellBook* SpellBook = GetSpellBook();
+    if (IsValid(SpellBook))
+    {
+        SpellBook->AttachToComponent(SpellBookComponent, FAttachmentTransformRules::SnapToTargetNotIncludingScale);
+        SpellBook->GetMesh()->SetVisibility(false);
+        SpellBook->GetMesh()->SetComponentTickEnabled(false);
+        SpellBook->GetHitFlashComponent()->ForceStopFlash();
+        SpellBook->GetOutlineComponent()->DisableOutline();
+    }
     HitFlashComponent->UnbindMaterials();
     OutlineComponent->UnbindMaterials();
-    OutlineComponent->DisableOutline();
     // ^^^ Reset animation, detach held items and unbind materials because the mesh is about to change ^^^
 
     const FHealerLevel CurrentHealerLevel = GetHealerCurrentLevel();
@@ -216,12 +251,6 @@ void AHealer::DoOnLevelChanged(int32 Level)
                                           TEXT("spell"));
     HealSpellBall->AttachToComponent(SpellSpawnLocation, FAttachmentTransformRules::SnapToTargetNotIncludingScale);
     FireSpellBall->AttachToComponent(SpellSpawnLocation, FAttachmentTransformRules::SnapToTargetNotIncludingScale);
-    if (Level == 1)
-    {
-        SpellBook->AttachToComponent(GetMesh(), FAttachmentTransformRules::SnapToTargetNotIncludingScale, "spellBook");
-        SpellBook->SetVisibility(true);
-        SpellBook->SetComponentTickEnabled(true);
-    }
     HitFlashComponent->BindMaterials();
     OutlineComponent->BindMaterials();
     HealRadius = CurrentHealerLevel.GetHealRadius();
@@ -229,8 +258,39 @@ void AHealer::DoOnLevelChanged(int32 Level)
     AttackNoThrowingRadius = CurrentHealerLevel.GetAttackNoThrowingRadius();
     AttackCooldown = CurrentHealerLevel.GetAttackCooldown();
     HealAmount = CurrentHealerLevel.GetHealAmount();
+    if (bMustResumeFlash)
+    {
+        HitFlashComponent->SetRemainingFlashDuration(RemainingFlashDuration);
+        HitFlashComponent->ResumeFlash();
+    }
+    if (Level == 1 && IsValid(SpellBook))
+    {
+        SpellBook->AttachToComponent(GetMesh(), FAttachmentTransformRules::SnapToTargetNotIncludingScale, "spellBook");
+        SpellBook->GetMesh()->SetVisibility(true);
+        SpellBook->GetMesh()->SetComponentTickEnabled(true);
+        if (bMustResumeFlash)
+        {
+            SpellBook->GetHitFlashComponent()->SetRemainingFlashDuration(RemainingFlashDuration);
+            SpellBook->GetHitFlashComponent()->ResumeFlash();
+        }
+    }
     if (bShowingRadius) ShowRadiusDisplay(); // Update radius display to match any new values
     if (bShowingOutline) ShowOutline(); // Reshow outline because was hidden when unbound materials
+}
+
+const ASpellBook* AHealer::GetSpellBook() const
+{
+    return Cast<ASpellBook>(SpellBookComponent ? SpellBookComponent->GetChildActor() : nullptr);
+}
+
+ASpellBook* AHealer::GetSpellBook()
+{
+    return Cast<ASpellBook>(SpellBookComponent ? SpellBookComponent->GetChildActor() : nullptr);
+}
+
+ASpellBook* AHealer::GetSpellBook_Blueprint() const
+{
+    return Cast<ASpellBook>(SpellBookComponent ? SpellBookComponent->GetChildActor() : nullptr);
 }
 
 void AHealer::SetCurrentTarget(ATowerDefencePawn* NewTarget)

@@ -27,6 +27,8 @@ public:
 
     virtual void OnDeath(TFunction<void()>&& Func) override;
 
+    virtual void DoFlash() override;
+
 protected:
     virtual void DoOnSetActive(bool bActive) override;
 

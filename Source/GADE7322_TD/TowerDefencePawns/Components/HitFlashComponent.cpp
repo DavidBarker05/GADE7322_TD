@@ -27,8 +27,7 @@ void UHitFlashComponent::BindMaterials()
 
 void UHitFlashComponent::UnbindMaterials()
 {
-    EndFlash();
-    if (const UWorld* World = GetWorld()) World->GetTimerManager().ClearTimer(FlashHandle);
+    ForceStopFlash();
     FlashMaterials.Empty();
 }
 
@@ -42,6 +41,59 @@ void UHitFlashComponent::DoFlash()
     }
     if (const UWorld* World = GetWorld())
         World->GetTimerManager().SetTimer(FlashHandle, this, &UHitFlashComponent::EndFlash, FlashDuration, false);
+}
+
+void UHitFlashComponent::ForceStopFlash()
+{
+    if (const UWorld* World = GetWorld()) World->GetTimerManager().ClearTimer(FlashHandle);
+    EndFlash();
+    bPaused = false;
+}
+
+bool UHitFlashComponent::IsStillFlashing() const
+{
+    if (const UWorld* World = GetWorld()) return World->GetTimerManager().IsTimerActive(FlashHandle);
+    return false;
+}
+
+bool UHitFlashComponent::PauseFlash()
+{
+    if (bPaused) return true;
+    if (!IsStillFlashing()) return false;
+    if (const UWorld* World = GetWorld())
+    {
+        RemainingFlashDuration = World->GetTimerManager().GetTimerRemaining(FlashHandle);
+        bPaused =
+            !FMath::IsNearlyZero(RemainingFlashDuration); // If too small it might cause issues with the timer manager
+        if (bPaused) World->GetTimerManager().ClearTimer(FlashHandle);
+        else ForceStopFlash();
+    }
+    else ForceStopFlash();
+    return bPaused;
+}
+
+void UHitFlashComponent::SetRemainingFlashDuration(float InRemainingFlashDuration)
+{
+    if (InRemainingFlashDuration <= SMALL_NUMBER) return;
+    if (const UWorld* World = GetWorld()) World->GetTimerManager().ClearTimer(FlashHandle);
+    bPaused = true;
+    RemainingFlashDuration = InRemainingFlashDuration;
+}
+
+void UHitFlashComponent::ResumeFlash()
+{
+    if (!bPaused) return;
+    bPaused = false;
+    for (UMaterialInstanceDynamic* MID : FlashMaterials)
+    {
+        if (!IsValid(MID)) continue;
+        MID->SetVectorParameterValue(TEXT("EmissiveFlashColor"), FlashColor);
+        MID->SetScalarParameterValue(TEXT("EmissiveFlashMultiplier"), FlashIntensity);
+    }
+    if (const UWorld* World = GetWorld())
+    {
+        World->GetTimerManager().SetTimer(FlashHandle, this, &UHitFlashComponent::EndFlash, FlashDuration, false);
+    }
 }
 
 void UHitFlashComponent::EndFlash()

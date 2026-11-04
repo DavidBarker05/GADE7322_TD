@@ -3,21 +3,18 @@ Improve UI (if have time)
 Add play guide
 Add controls guide
 
+Add UI for upgrading
+
 Add main menu
 
 Upgrades:
 - Warrior
     - Give upgrades values
-    - Might make upgrade 2 give bleed effect
-    - Maybe replace ronin with male and female in armour
+    - Maybe replace ronin with male and female in armour (match original style better)
 - Ballista
     - Give upgrades values
-    - Upgrade 1: Add decorations
 - Healer
     - Give upgrades values
-
-Shaders:
-- Create instance of outline material for each defender
 
 Custom Procedural Feature:
 - Custom Enemy:
