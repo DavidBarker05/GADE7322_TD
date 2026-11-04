@@ -13,7 +13,6 @@ Upgrades:
 - Ballista
     - Give upgrades values
     - Upgrade 1: Add decorations
-    - Upgrade 2: Add cannon visually
 - Healer
     - Give upgrades values
 
