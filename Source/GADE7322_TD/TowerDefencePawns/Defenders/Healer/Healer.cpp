@@ -226,6 +226,8 @@ void AHealer::DoOnLevelChanged(int32 Level)
     OutlineComponent->BindMaterials();
     HealRadius = CurrentHealerLevel.GetHealRadius();
     AttackRadius = CurrentHealerLevel.GetAttackRadius();
+    AttackNoThrowingRadius = CurrentHealerLevel.GetAttackNoThrowingRadius();
+    AttackCooldown = CurrentHealerLevel.GetAttackCooldown();
     HealAmount = CurrentHealerLevel.GetHealAmount();
     if (bShowingRadius) ShowRadiusDisplay(); // Update radius display to match any new values
     if (bShowingOutline) ShowOutline(); // Reshow outline because was hidden when unbound materials
