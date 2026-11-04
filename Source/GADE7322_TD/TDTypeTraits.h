@@ -38,3 +38,76 @@ using TRemoveObjectPointer_T = typename TRemoveObjectPointer<T>::Type;
 
 template<typename T>
 using TRemovePointer_T = typename TRemovePointer<T>::Type;
+
+template<typename T>
+struct TRemoveCV
+{
+    using type = T;
+    using Type = T;
+};
+
+template<typename T>
+struct TRemoveCV<const T>
+{
+    using type = T;
+    using Type = T;
+};
+
+template<typename T>
+struct TRemoveCV<volatile T>
+{
+    using type = T;
+    using Type = T;
+};
+
+template<typename T>
+struct TRemoveCV<const volatile T>
+{
+    using type = T;
+    using Type = T;
+};
+
+template<typename T>
+using TRemoveCV_T = typename TRemoveCV<T>::type;
+
+template<bool Predicate, typename Result = void>
+using TEnableIf_T = typename TEnableIf<Predicate, Result>::Type;
+
+template<typename T>
+constexpr bool TIsFloatingPoint_V = false;
+
+template<>
+constexpr bool TIsFloatingPoint_V<float> = true;
+
+template<>
+constexpr bool TIsFloatingPoint_V<const float> = true;
+
+template<>
+constexpr bool TIsFloatingPoint_V<volatile float> = true;
+
+template<>
+constexpr bool TIsFloatingPoint_V<const volatile float> = true;
+
+template<>
+constexpr bool TIsFloatingPoint_V<double> = true;
+
+template<>
+constexpr bool TIsFloatingPoint_V<const double> = true;
+
+template<>
+constexpr bool TIsFloatingPoint_V<volatile double> = true;
+
+template<>
+constexpr bool TIsFloatingPoint_V<const volatile double> = true;
+
+template<>
+constexpr bool TIsFloatingPoint_V<long double> = true;
+
+template<>
+constexpr bool TIsFloatingPoint_V<const long double> = true;
+
+template<>
+constexpr bool TIsFloatingPoint_V<volatile long double> = true;
+
+template<>
+constexpr bool TIsFloatingPoint_V<const volatile long double> = true;

@@ -19,9 +19,6 @@ Upgrades:
 Shaders:
 - Create instance of outline material for each defender
 
-Visual Effects:
-- Post Processing Effect: Screen hit effect when the tower gets hit to show it's taking damage
-
 Custom Procedural Feature:
 - Custom Enemy:
     - Rock golem

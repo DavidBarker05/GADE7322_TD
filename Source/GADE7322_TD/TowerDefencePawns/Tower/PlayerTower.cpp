@@ -1,6 +1,7 @@
 #include "TowerDefencePawns/Tower/PlayerTower.h"
 
 #include "Components/BoxComponent.h"
+#include "Engine/PostProcessVolume.h"
 #include "HealthComponent.h"
 #include "Materials/MaterialInstanceDynamic.h"
 #include "NiagaraComponent.h"
@@ -55,28 +56,12 @@ APlayerTower::APlayerTower()
     }
 }
 
-void APlayerTower::ShowRadiusDisplay()
-{
-    if (!RadiusMaterial) return;
-    const auto Pack = [](const FLinearColor& Colour, float Radius) -> FLinearColor
-    { return FLinearColor(Colour.R, Colour.G, Colour.B, Radius); };
-    RadiusMaterial->SetVectorParameterValue(TEXT("Detection Radius"), Pack(DetectionRadiusColour, AttackRadius));
-    RadiusMaterial->SetVectorParameterValue(TEXT("Primary Radius"), Pack(PrimaryRadiusColour, AttackRadius));
-    RadiusMaterial->SetVectorParameterValue(TEXT("Secondary Radius"), Pack(SecondaryRadiusColour, 0.0f));
-    RadiusDisplay->SetVisibility(true);
-}
-
-void APlayerTower::ShowOutline() { OutlineComponent->EnableOutline(); }
-
-void APlayerTower::HideRadiusDisplay() { RadiusDisplay->SetVisibility(false); }
-
-void APlayerTower::HideOutline() { OutlineComponent->DisableOutline(); }
-
 void APlayerTower::PostInitializeComponents()
 {
     Super::PostInitializeComponents();
     HitFlashComponent->OnMeshMaterialsAdded.AddUniqueDynamic(this, &APlayerTower::OnHitFlashMaterialsAdded);
     HealthComponent->OnHealthChanged.AddUniqueDynamic(this, &APlayerTower::UpdateCrystalMaterial);
+    HealthComponent->OnHealthLost.AddUniqueDynamic(this, &APlayerTower::StartScreenFlash);
 }
 
 void APlayerTower::BeginPlay()
@@ -88,6 +73,18 @@ void APlayerTower::BeginPlay()
     UpdateCrystalMaterial();
     OutlineComponent->BindMaterials();
     OutlineComponent->DisableOutline();
+    if (ScreenDamageMaterialInterface)
+        ScreenDamageMaterial = UMaterialInstanceDynamic::Create(ScreenDamageMaterialInterface, this);
+    if (IsValid(ScreenDamageMaterial))
+    {
+        ScreenDamageMaterial->SetScalarParameterValue("Alpha", 0.0f);
+        ScreenDamageMaterial->SetScalarParameterValue(TEXT("Health01"), GetHealth01());
+        if (IsValid(PostProcessVolume))
+        {
+            const FWeightedBlendable BlendWeight {1.0f, ScreenDamageMaterial};
+            PostProcessVolume->Settings.WeightedBlendables.Array.Add(BlendWeight);
+        }
+    }
 }
 
 void APlayerTower::Tick(float DeltaTime)
@@ -100,6 +97,15 @@ void APlayerTower::Tick(float DeltaTime)
         UpdateAttackTargets();
     }
     StartAttack();
+    if (!IsValid(ScreenDamageMaterial)) return;
+    if (CurrentScreenDamageTime <= 0.0f + KINDA_SMALL_NUMBER)
+    {
+        ScreenDamageMaterial->SetScalarParameterValue("Alpha", 0.0f);
+        return;
+    }
+    const float Alpha = FTDMath::InverseLerp(0.0f, ScreenDamageDuration, CurrentScreenDamageTime);
+    ScreenDamageMaterial->SetScalarParameterValue(TEXT("Alpha"), Alpha);
+    CurrentScreenDamageTime -= DeltaTime;
 }
 
 void APlayerTower::StartAttack()
@@ -117,32 +123,22 @@ void APlayerTower::StartAttack()
     }
 }
 
-void APlayerTower::FireAttackBeam(int32 Index, const FVector& TargetLocation)
+void APlayerTower::ShowRadiusDisplay()
 {
-    UNiagaraComponent* Beam = BeamComponents[Index];
-    if (!Beam) return;
-    Beam->SetVariablePosition(TEXT("Beam Start"), Beam->GetComponentLocation());
-    Beam->SetVariablePosition(TEXT("Beam End"), TargetLocation);
-    Beam->Activate(true);
+    if (!RadiusMaterial) return;
+    const auto Pack = [](const FLinearColor& Colour, float Radius) -> FLinearColor
+    { return FLinearColor(Colour.R, Colour.G, Colour.B, Radius); };
+    RadiusMaterial->SetVectorParameterValue(TEXT("Detection Radius"), Pack(DetectionRadiusColour, AttackRadius));
+    RadiusMaterial->SetVectorParameterValue(TEXT("Primary Radius"), Pack(PrimaryRadiusColour, AttackRadius));
+    RadiusMaterial->SetVectorParameterValue(TEXT("Secondary Radius"), Pack(SecondaryRadiusColour, 0.0f));
+    RadiusDisplay->SetVisibility(true);
 }
 
-void APlayerTower::OnHitFlashMaterialsAdded(UMeshComponent* MeshComponent,
-                                            TArray<UMaterialInstanceDynamic*> MaterialInstances)
-{
-    if (!IsValid(MeshComponent) || MaterialInstances.IsEmpty()) return;
-    CrystalMaterials = MaterialInstances;
-}
+void APlayerTower::ShowOutline() { OutlineComponent->EnableOutline(); }
 
-void APlayerTower::UpdateCrystalMaterial()
-{
-    const float Health01 =
-        static_cast<float>(HealthComponent->GetCurrentHealth()) / static_cast<float>(HealthComponent->GetMaxHealth());
-    for (const auto Material : CrystalMaterials)
-    {
-        if (!IsValid(Material)) continue;
-        Material->SetScalarParameterValue(TEXT("Health01"), Health01);
-    }
-}
+void APlayerTower::HideRadiusDisplay() { RadiusDisplay->SetVisibility(false); }
+
+void APlayerTower::HideOutline() { OutlineComponent->DisableOutline(); }
 
 void APlayerTower::DoUpdatePerceptionOnTeamChange()
 {
@@ -175,4 +171,42 @@ void APlayerTower::UpdateAttackTargets()
         if (ATowerDefencePawn* NewTarget = SelectClosestTarget(VisiblePawns, this)) SetAttackTarget(i, NewTarget);
         else AttackTargets[i] = nullptr;
     }
+}
+
+void APlayerTower::FireAttackBeam(int32 Index, const FVector& TargetLocation)
+{
+    UNiagaraComponent* Beam = BeamComponents[Index];
+    if (!Beam) return;
+    Beam->SetVariablePosition(TEXT("Beam Start"), Beam->GetComponentLocation());
+    Beam->SetVariablePosition(TEXT("Beam End"), TargetLocation);
+    Beam->Activate(true);
+}
+
+void APlayerTower::OnHitFlashMaterialsAdded(UMeshComponent* MeshComponent,
+                                            TArray<UMaterialInstanceDynamic*> MaterialInstances)
+{
+    if (!IsValid(MeshComponent) || MaterialInstances.IsEmpty()) return;
+    CrystalMaterials = MaterialInstances;
+}
+
+void APlayerTower::UpdateCrystalMaterial()
+{
+    for (const auto Material : CrystalMaterials)
+    {
+        if (!IsValid(Material)) continue;
+        Material->SetScalarParameterValue(TEXT("Health01"), GetHealth01());
+    }
+}
+
+void APlayerTower::StartScreenFlash()
+{
+    if (!IsValid(ScreenDamageMaterial)) return;
+    ScreenDamageMaterial->SetScalarParameterValue(TEXT("Health01"), GetHealth01());
+    CurrentScreenDamageTime = ScreenDamageDuration;
+}
+
+float APlayerTower::GetHealth01() const
+{
+    return static_cast<float>(HealthComponent->GetCurrentHealth()) /
+           static_cast<float>(HealthComponent->GetMaxHealth());
 }

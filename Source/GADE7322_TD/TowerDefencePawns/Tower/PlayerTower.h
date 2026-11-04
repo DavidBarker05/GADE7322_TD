@@ -1,11 +1,12 @@
 #pragma once
 
-#include "CoreMinimal.h"
+#include "TDCore.h"
 
 #include "TowerDefencePawns/TowerDefencePawn.h"
 
 #include "PlayerTower.generated.h"
 
+class APostProcessVolume;
 struct FAIStimulus;
 class UAIPerceptionComponent;
 class UAISenseConfig_Proximity;
@@ -84,6 +85,11 @@ private:
     UFUNCTION()
     void UpdateCrystalMaterial();
 
+    UFUNCTION()
+    void StartScreenFlash();
+
+    float GetHealth01() const;
+
     // The amount of health the tower heals by with each purchase of health
     UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Tower",
               meta = (AllowPrivateAccess = true, ClampMin = 0, UIMin = 0))
@@ -156,4 +162,20 @@ private:
 
     UPROPERTY()
     TArray<UMaterialInstanceDynamic*> CrystalMaterials;
+
+    UPROPERTY(EditInstanceOnly, Category = "PostProcess", meta = (AllowPrivateAccess = true))
+    APostProcessVolume* PostProcessVolume;
+
+    UPROPERTY(EditDefaultsOnly, Category = "PostProcess|Material", meta = (AllowPrivateAccess = true))
+    UMaterialInterface* ScreenDamageMaterialInterface;
+
+    UPROPERTY(EditDefaultsOnly, Category = "PostProcess|Material|Value",
+              meta = (AllowPrivateAccess = true, ClampMin = 0.0, UIMin = 0.0, ClampMax = 1.0, UIMax = 1.0,
+                      Units = "Seconds"))
+    float ScreenDamageDuration = 0.2f;
+
+    float CurrentScreenDamageTime = 0.0f;
+
+    UPROPERTY()
+    UMaterialInstanceDynamic* ScreenDamageMaterial;
 };
