@@ -1,6 +1,5 @@
 #include "TowerDefencePawns/AI/CommonTasks/MaintainDistanceToTargetTask.h"
 
-#include "CustomLog.h"
 #include "Navigation/PathFollowingComponent.h"
 #include "StateTreeExecutionContext.h"
 

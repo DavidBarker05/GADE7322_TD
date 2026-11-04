@@ -1,6 +1,6 @@
 #pragma once
 
-#include "CoreMinimal.h"
+#include "TDCore.h"
 
 #include "Engine/EngineTypes.h"
 #include "TowerDefencePawns/Defenders/Defender.h"

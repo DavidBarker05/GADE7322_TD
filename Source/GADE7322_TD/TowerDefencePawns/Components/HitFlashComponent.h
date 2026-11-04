@@ -1,6 +1,6 @@
 #pragma once
 
-#include "CoreMinimal.h"
+#include "TDCore.h"
 
 #include "Components/ActorComponent.h"
 #include "Components/MeshComponent.h"

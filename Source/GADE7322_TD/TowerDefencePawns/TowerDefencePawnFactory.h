@@ -1,6 +1,6 @@
 #pragma once
 
-#include "CoreMinimal.h"
+#include "TDCore.h"
 
 #include "Engine.h"
 #include "Subsystems/GameInstanceSubsystem.h"

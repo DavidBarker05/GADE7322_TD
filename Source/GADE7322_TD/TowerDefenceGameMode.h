@@ -1,6 +1,6 @@
 #pragma once
 
-#include "CoreMinimal.h"
+#include "TDCore.h"
 
 #include "Events/EventListener.h"
 #include "GameFramework/GameModeBase.h"

@@ -8,11 +8,9 @@
 #endif
 
 #include "Components/HierarchicalInstancedStaticMeshComponent.h"
-#include "CustomLog.h"
 #include "KismetProceduralMeshLibrary.h"
 #include "NavigationSystem.h"
 #include "ProceduralMeshComponent.h"
-#include "TDCollisionChannels.h"
 #include "TowerDefencePawns/Defenders/DefenderSpot.h"
 
 namespace

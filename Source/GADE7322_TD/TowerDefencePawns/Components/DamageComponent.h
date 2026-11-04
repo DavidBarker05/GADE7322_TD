@@ -1,9 +1,8 @@
 #pragma once
 
-#include "CoreMinimal.h"
+#include "TDCore.h"
 
 #include "Components/ActorComponent.h"
-#include "PriorityQueue.h"
 
 #include "DamageComponent.generated.h"
 

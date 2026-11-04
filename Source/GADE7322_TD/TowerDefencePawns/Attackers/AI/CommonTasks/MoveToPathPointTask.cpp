@@ -1,6 +1,5 @@
 #include "TowerDefencePawns/Attackers/AI/CommonTasks/MoveToPathPointTask.h"
 
-#include "CustomLog.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Navigation/PathFollowingComponent.h"
 #include "StateTreeExecutionContext.h"

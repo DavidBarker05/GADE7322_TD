@@ -3,7 +3,6 @@
 #include "NiagaraComponent.h"
 #include "Perception/AIPerceptionComponent.h"
 #include "Perception/AIPerceptionSystem.h"
-#include "TDCollisionChannels.h"
 #include "TowerDefenceGameMode.h"
 #include "TowerDefencePawns/Attackers/Mage/AI/MageAIController.h"
 #include "TowerDefencePawns/Attackers/Mage/DamageSpellProjectile.h"

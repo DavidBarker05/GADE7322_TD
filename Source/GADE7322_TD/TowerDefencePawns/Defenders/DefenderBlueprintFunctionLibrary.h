@@ -1,6 +1,6 @@
 #pragma once
 
-#include "CoreMinimal.h"
+#include "TDCore.h"
 
 #include "BlueprintFunctionLibraryEnums.h"
 #include "Kismet/BlueprintFunctionLibrary.h"

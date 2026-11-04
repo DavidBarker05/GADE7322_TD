@@ -1,12 +1,9 @@
 #include "TowerDefencePawns/Defenders/Defender.h"
 
 #include "Components/BoxComponent.h"
-#include "Kismet/GameplayStatics.h"
 #include "Materials/MaterialInstanceDynamic.h"
 #include "NiagaraComponent.h"
-#include "OutlineComponent.h"
 #include "Perception/AIPerceptionComponent.h"
-#include "TDCollisionChannels.h"
 #include "TowerDefenceGameMode.h"
 #include "TowerDefencePawns/AI/ProximityPerception/AISense_Proximity.h"
 #include "TowerDefencePawns/AI/ProximityPerception/AISenseConfig_Proximity.h"

@@ -2,7 +2,6 @@
 
 #include "Components/BoxComponent.h"
 #include "Events/EventBus.h"
-#include "TDCollisionChannels.h"
 #include "TowerDefencePawns/Components/HealthComponent.h"
 #include "TowerDefencePawns/Defenders/Components/DefenderUpgradeComponent.h"
 #include "TowerDefencePawns/Defenders/Defender.h"

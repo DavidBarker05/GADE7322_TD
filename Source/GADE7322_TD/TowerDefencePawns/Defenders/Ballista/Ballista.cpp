@@ -3,7 +3,6 @@
 #include "Components/ChildActorComponent.h"
 #include "Perception/AIPerceptionComponent.h"
 #include "Perception/AIPerceptionTypes.h"
-#include "TDCollisionChannels.h"
 #include "TowerDefencePawns/AI/ProximityPerception/AISenseConfig_Proximity.h"
 #include "TowerDefencePawns/AI/TargetSelectionFunctions.h"
 #include "TowerDefencePawns/Components/DamageComponent.h"

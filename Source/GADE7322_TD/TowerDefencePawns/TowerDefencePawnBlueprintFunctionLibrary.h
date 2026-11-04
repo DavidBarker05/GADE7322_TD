@@ -1,6 +1,6 @@
 #pragma once
 
-#include "CoreMinimal.h"
+#include "TDCore.h"
 
 #include "Kismet/BlueprintFunctionLibrary.h"
 #include "TowerDefencePawns/TowerDefencePawn.h"

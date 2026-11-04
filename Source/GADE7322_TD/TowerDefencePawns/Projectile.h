@@ -1,8 +1,7 @@
 #pragma once
 
-#include "CoreMinimal.h"
+#include "TDCore.h"
 
-#include "Any/Any.h"
 #include "GameFramework/Actor.h"
 
 #include "Projectile.generated.h"

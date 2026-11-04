@@ -1,7 +1,6 @@
 #include "TowerDefencePawns/TowerDefencePawnFactory.h"
 
 #include "Components/CapsuleComponent.h"
-#include "CustomLog.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "TowerDefencePawns/TowerDefencePawn.h"
 

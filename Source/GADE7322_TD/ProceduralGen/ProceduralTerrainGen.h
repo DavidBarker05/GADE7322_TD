@@ -1,6 +1,6 @@
 #pragma once
 
-#include "CoreMinimal.h"
+#include "TDCore.h"
 
 #include "GameFramework/Actor.h"
 #include "Math/RandomStream.h"

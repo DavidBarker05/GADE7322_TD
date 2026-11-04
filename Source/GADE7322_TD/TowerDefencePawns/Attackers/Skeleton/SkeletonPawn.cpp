@@ -4,7 +4,6 @@
 #include "Components/ChildActorComponent.h"
 #include "Perception/AIPerceptionComponent.h"
 #include "Perception/AIPerceptionSystem.h"
-#include "TDCollisionChannels.h"
 #include "TowerDefencePawns/Attackers/Skeleton/AI/SkeletonAIController.h"
 #include "TowerDefencePawns/Components/HitFlashComponent.h"
 #include "TowerDefencePawns/Weapon.h"

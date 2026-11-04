@@ -1,6 +1,5 @@
 #include "TowerDefencePawns/Defenders/AI/CommonTasks/MoveToStartingPointTask.h"
 
-#include "CustomLog.h"
 #include "Navigation/PathFollowingComponent.h"
 #include "StateTreeExecutionContext.h"
 #include "TowerDefencePawns/Defenders/DefenderSpot.h"

@@ -2,14 +2,13 @@
 
 #include "Components/BoxComponent.h"
 #include "Engine/PostProcessVolume.h"
-#include "HealthComponent.h"
 #include "Materials/MaterialInstanceDynamic.h"
 #include "NiagaraComponent.h"
 #include "Perception/AIPerceptionComponent.h"
 #include "Perception/AIPerceptionTypes.h"
-#include "TDCollisionChannels.h"
 #include "TowerDefencePawns/AI/ProximityPerception/AISenseConfig_Proximity.h"
 #include "TowerDefencePawns/AI/TargetSelectionFunctions.h"
+#include "TowerDefencePawns/Components/HealthComponent.h"
 #include "TowerDefencePawns/Components/HitFlashComponent.h"
 #include "TowerDefencePawns/Components/OutlineComponent.h"
 

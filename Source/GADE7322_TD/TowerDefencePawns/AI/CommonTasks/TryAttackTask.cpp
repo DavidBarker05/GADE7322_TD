@@ -1,6 +1,5 @@
 #include "TowerDefencePawns/AI/CommonTasks/TryAttackTask.h"
 
-#include "CustomLog.h"
 #include "StateTreeExecutionContext.h"
 
 EStateTreeRunStatus FTryAttackTask::EnterState(FStateTreeExecutionContext& Context,

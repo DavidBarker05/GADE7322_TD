@@ -1,6 +1,6 @@
 #pragma once
 
-#include "CoreMinimal.h"
+#include "TDCore.h"
 
 #include "AI/Navigation/NavigationTypes.h"
 #include "AIController.h"

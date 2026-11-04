@@ -5,7 +5,6 @@
 #include "Components/CapsuleComponent.h"
 #include "Components/ChildActorComponent.h"
 #include "Perception/AIPerceptionComponent.h"
-#include "TDCollisionChannels.h"
 #include "TowerDefencePawns/Components/HitFlashComponent.h"
 #include "TowerDefencePawns/Components/OutlineComponent.h"
 #include "TowerDefencePawns/Defenders/Components/DefenderUpgradeComponent.h"
