@@ -179,7 +179,7 @@ private:
                       Units = "%"))
     float GroundTroopDamageReduction = 20.0f;
 
-    UPROPERTY(BlueprintReadOnly, Category = "Projectile|Ballista|Cannon",
+    UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Projectile|Ballista|Cannon",
               meta = (AllowPrivateAccess = true, ClampMin = 0.0, UIMin = 0.0, Units = "Centimeters"))
     float ExplosionRadius = 250.0f;
 

@@ -1,6 +1,8 @@
 #include "TowerDefencePawns/Defenders/Ballista/CannonBall.h"
 
 #include "Kismet/KismetSystemLibrary.h"
+#include "NiagaraFunctionLibrary.h"
+#include "NiagaraSystem.h"
 #include "TowerDefencePawns/Attackers/Attacker.h"
 #include "TowerDefencePawns/Components/HealthComponent.h"
 
@@ -22,6 +24,12 @@ void ACannonBall::DamageTarget(ATowerDefencePawn* TargetToDamage)
     if (UKismetSystemLibrary::SphereOverlapActors(this, GetActorLocation(), ExplosionRadius, ObjectTypes,
                                                   AAttacker::StaticClass(), {}, OutActors))
     {
+        if (ExplosionSystem)
+        {
+            UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), ExplosionSystem, GetActorLocation(),
+                                                           FRotator::ZeroRotator, FVector::OneVector, true, true,
+                                                           ENCPoolMethod::AutoRelease);
+        }
         const int32 AirDamage = GetDamage();
         const int32 GroundDamage = FMath::RoundToInt(GetDamage() * (1.0f - GroundTroopDamageReduction / 100.0f));
         for (AActor* Actor : OutActors)

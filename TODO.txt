@@ -13,7 +13,7 @@ Upgrades:
 - Ballista
     - Give upgrades values
     - Upgrade 1: Add decorations
-    - Upgrade 2: Add cannon and cannon ball visually
+    - Upgrade 2: Add cannon visually
 - Healer
     - Give upgrades values
 
@@ -21,8 +21,12 @@ Shaders:
 - Create instance of outline material for each defender
 
 Visual Effects:
-- Particle System: Cannon ball explosion
 - Post Processing Effect: Screen hit effect when the tower gets hit to show it's taking damage
 
 Custom Procedural Feature:
-Unsure right now, need to see how much time I have and what is doable still
+- Custom Enemy:
+    - Rock golem
+    - Two body types: 1 gives more health other is normal
+    - Two arm types: 1 gives more damage other is normal
+    - Two leg types: 1 makes move faster other is normal
+    - All make 8 combinations for enemy to spawn
