@@ -50,7 +50,7 @@ void AMage::Tick(float DeltaTime)
         StopBoosting();
         return;
     }
-    if (TimeSinceLastVisionUpdate < 1.0f / SpellDistanceCheckUpdateFrequency + KINDA_SMALL_NUMBER)
+    if (TimeSinceLastVisionUpdate < 1.0f / SpellDistanceCheckUpdateFrequency + UE_KINDA_SMALL_NUMBER)
     {
         TimeSinceLastVisionUpdate += DeltaTime;
         return;
@@ -60,7 +60,7 @@ void AMage::Tick(float DeltaTime)
     const float Radius = (bOtherTargetFriendly ? BoostRadius : AttackRadius) * SpellShowRadiusMultiplier;
     const bool bWasHoldingSpell = bIsHoldingSpell;
     bIsHoldingSpell =
-        FVector::Dist2D(GetActorLocation(), CurrentTarget->GetActorLocation()) <= Radius + KINDA_SMALL_NUMBER;
+        FVector::Dist2D(GetActorLocation(), CurrentTarget->GetActorLocation()) <= Radius + UE_KINDA_SMALL_NUMBER;
     if (bWasHoldingSpell != bIsHoldingSpell)
     {
         (bOtherTargetFriendly ? BoostSpellBall : DamageSpellBall)->SetVisibility(bIsHoldingSpell);
@@ -92,7 +92,7 @@ void AMage::Attack(ATowerDefencePawn* Other)
 {
     if (!IsPawnActiveAndAlive(Other)) return;
     if (FVector::Dist2D(GetActorLocation(), Other->GetVisualAttackPointLocation()) <=
-        AttackNoThrowingRadius + KINDA_SMALL_NUMBER)
+        AttackNoThrowingRadius + UE_KINDA_SMALL_NUMBER)
         Super::Attack(Other);
     else if (PROJECTILE_POOL_FACTORY_EXISTS)
     {

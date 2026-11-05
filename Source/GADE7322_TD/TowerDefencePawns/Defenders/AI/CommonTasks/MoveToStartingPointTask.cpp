@@ -31,7 +31,7 @@ EStateTreeRunStatus FMoveToStartingPointTask::EnterState(FStateTreeExecutionCont
     const FVector Destination = Actor->GetSpawnPoint()->GetActorLocation();
     const float DistToHome = FVector::Dist2D(Actor->GetActorLocation(), Destination);
 
-    if (DistToHome <= AcceptanceRadius - KINDA_SMALL_NUMBER) return EStateTreeRunStatus::Succeeded;
+    if (DistToHome <= AcceptanceRadius - UE_KINDA_SMALL_NUMBER) return EStateTreeRunStatus::Succeeded;
 
     if (AIController->GetMoveStatus() == EPathFollowingStatus::Moving) return EStateTreeRunStatus::Running;
 

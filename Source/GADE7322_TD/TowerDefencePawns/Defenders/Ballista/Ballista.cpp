@@ -411,7 +411,7 @@ void ABallista::UpdateAttackTarget()
     if (const ATowerDefencePawn* Current = CurrentAttackTarget;
         IsPawnActiveAndAlive(Current) &&
         FVector::Dist2D(GetActorLocation(), Current->GetActorLocation()) - Current->GetOccupiedRadius() <=
-            AttackRadius + KINDA_SMALL_NUMBER)
+            AttackRadius + UE_KINDA_SMALL_NUMBER)
         return;
     if (ATowerDefencePawn* NewTarget = SelectClosestTarget(VisiblePawns, this)) SetAttackTarget(NewTarget);
     else CurrentAttackTarget = nullptr;

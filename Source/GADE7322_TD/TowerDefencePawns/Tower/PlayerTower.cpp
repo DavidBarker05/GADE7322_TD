@@ -97,7 +97,7 @@ void APlayerTower::Tick(float DeltaTime)
     }
     StartAttack();
     if (!IsValid(ScreenDamageMaterial)) return;
-    if (CurrentScreenDamageTime <= 0.0f + KINDA_SMALL_NUMBER)
+    if (CurrentScreenDamageTime <= 0.0f + UE_KINDA_SMALL_NUMBER)
     {
         ScreenDamageMaterial->SetScalarParameterValue("Alpha", 0.0f);
         return;
@@ -166,7 +166,7 @@ void APlayerTower::UpdateAttackTargets()
         if (const ATowerDefencePawn* Current = AttackTargets[i];
             IsPawnActiveAndAlive(Current) &&
             FVector::Dist2D(GetActorLocation(), Current->GetActorLocation()) - Current->GetOccupiedRadius() <=
-                AttackRadius + KINDA_SMALL_NUMBER)
+                AttackRadius + UE_KINDA_SMALL_NUMBER)
             continue;
         if (ATowerDefencePawn* NewTarget = SelectClosestTarget(VisiblePawns, this)) SetAttackTarget(i, NewTarget);
         else AttackTargets[i] = nullptr;

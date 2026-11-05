@@ -506,8 +506,8 @@ void AProceduralTerrainGen::ComputeDefenderSpotLocations()
             FVector SegPoint = Points[i]; // Current walk position, advances along the segment below
             const FVector SegEnd = Points[i + 1];
             float SegRemaining = FVector::Dist(SegPoint, SegEnd);
-            // Yes "KINDA_SMALL_NUMBER" is an actual UE macro lol, who needs epsilon?
-            if (SegRemaining <= KINDA_SMALL_NUMBER) continue; // Don't divide by 0
+            // Yes "UE_KINDA_SMALL_NUMBER" is an actual UE macro lol, who needs epsilon?
+            if (SegRemaining <= UE_KINDA_SMALL_NUMBER) continue; // Don't divide by 0
 
             const FVector SegDir = (SegEnd - SegPoint) / SegRemaining;
             const FVector Perpendicular(-SegDir.Y, SegDir.X, 0.0f);

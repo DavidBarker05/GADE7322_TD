@@ -82,7 +82,7 @@ void AMageAIController::Tick(float DeltaTime)
     {
         const float Radius = Mage->IsOtherPawnFriendly(Target) ? Mage->GetBoostRadius() : Mage->GetAttackRadius();
         if (FVector::Dist2D(Mage->GetActorLocation(), Target->GetActorLocation()) <=
-            Radius + KINDA_SMALL_NUMBER) // Is the current target in the radius?
+            Radius + UE_KINDA_SMALL_NUMBER) // Is the current target in the radius?
         {
             if (const FVector ToTarget = Target->GetActorLocation() - Mage->GetActorLocation();
                 !ToTarget.IsNearlyZero())
@@ -90,7 +90,7 @@ void AMageAIController::Tick(float DeltaTime)
             return; // Keep using that target
         }
     }
-    if (TimeSinceLastVisionUpdate < 1.0f / VisionUpdateFrequency + KINDA_SMALL_NUMBER)
+    if (TimeSinceLastVisionUpdate < 1.0f / VisionUpdateFrequency + UE_KINDA_SMALL_NUMBER)
     {
         TimeSinceLastVisionUpdate += DeltaTime;
         return;
@@ -138,7 +138,7 @@ void AMageAIController::Tick(float DeltaTime)
         float DistToEnemy =
             FVector::Dist2D(MageLoc, KindaClosestEnemy->GetActorLocation()) - KindaClosestEnemy->GetOccupiedRadius();
         bool bIsTargetForEnemy = IsThisATargetForOtherPawn(KindaClosestEnemy);
-        if (DistToEnemy <= Mage->GetAttackRadius() + KINDA_SMALL_NUMBER) // Are there any defenders in attack radius?
+        if (DistToEnemy <= Mage->GetAttackRadius() + UE_KINDA_SMALL_NUMBER) // Are there any defenders in attack radius?
         {
             if (bIsTargetForEnemy) // Are any of those defenders targeting this pawn?
                 Mage->SetCurrentTarget(KindaClosestEnemy); // Attack the closest of those defenders
@@ -149,7 +149,7 @@ void AMageAIController::Tick(float DeltaTime)
                 float DistToFriendly = FVector::Dist2D(MageLoc, KindaClosestFriendly->GetActorLocation()) -
                                        KindaClosestFriendly->GetOccupiedRadius();
                 if (DistToFriendly <=
-                    Mage->GetBoostRadius() + KINDA_SMALL_NUMBER) // Are any of those attackers in boost radius?
+                    Mage->GetBoostRadius() + UE_KINDA_SMALL_NUMBER) // Are any of those attackers in boost radius?
                     Mage->SetCurrentTarget(KindaClosestFriendly); // Boost the closest of those defenders
                 else Mage->SetCurrentTarget(KindaClosestEnemy); // Attack the closest of those defenders
             }

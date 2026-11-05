@@ -165,7 +165,7 @@ void ATowerDefencePlayer::DoMove(const FInputActionValue& Value)
     const FVector RightVector = GetActorRightVector() * MovementVector.X;
     const FVector ForwardVector = GetActorForwardVector() * MovementVector.Y;
     FloatingPawnMovement->AddInputVector(RightVector + ForwardVector);
-    if (MovementVector.SquaredLength() > KINDA_SMALL_NUMBER) bFollowTarget = false;
+    if (MovementVector.SquaredLength() > UE_KINDA_SMALL_NUMBER) bFollowTarget = false;
 }
 
 void ATowerDefencePlayer::DoRotate(const FInputActionValue& Value)

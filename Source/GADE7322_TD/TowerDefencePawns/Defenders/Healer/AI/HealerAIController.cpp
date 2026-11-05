@@ -85,7 +85,7 @@ void AHealerAIController::Tick(float DeltaTime)
     {
         const float Radius = Healer->IsOtherPawnFriendly(Target) ? Healer->GetHealRadius() : Healer->GetAttackRadius();
         if (FVector::Dist2D(Healer->GetActorLocation(), Target->GetActorLocation()) <=
-            Radius + KINDA_SMALL_NUMBER) // Is the current target in the radius?
+            Radius + UE_KINDA_SMALL_NUMBER) // Is the current target in the radius?
         {
             if (const FVector ToTarget = Target->GetActorLocation() - Healer->GetActorLocation();
                 !ToTarget.IsNearlyZero())
@@ -93,7 +93,7 @@ void AHealerAIController::Tick(float DeltaTime)
             return; // Keep using that target
         }
     }
-    if (TimeSinceLastVisionUpdate < 1.0f / VisionUpdateFrequency + KINDA_SMALL_NUMBER)
+    if (TimeSinceLastVisionUpdate < 1.0f / VisionUpdateFrequency + UE_KINDA_SMALL_NUMBER)
     {
         TimeSinceLastVisionUpdate += DeltaTime;
         return;
@@ -141,7 +141,7 @@ void AHealerAIController::Tick(float DeltaTime)
         float DistToEnemy =
             FVector::Dist2D(HealerLoc, KindaClosestEnemy->GetActorLocation()) - KindaClosestEnemy->GetOccupiedRadius();
         bool bIsTargetForEnemy = IsThisATargetForOtherPawn(KindaClosestEnemy);
-        if (DistToEnemy <= Healer->GetAttackRadius() + KINDA_SMALL_NUMBER) // Are there any attackers in attack radius?
+        if (DistToEnemy <= Healer->GetAttackRadius() + UE_KINDA_SMALL_NUMBER) // Are there any attackers in attack radius?
         {
             if (bIsTargetForEnemy) // Are any of those attackers targeting this pawn?
                 Healer->SetCurrentTarget(KindaClosestEnemy); // Attack the closest of those attackers
@@ -152,7 +152,7 @@ void AHealerAIController::Tick(float DeltaTime)
                 float DistToFriendly = FVector::Dist2D(HealerLoc, KindaClosestFriendly->GetActorLocation()) -
                                        KindaClosestFriendly->GetOccupiedRadius();
                 if (DistToFriendly <=
-                    Healer->GetHealRadius() + KINDA_SMALL_NUMBER) // Are any of those defenders in heal radius?
+                    Healer->GetHealRadius() + UE_KINDA_SMALL_NUMBER) // Are any of those defenders in heal radius?
                     Healer->SetCurrentTarget(KindaClosestFriendly); // Heal the closest of those defenders
                 else Healer->SetCurrentTarget(KindaClosestEnemy); // Attack the closest of those attackers
             }

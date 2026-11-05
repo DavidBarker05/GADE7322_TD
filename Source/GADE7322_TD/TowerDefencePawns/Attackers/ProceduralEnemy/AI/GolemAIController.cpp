@@ -28,14 +28,14 @@ void AGolemController::Tick(float DeltaTime)
         (AttackTarget->IsA<APlayerTower>() ||
          FVector::Dist2D(Golem->GetActorLocation(), AttackTarget->GetActorLocation()) -
                  AttackTarget->GetOccupiedRadius() <=
-             Golem->GetAttackRadius() + KINDA_SMALL_NUMBER))
+             Golem->GetAttackRadius() + UE_KINDA_SMALL_NUMBER))
     {
         if (const FVector ToTarget = AttackTarget->GetActorLocation() - Golem->GetActorLocation();
             !ToTarget.IsNearlyZero())
             Golem->SetActorRotation(FRotator(0.0f, ToTarget.Rotation().Yaw, 0.0f));
         return;
     }
-    if (TimeSinceLastVisionUpdate < 1.0f / VisionUpdateFrequency + KINDA_SMALL_NUMBER)
+    if (TimeSinceLastVisionUpdate < 1.0f / VisionUpdateFrequency + UE_KINDA_SMALL_NUMBER)
     {
         TimeSinceLastVisionUpdate += DeltaTime;
         return;

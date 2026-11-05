@@ -26,14 +26,14 @@ void AWarriorAIController::Tick(float DeltaTime)
         ATowerDefencePawn::IsPawnActiveAndAlive(AttackTarget) &&
         FVector::Dist2D(WPawn->GetActorLocation(), AttackTarget->GetActorLocation()) -
                 AttackTarget->GetOccupiedRadius() <=
-            WPawn->GetAttackRadius() + KINDA_SMALL_NUMBER)
+            WPawn->GetAttackRadius() + UE_KINDA_SMALL_NUMBER)
     {
         if (const FVector ToTarget = AttackTarget->GetActorLocation() - WPawn->GetActorLocation();
             !ToTarget.IsNearlyZero())
             WPawn->SetActorRotation(FRotator(0.0f, ToTarget.Rotation().Yaw, 0.0f));
         return;
     }
-    if (TimeSinceLastVisionUpdate < 1.0f / VisionUpdateFrequency + KINDA_SMALL_NUMBER)
+    if (TimeSinceLastVisionUpdate < 1.0f / VisionUpdateFrequency + UE_KINDA_SMALL_NUMBER)
     {
         TimeSinceLastVisionUpdate += DeltaTime;
         return;
