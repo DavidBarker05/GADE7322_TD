@@ -60,6 +60,7 @@ void AFlyingEnemy::DoOnSetActive(bool bActive)
         }
         ResetHealth();
     }
+    else HitFlashComponent->ForceStopFlash();
     GetMesh()->SetVisibility(bActive);
     GetMesh()->SetComponentTickEnabled(bActive);
     GetMesh()->SetCollisionEnabled(bActive ? ECollisionEnabled::QueryAndPhysics : ECollisionEnabled::NoCollision);

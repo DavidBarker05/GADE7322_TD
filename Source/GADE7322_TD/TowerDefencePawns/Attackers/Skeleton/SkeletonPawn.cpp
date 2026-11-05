@@ -60,6 +60,7 @@ void ASkeletonPawn::DoFlash()
 
 void ASkeletonPawn::DoOnSetActive(bool bActive)
 {
+    AWeapon* Sword = GetWeapon();
     if (bActive)
     {
         CurrentAttackTarget = nullptr;
@@ -69,13 +70,16 @@ void ASkeletonPawn::DoOnSetActive(bool bActive)
             AnimInstance->InitializeAnimation();
         }
         ResetHealth();
+        if (IsValid(Sword)) Sword->AttachToSkeleton(GetMesh());
     }
-    AWeapon* Sword = GetWeapon();
-    if (IsValid(Sword))
+    else
     {
-        if (bActive) Sword->AttachToSkeleton(GetMesh());
-        else Sword->AttachToComponent(Weapon, FAttachmentTransformRules::SnapToTargetNotIncludingScale);
-        Sword->GetHitFlashComponent()->ForceStopFlash();
+        HitFlashComponent->ForceStopFlash();
+        if (IsValid(Sword))
+        {
+            Sword->AttachToComponent(Weapon, FAttachmentTransformRules::SnapToTargetNotIncludingScale);
+            Sword->GetHitFlashComponent()->ForceStopFlash();
+        }
     }
     GetMesh()->SetVisibility(bActive);
     GetMesh()->SetComponentTickEnabled(bActive);
