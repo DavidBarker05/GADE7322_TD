@@ -3,13 +3,16 @@
 #include "TDCore.h"
 
 #include "TowerDefencePawns/Attackers/Attacker.h"
+#include "TowerDefencePawns/Attackers/ProceduralEnemy/ProceduralParts/GolemCollapse.h"
 
 #include "Golem.generated.h"
 
 class AGolemArm;
 class AGolemBody;
 class AGolemLeg;
+class UCapsuleComponent;
 class UChildActorComponent;
+class UGolemAnimator;
 
 UENUM(BlueprintType)
 enum class EGolemPartStrength : uint8
@@ -32,6 +35,8 @@ public:
     AGolem();
 
     virtual void BeginPlay() override;
+
+    virtual void DoFlash() override;
 
     const ATowerDefencePawn* GetAttackTarget() const { return CurrentAttackTarget; }
     ATowerDefencePawn* GetAttackTarget() { return CurrentAttackTarget; }
@@ -91,8 +96,18 @@ public:
     const AGolemLeg* GetCurrentLeftLeg() const { return CurrentLeftLeg; }
     AGolemLeg* GetCurrentLeftLeg() { return CurrentLeftLeg; }
 
+    virtual void StartAttack() override;
+
+    virtual void EndAttack() override;
+
+    virtual void OnDeath(TFunction<void()>&& Func) override;
+
 protected:
     virtual void DoOnSetActive(bool bActive) override;
+
+    void StartCollapse();
+
+    void StopCollapse();
 
     UFUNCTION(BlueprintCallable, Category = "Golem|Part|Arm|Right")
     void SetCurrentRightArm(AGolemArm* Arm);
@@ -211,9 +226,36 @@ private:
               meta = (AllowPrivateAccess = true, ClampMin = 0.0, UIMin = 0.0, Units = "Seconds"))
     float AttackCooldown = 1.0f;
 
+    UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Death",
+              meta = (AllowPrivateAccess = true, ClampMin = 0.0, UIMin = 0.0, Units = "Seconds"))
+    float CollapseDuration = 3.0f;
+
+    UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Death",
+              meta = (AllowPrivateAccess = true, ClampMin = 0.0, UIMin = 0.0, Units = "cm/s"))
+    float CollapseImpulse = 150.0f;
+
+    UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Death",
+              meta = (AllowPrivateAccess = true, ClampMin = 0.0, UIMin = 0.0, Units = "Deg/s"))
+    float CollapseSpin = 180.0f;
+
     UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components|Golem|Part|Head",
               meta = (AllowPrivateAccess = true))
     UStaticMeshComponent* Head;
+
+    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components|Golem", meta = (AllowPrivateAccess = true))
+    UGolemAnimator* Animator;
+
+    FGolemCollapse HeadCollapse;
+
+    FTimerHandle AttackCooldownHandle;
+
+    FTimerHandle CollapseTimerHandle;
+
+    void OnAnimatorAttackHit();
+
+    void OnAnimatorAttackFinished();
+
+    void FinishCollapse();
 
     UPROPERTY(VisibleAnywhere, Category = "Components|Golem|Part|Arm|Right", meta = (AllowPrivateAccess = true))
     UChildActorComponent* WeakRightArmComponent;

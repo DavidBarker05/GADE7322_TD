@@ -2,31 +2,17 @@
 
 #include "TDCore.h"
 
-#include "GameFramework/Actor.h"
+#include "TowerDefencePawns/Attackers/ProceduralEnemy/ProceduralParts/GolemPart.h"
 
 #include "GolemBody.generated.h"
 
-class UHitFlashComponent;
-
 UCLASS(Abstract)
-class GADE7322_TD_API AGolemBody : public AActor
+class GADE7322_TD_API AGolemBody : public AGolemPart
 {
     GENERATED_BODY()
 
 public:
     AGolemBody();
-
-    const UStaticMeshComponent* GetMesh() const { return Mesh; }
-    UStaticMeshComponent* GetMesh() { return Mesh; }
-
-    UFUNCTION(BlueprintCallable, Category = "Golem|Part|Body")
-    virtual void EnableMesh();
-
-    UFUNCTION(BlueprintCallable, Category = "Golem|Part|Body")
-    virtual void DisableMesh();
-
-    const UHitFlashComponent* GetHitFlashComponent() const { return HitFlashComponent; }
-    UHitFlashComponent* GetHitFlashComponent() { return HitFlashComponent; }
 
     const USceneComponent* GetHeadAttachmentPoint() const { return HeadAttachmentPoint; }
     USceneComponent* GetHeadAttachmentPoint() { return HeadAttachmentPoint; }
@@ -46,12 +32,6 @@ public:
     int32 GetHealth() const { return Health; }
 
 private:
-    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components", meta = (AllowPrivateAccess = true))
-    UStaticMeshComponent* Mesh;
-
-    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components", meta = (AllowPrivateAccess = true))
-    UHitFlashComponent* HitFlashComponent;
-
     UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components|Golem|Part|Body|AttachPoint|Head",
               meta = (AllowPrivateAccess = true))
     USceneComponent* HeadAttachmentPoint;
@@ -74,5 +54,5 @@ private:
 
     UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Golem|Part|Body|Health",
               meta = (AllowPrivateAccess = true, ClampMin = 0, UIMin = 0))
-    int32 Health;
+    int32 Health = 0;
 };

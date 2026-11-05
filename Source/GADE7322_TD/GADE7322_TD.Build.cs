@@ -52,6 +52,7 @@ public class GADE7322_TD : ModuleRules
 			"GADE7322_TD/TowerDefencePawns/Attackers/Mage/AI",
 			"GADE7322_TD/TowerDefencePawns/Attackers/ProceduralEnemy",
 			"GADE7322_TD/TowerDefencePawns/Attackers/ProceduralEnemy/AI",
+			"GADE7322_TD/TowerDefencePawns/Attackers/ProceduralEnemy/Animation",
 			"GADE7322_TD/TowerDefencePawns/Attackers/ProceduralEnemy/ProceduralParts",
 			"GADE7322_TD/TowerDefencePawns/Attackers/Skeleton",
 			"GADE7322_TD/TowerDefencePawns/Attackers/Skeleton/AI",

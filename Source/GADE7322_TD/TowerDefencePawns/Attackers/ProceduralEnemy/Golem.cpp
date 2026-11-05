@@ -1,9 +1,11 @@
 #include "TowerDefencePawns/Attackers/ProceduralEnemy/Golem.h"
 
+#include "Components/CapsuleComponent.h"
 #include "Components/ChildActorComponent.h"
 #include "DamageComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "HealthComponent.h"
+#include "TowerDefencePawns/Attackers/ProceduralEnemy/Animation/GolemAnimator.h"
 #include "TowerDefencePawns/Attackers/ProceduralEnemy/ProceduralParts/GolemArm.h"
 #include "TowerDefencePawns/Attackers/ProceduralEnemy/ProceduralParts/GolemBody.h"
 #include "TowerDefencePawns/Attackers/ProceduralEnemy/ProceduralParts/GolemLeg.h"
@@ -14,6 +16,11 @@ AGolem::AGolem()
     PawnDisplayName = TEXT("Golem");
     OccupiedRadius = 50.0f;
     CurrentTeam = EAITeam::MeleeAttacker;
+    Head = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Head"));
+    Head->SetupAttachment(RootComponent);
+    Head->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+    Head->SetCanEverAffectNavigation(false);
+    Animator = CreateDefaultSubobject<UGolemAnimator>(TEXT("Animator"));
     WeakRightArmComponent = CreateDefaultSubobject<UChildActorComponent>(TEXT("Weak Right Arm Component"));
     WeakRightArmComponent->SetupAttachment(RootComponent);
     AverageRightArmComponent = CreateDefaultSubobject<UChildActorComponent>(TEXT("Average Right Arm Component"));
@@ -49,6 +56,11 @@ AGolem::AGolem()
 void AGolem::BeginPlay()
 {
     Super::BeginPlay();
+    Head->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+    Head->SetCanEverAffectNavigation(false);
+    Head->SetGenerateOverlapEvents(false);
+    Animator->OnAttackHit.AddUObject(this, &AGolem::OnAnimatorAttackHit);
+    Animator->OnAttackFinished.AddUObject(this, &AGolem::OnAnimatorAttackFinished);
     HitFlashComponent->BindMaterials();
     if (AGolemArm* WeakRightArm = GetWeakRightArm(); IsValid(WeakRightArm))
         WeakRightArm->GetHitFlashComponent()->BindMaterials();
@@ -79,6 +91,16 @@ void AGolem::BeginPlay()
         AverageLeftLeg->GetHitFlashComponent()->BindMaterials();
     if (AGolemLeg* StrongLeftLeg = GetStrongLeftLeg(); IsValid(StrongLeftLeg))
         StrongLeftLeg->GetHitFlashComponent()->BindMaterials();
+}
+
+void AGolem::DoFlash()
+{
+    Super::DoFlash();
+    if (IsValid(CurrentRightArm)) CurrentRightArm->GetHitFlashComponent()->DoFlash();
+    if (IsValid(CurrentLeftArm)) CurrentLeftArm->GetHitFlashComponent()->DoFlash();
+    if (IsValid(CurrentBody)) CurrentBody->GetHitFlashComponent()->DoFlash();
+    if (IsValid(CurrentRightLeg)) CurrentRightLeg->GetHitFlashComponent()->DoFlash();
+    if (IsValid(CurrentLeftLeg)) CurrentLeftLeg->GetHitFlashComponent()->DoFlash();
 }
 
 EGolemPartStrength AGolem::GetRandomPartStrength()
@@ -178,9 +200,9 @@ AGolemArm* AGolem::GetLeftArm_Blueprint(EGolemPartStrength Strength) const
         case EGolemPartStrength::Weak:
             return GetWeakLeftArm_Blueprint();
         case EGolemPartStrength::Average:
-            return GetWeakLeftArm_Blueprint();
+            return GetAverageLeftArm_Blueprint();
         case EGolemPartStrength::Strong:
-            return GetWeakLeftArm_Blueprint();
+            return GetStrongLeftArm_Blueprint();
         default:
             return nullptr;
     }
@@ -313,17 +335,100 @@ AGolemLeg* AGolem::GetLeftLeg_Blueprint(EGolemPartStrength Strength) const
         case EGolemPartStrength::Weak:
             return GetWeakLeftLeg_Blueprint();
         case EGolemPartStrength::Average:
-            return GetWeakLeftLeg_Blueprint();
+            return GetAverageLeftLeg_Blueprint();
         case EGolemPartStrength::Strong:
-            return GetWeakLeftLeg_Blueprint();
+            return GetStrongLeftLeg_Blueprint();
         default:
             return nullptr;
     }
 }
 
+void AGolem::StartAttack()
+{
+    if (!bCanAttack || bDeathStarted) return;
+    bCanAttack = false;
+    Animator->PlayAttack();
+}
+
+void AGolem::EndAttack()
+{
+    GetWorldTimerManager().ClearTimer(AttackCooldownHandle);
+    if (bDeathStarted) return;
+    if (AttackCooldown <= 0.0f)
+    {
+        bCanAttack = true;
+        return;
+    }
+    GetWorldTimerManager().SetTimer(
+        AttackCooldownHandle, [this]() -> void { bCanAttack = true; }, AttackCooldown, false);
+}
+
+void AGolem::OnDeath(TFunction<void()>&& Func)
+{
+    if (bDeathStarted) return;
+    bDeathStarted = true;
+    DestroyDelegate = MoveTemp(Func);
+    GetWorldTimerManager().ClearTimer(AttackCooldownHandle);
+    Animator->Freeze();
+    GetCharacterMovement()->DisableMovement();
+    StartCollapse();
+    GetWorldTimerManager().SetTimer(CollapseTimerHandle, this, &AGolem::FinishCollapse,
+                                    FMath::Max(CollapseDuration, 0.01f), false);
+}
+
+void AGolem::OnAnimatorAttackHit()
+{
+    if (bDeathStarted) return;
+    if (IsPawnActiveAndAlive(CurrentAttackTarget)) Attack(CurrentAttackTarget);
+}
+
+void AGolem::OnAnimatorAttackFinished() { EndAttack(); }
+
+void AGolem::FinishCollapse()
+{
+    StopCollapse();
+    OnDeathComplete();
+}
+
+void AGolem::StartCollapse()
+{
+    if (IsValid(CurrentBody)) CurrentBody->StartCollapse(CollapseImpulse, CollapseSpin);
+    if (IsValid(CurrentRightArm)) CurrentRightArm->StartCollapse(CollapseImpulse, CollapseSpin);
+    if (IsValid(CurrentLeftArm)) CurrentLeftArm->StartCollapse(CollapseImpulse, CollapseSpin);
+    if (IsValid(CurrentRightLeg)) CurrentRightLeg->StartCollapse(CollapseImpulse, CollapseSpin);
+    if (IsValid(CurrentLeftLeg)) CurrentLeftLeg->StartCollapse(CollapseImpulse, CollapseSpin);
+    HeadCollapse.Begin({Head}, CollapseImpulse, CollapseSpin);
+}
+
+void AGolem::StopCollapse()
+{
+    GetWorldTimerManager().ClearTimer(CollapseTimerHandle);
+    HeadCollapse.End();
+    if (IsValid(CurrentBody)) CurrentBody->StopCollapse();
+    if (IsValid(CurrentRightArm)) CurrentRightArm->StopCollapse();
+    if (IsValid(CurrentLeftArm)) CurrentLeftArm->StopCollapse();
+    if (IsValid(CurrentRightLeg)) CurrentRightLeg->StopCollapse();
+    if (IsValid(CurrentLeftLeg)) CurrentLeftLeg->StopCollapse();
+}
+
+void AGolem::SetCurrentRightArm(AGolemArm* Arm) { CurrentRightArm = Arm; }
+
+void AGolem::SetCurrentLeftArm(AGolemArm* Arm) { CurrentLeftArm = Arm; }
+
+void AGolem::SetCurrentBody(AGolemBody* Body) { CurrentBody = Body; }
+
+void AGolem::SetCurrentRightLeg(AGolemLeg* Leg) { CurrentRightLeg = Leg; }
+
+void AGolem::SetCurrentLeftLeg(AGolemLeg* Leg) { CurrentLeftLeg = Leg; }
+
 void AGolem::DoOnSetActive(bool bActive)
 {
     Super::DoOnSetActive(bActive);
+    StopCollapse();
+    Animator->Stop();
+    GetWorldTimerManager().ClearTimer(AttackCooldownHandle);
+    CurrentAttackTarget = nullptr;
+    bCanAttack = true;
     auto Deactivate = [this]() -> void
     {
         Head->AttachToComponent(RootComponent, FAttachmentTransformRules::SnapToTargetNotIncludingScale);
@@ -470,6 +575,8 @@ void AGolem::DoOnSetActive(bool bActive)
         HealthComponent->SetBaseMaxHealth(CurrentBody->GetHealth());
         DamageComponent->SetDamage(CurrentRightArm->GetDamage());
         GetCharacterMovement()->MaxWalkSpeed = CurrentRightLeg->GetSpeed();
+        GetCharacterMovement()->SetMovementMode(MOVE_Walking);
+        Animator->Setup(CurrentBody, CurrentRightArm, CurrentLeftArm, CurrentRightLeg, CurrentLeftLeg);
         ResetHealth();
     }
     else Deactivate();
