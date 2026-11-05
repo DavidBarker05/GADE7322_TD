@@ -18,22 +18,24 @@ class GADE7322_TD_API UHealthComponent : public UActorComponent
     GENERATED_BODY()
 
 public:
-    int32 GetMaxHealth() const { return MaxHealth; }
-    UHealthComponent& SetMaxHealth(int32 Health)
-    {
-        MaxHealth = FMath::Max(0, Health);
-        CurrentHealth = FMath::Clamp(CurrentHealth, 0, MaxHealth);
-        OnHealthChanged.Broadcast();
-        return *this;
-    }
+    UFUNCTION(BlueprintCallable)
+    void SetStrengthMultiplier(float Multiplier);
+
+    UFUNCTION(BlueprintCallable)
+    void RemoveStrengthMultiplier();
+
+    UFUNCTION(BlueprintPure, Category = "Health")
+    int32 GetMaxHealth() const;
+
+    int32 GetBaseMaxHealth() const { return BaseMaxHealth; }
+
+    UFUNCTION(BlueprintCallable)
+    void SetBaseMaxHealth(int32 Health);
 
     int32 GetCurrentHealth() const { return CurrentHealth; }
-    UHealthComponent& SetCurrentHealth(int32 Health)
-    {
-        CurrentHealth = FMath::Clamp(Health, 0, MaxHealth);
-        OnHealthChanged.Broadcast();
-        return *this;
-    }
+
+    UFUNCTION(BlueprintCallable)
+    void SetCurrentHealth(int32 Health);
 
     UFUNCTION(BlueprintCallable, Category = "Health")
     void TakeDamage(int32 Damage);
@@ -42,12 +44,7 @@ public:
     void ReceiveHealth(int32 Health);
 
     UFUNCTION(BlueprintCallable, Category = "Health")
-    void ResetHealth()
-    {
-        CurrentHealth = MaxHealth;
-        bAlive = true;
-        bDead = false;
-    }
+    void ResetHealth();
 
     bool IsAlive() const { return bAlive; }
 
@@ -69,11 +66,11 @@ public:
     FOnHealthGainedValue OnHealthGainedValue;
 
 private:
-    UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Health",
+    UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Health",
               meta = (AllowPrivateAccess = true, UIMin = 0, ClampMin = 0))
-    int32 MaxHealth = 1;
+    int32 BaseMaxHealth = 1;
 
-    UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Health",
+    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Health",
               meta = (AllowPrivateAccess = true, UIMin = 0, ClampMin = 0))
     int32 CurrentHealth = 0;
 
@@ -82,4 +79,7 @@ private:
 
     UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Health", meta = (AllowPrivateAccess = true))
     bool bDead = false;
+
+    bool bDoStrengthMultiplier = false;
+    float StrengthMultiplier = 1.0f;
 };

@@ -113,6 +113,7 @@ void AWarrior::DoOnSetActive(bool bActive)
     {
         bIsFemale = FMath::RandBool();
         GetUpgradeComponent()->SetLevel(0); // Reset to base level
+        ResetHealth();
     }
     else
     {

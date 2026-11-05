@@ -17,37 +17,33 @@ public:
     UFUNCTION(BlueprintCallable)
     virtual void DamageOther(UHealthComponent* HealthComponent);
 
-    UFUNCTION(BlueprintPure)
-    int32 GetDamage() const { return FMath::RoundToInt32(Damage * GetDamageMultiplier()); }
     UFUNCTION(BlueprintCallable)
-    void SetDamage(int32 InDamage) { Damage = InDamage; }
+    void SetStrengthMultiplier(float Multiplier);
 
-    float GetDamageMultiplier() const { return DamageBoosts.IsEmpty() ? 1.0f : DamageBoosts.Top(); }
+    UFUNCTION(BlueprintCallable)
+    void RemoveStrengthMultiplier();
 
-    bool AddDamageBoost(float Multiplier)
-    {
-        DamageBoosts.Push(Multiplier);
-        return DamageBoosts.Num() == 1;
-    }
+    UFUNCTION(BlueprintPure)
+    float GetDamageMultiplier() const;
 
-    bool RemoveDamageBoost(float Multiplier)
-    {
-        if (DamageBoosts.IsEmpty()) return false;
-        TArray<float>& DamageBoostsContainer = DamageBoosts.GetContainer();
-        for (int32 i = 0; i < DamageBoostsContainer.Num(); ++i)
-        {
-            if (DamageBoostsContainer[i] == Multiplier)
-            {
-                DamageBoostsContainer.HeapRemoveAt(i, TGreater<float>());
-                break;
-            }
-        }
-        return DamageBoosts.IsEmpty();
-    }
+    UFUNCTION(BlueprintCallable)
+    bool AddDamageBoost(float Multiplier);
+
+    UFUNCTION(BlueprintCallable)
+    bool RemoveDamageBoost(float Multiplier);
+
+    UFUNCTION(BlueprintPure)
+    int32 GetDamage() const;
+
+    UFUNCTION(BlueprintCallable)
+    void SetDamage(int32 InDamage);
 
 protected:
     UPROPERTY(EditDefaultsOnly, meta = (AllowPrivateAccess = true, ClampMin = 0, UIMin = 0))
     int32 Damage = 0;
+
+    bool bDoStrengthMultiplier = false;
+    float StrengthMultiplier = 1.0f;
 
     TPriorityQueue<float> DamageBoosts;
     // Priority queue is something I learned on Leetcode

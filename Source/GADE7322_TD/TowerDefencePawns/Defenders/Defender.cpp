@@ -131,7 +131,15 @@ void ADefender::LevelChanged(int32 Level)
         if (ADefenderAIController* D_AIC = GetController<ADefenderAIController>()) D_AIC->UpdateControllerLevel();
     const FDefenderLevel CurrentDefenderLevel = GetUpgradeComponent()->GetCurrent();
     DamageComponent->SetDamage(CurrentDefenderLevel.GetDamage());
-    HealthComponent->SetMaxHealth(CurrentDefenderLevel.GetHealth());
+    const float PrevMaxHealth = HealthComponent->GetBaseMaxHealth();
+    HealthComponent->SetBaseMaxHealth(CurrentDefenderLevel.GetHealth());
+    if (const float HealthDelta = HealthComponent->GetBaseMaxHealth() - PrevMaxHealth; Level > 0 && HealthDelta > 0)
+    {
+        const float CurrentHealth = HealthComponent->GetCurrentHealth();
+        HealthComponent->SetCurrentHealth(CurrentHealth +
+                                          HealthDelta); // Receive health would call health gained which would
+        if (IsValid(TowerDefenceGameMode)) TowerDefenceGameMode->DefenderMaxHealthChanged(HealthDelta);
+    }
     DoOnLevelChanged(Level);
 }
 

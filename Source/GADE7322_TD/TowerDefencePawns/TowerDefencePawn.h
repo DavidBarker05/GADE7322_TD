@@ -85,6 +85,9 @@ public:
     UFUNCTION(BlueprintCallable)
     void SetPawnActive(bool bActive);
 
+    UFUNCTION(BlueprintCallable)
+    void ResetHealth();
+
     bool IsPawnActive() const { return bIsPawnActive; }
 
     float GetOccupiedRadius() const { return OccupiedRadius; }

@@ -92,7 +92,8 @@ void UHitFlashComponent::ResumeFlash()
     }
     if (const UWorld* World = GetWorld())
     {
-        World->GetTimerManager().SetTimer(FlashHandle, this, &UHitFlashComponent::EndFlash, FlashDuration, false);
+        World->GetTimerManager().SetTimer(FlashHandle, this, &UHitFlashComponent::EndFlash, RemainingFlashDuration,
+                                          false);
     }
 }
 

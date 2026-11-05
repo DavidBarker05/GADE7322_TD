@@ -110,7 +110,7 @@ void UPawnManagerWidget::ShowDefenderInfo(ADefender* Defender)
     DefenderNameText->SetText(FText::FromName(Defender->GetPawnDisplayName()));
     const UHealthComponent* Health = Defender->GetHealthComponent();
     DefenderHealthText->SetText(FText::FromString(
-        FString::Printf(TEXT("Health: %d / %d"), Health->GetCurrentHealth(), Health->GetMaxHealth())));
+        FString::Printf(TEXT("Health: %d / %d"), Health->GetCurrentHealth(), Health->GetBaseMaxHealth())));
     DefenderDamageText->SetText(
         FText::FromString(FString::Printf(TEXT("Damage: %d"), Defender->GetDamageComponent()->GetDamage())));
     SellAmountText->SetText(FText::FromString(FString::Printf(TEXT("Sell for: %d Gold"), Defender->GetSellPrice())));
@@ -132,7 +132,7 @@ void UPawnManagerWidget::ShowTowerInfo(APlayerTower* Tower)
     TowerNameText->SetText(FText::FromName(Tower->GetPawnDisplayName()));
     const UHealthComponent* Health = Tower->GetHealthComponent();
     TowerHealthText->SetText(FText::FromString(
-        FString::Printf(TEXT("Health: %d / %d"), Health->GetCurrentHealth(), Health->GetMaxHealth())));
+        FString::Printf(TEXT("Health: %d / %d"), Health->GetCurrentHealth(), Health->GetBaseMaxHealth())));
     TowerDamageText->SetText(
         FText::FromString(FString::Printf(TEXT("Damage: %d"), Tower->GetDamageComponent()->GetDamage())));
     HealButtonText->SetText(

@@ -71,7 +71,7 @@ void ADefenderSpot::PurchaseDefender(const TSubclassOf<ADefender>& DefenderBluep
         CurrentDefender->SetSpawnPoint(this);
         CurrentDefender->SetPawnActive(true);
         BROADCAST_EVENT(TEXT("PurchaseEvent"), CurrentDefender->GetUpgradeComponent()->GetCurrent().GetCost());
-        BROADCAST_EVENT(TEXT("DefenderPurchasedEvent"), CurrentDefender->GetHealthComponent()->GetMaxHealth());
+        BROADCAST_EVENT(TEXT("DefenderPurchasedEvent"), CurrentDefender->GetHealthComponent()->GetBaseMaxHealth());
     }
 }
 
@@ -81,7 +81,7 @@ void ADefenderSpot::SellDefender()
     if (TOWER_DEFENCE_PAWN_FACTORY_EXISTS)
     {
         BROADCAST_EVENT(TEXT("SellEvent"), CurrentDefender->GetSellPrice());
-        BROADCAST_EVENT(TEXT("DefenderSoldEvent"), CurrentDefender->GetHealthComponent()->GetMaxHealth());
+        BROADCAST_EVENT(TEXT("DefenderSoldEvent"), CurrentDefender->GetHealthComponent()->GetBaseMaxHealth());
         CurrentDefender->SetSpawnPoint(nullptr);
         CurrentDefender->SetPawnActive(false);
         DESTROY_PAWN(CurrentDefender);

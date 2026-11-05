@@ -164,6 +164,7 @@ void ABallista::DoOnSetActive(bool bActive)
         if (UAIPerceptionSystem* PerceptionSys = UAIPerceptionSystem::GetCurrent(GetWorld()))
             PerceptionSys->UpdateListener(*PerceptionComponent);
         GetUpgradeComponent()->SetLevel(0); // Reset to base level
+        ResetHealth();
     }
     else
     {
@@ -205,6 +206,7 @@ void ABallista::DoOnSetActive(bool bActive)
     StandMesh->SetComponentTickEnabled(bActive);
     StandMesh->SetCollisionEnabled(bActive ? ECollisionEnabled::QueryAndPhysics : ECollisionEnabled::NoCollision);
     StandMesh->SetCollisionResponseToAllChannels(bActive ? ECR_Block : ECR_Ignore);
+    StandMesh->SetCollisionResponseToChannel(MouseClickTraceChannel, ECR_Ignore);
     if (bActive)
     {
         StandMesh->SetCollisionResponseToChannel(ECC_WorldStatic, ECR_Ignore);
@@ -269,6 +271,7 @@ void ABallista::DoOnLevelChanged(int32 Level)
         Barrel->GetMesh()->SetComponentTickEnabled(true);
         Barrel->GetMesh()->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
         Barrel->GetMesh()->SetCollisionResponseToAllChannels(ECR_Block);
+        Barrel->GetMesh()->SetCollisionResponseToChannel(MouseClickTraceChannel, ECR_Ignore);
         Barrel->GetMesh()->SetCollisionResponseToChannel(ECC_WorldStatic, ECR_Ignore);
         Barrel->GetMesh()->SetCollisionResponseToChannel(ECC_Pawn, ECR_Overlap);
         if (bMustResumeFlash)
@@ -289,6 +292,7 @@ void ABallista::DoOnLevelChanged(int32 Level)
         Deco->GetMesh()->SetComponentTickEnabled(true);
         Deco->GetMesh()->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
         Deco->GetMesh()->SetCollisionResponseToAllChannels(ECR_Block);
+        Deco->GetMesh()->SetCollisionResponseToChannel(MouseClickTraceChannel, ECR_Ignore);
         Deco->GetMesh()->SetCollisionResponseToChannel(ECC_WorldStatic, ECR_Ignore);
         Deco->GetMesh()->SetCollisionResponseToChannel(ECC_Pawn, ECR_Overlap);
         if (bMustResumeFlash)

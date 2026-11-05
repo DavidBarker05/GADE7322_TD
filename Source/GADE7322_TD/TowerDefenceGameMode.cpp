@@ -47,7 +47,7 @@ void ATowerDefenceGameMode::OnEventReceived_Implementation(const FName& EventNam
         else if (ADefender* DeadDefender = Cast<ADefender>(DeadPawn))
         {
             if (NumAliveDefenders > 0) --NumAliveDefenders;
-            HealthTotal = FMath::Max(0, HealthTotal - DeadDefender->GetHealthComponent()->GetMaxHealth());
+            HealthTotal = FMath::Max(0, HealthTotal - DeadDefender->GetHealthComponent()->GetBaseMaxHealth());
         }
     }
     else if (EVENT_MATCHES(TEXT("DefenderPurchasedEvent"), 1))
@@ -206,16 +206,9 @@ void ATowerDefenceGameMode::SpawnEnemyOnRandomPath()
         AAttacker* Enemy = Cast<AAttacker>(CREATE_PAWN(EnemyClass, FTransform(SpawnLocation)));
         if (!IsValid(Enemy)) return;
         Enemy->SetPathPoints(Path.Points);
-        if (const AAttacker* DefaultEnemy = EnemyClass->GetDefaultObject<AAttacker>())
-        {
-            const float StrengthMultiplier = GetStrengthMultiplier();
-            if (UHealthComponent* HC = Enemy->GetHealthComponent())
-                HC->SetMaxHealth(
-                    FMath::RoundToInt32(DefaultEnemy->GetHealthComponent()->GetMaxHealth() * StrengthMultiplier));
-            if (UDamageComponent* DC = Enemy->GetDamageComponent())
-                DC->SetDamage(
-                    FMath::RoundToInt32(DefaultEnemy->GetDamageComponent()->GetDamage() * StrengthMultiplier));
-        }
+        const float StrengthMultiplier = GetStrengthMultiplier();
+        if (UHealthComponent* HC = Enemy->GetHealthComponent()) HC->SetStrengthMultiplier(StrengthMultiplier);
+        if (UDamageComponent* DC = Enemy->GetDamageComponent()) DC->SetStrengthMultiplier(StrengthMultiplier);
         Enemy->SetPawnActive(true);
         ++EnemiesAliveThisWave;
     }

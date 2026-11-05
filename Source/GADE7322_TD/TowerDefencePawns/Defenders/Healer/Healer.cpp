@@ -167,7 +167,11 @@ void AHealer::HideOutline()
 void AHealer::DoOnSetActive(bool bActive)
 {
     Super::DoOnSetActive(bActive);
-    if (bActive) GetUpgradeComponent()->SetLevel(0); // Reset to base level
+    if (bActive)
+    {
+        GetUpgradeComponent()->SetLevel(0); // Reset to base level
+        ResetHealth();
+    }
     else
     {
         if (ASpellBook* SpellBook = GetSpellBook(); IsValid(SpellBook))

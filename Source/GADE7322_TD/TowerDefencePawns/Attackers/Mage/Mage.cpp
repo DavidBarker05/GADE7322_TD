@@ -136,6 +136,7 @@ void AMage::DoOnSetActive(bool bActive)
             AnimInstance->StopAllMontages(0.0f);
             AnimInstance->InitializeAnimation();
         }
+        ResetHealth();
     }
     GetMesh()->SetVisibility(bActive);
     GetMesh()->SetComponentTickEnabled(bActive);

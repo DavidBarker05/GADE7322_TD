@@ -128,14 +128,6 @@ void ATowerDefencePawn::SetPawnActive(bool bActive)
     {
         StimuliSourceComponent->RegisterWithPerceptionSystem();
         StimuliSourceComponent->RegisterForSense(UAISense_Proximity::StaticClass());
-        HealthComponent->ResetHealth();
-        if (UHealthBarWidget* HealthBarWidget = Cast<UHealthBarWidget>(HealthBar->GetUserWidgetObject()))
-        {
-            const int32 CurrentHealth = HealthComponent->GetCurrentHealth();
-            const int32 MaxHealth = HealthComponent->GetMaxHealth();
-            const float HealthPercent = static_cast<float>(CurrentHealth) / static_cast<float>(MaxHealth);
-            HealthBarWidget->GetHealthBar()->SetPercent(HealthPercent);
-        }
         if (bAlwaysDisplayHealth) ShowHealthBar();
         else HideHealthBar();
     }
@@ -149,6 +141,18 @@ void ATowerDefencePawn::SetPawnActive(bool bActive)
         if (ATowerDefencePawnAIController* AIController = Cast<ATowerDefencePawnAIController>(GetController()))
             AIController->SetControllerActive(bActive);
     DoOnSetActive(bActive);
+}
+
+void ATowerDefencePawn::ResetHealth()
+{
+    HealthComponent->ResetHealth();
+    if (UHealthBarWidget* HealthBarWidget = Cast<UHealthBarWidget>(HealthBar->GetUserWidgetObject()))
+    {
+        const int32 CurrentHealth = HealthComponent->GetCurrentHealth();
+        const int32 MaxHealth = HealthComponent->GetMaxHealth();
+        const float HealthPercent = static_cast<float>(CurrentHealth) / static_cast<float>(MaxHealth);
+        HealthBarWidget->GetHealthBar()->SetPercent(HealthPercent);
+    }
 }
 
 void ATowerDefencePawn::UpdateHealthDisplay()

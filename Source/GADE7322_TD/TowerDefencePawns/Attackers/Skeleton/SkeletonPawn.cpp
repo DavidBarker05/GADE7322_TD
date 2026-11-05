@@ -68,6 +68,7 @@ void ASkeletonPawn::DoOnSetActive(bool bActive)
             AnimInstance->StopAllMontages(0.0f);
             AnimInstance->InitializeAnimation();
         }
+        ResetHealth();
     }
     AWeapon* Sword = GetWeapon();
     if (IsValid(Sword))

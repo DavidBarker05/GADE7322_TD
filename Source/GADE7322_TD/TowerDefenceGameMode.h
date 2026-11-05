@@ -70,6 +70,12 @@ public:
         if (Amount > 0) HealthGained += Amount;
     }
 
+    UFUNCTION(BlueprintCallable, Category = "Adaptive Difficulty")
+    void DefenderMaxHealthChanged(int32 Amount)
+    {
+        if (Amount > 0) HealthTotal += Amount;
+    }
+
 protected:
     void SpawnBurst();
 

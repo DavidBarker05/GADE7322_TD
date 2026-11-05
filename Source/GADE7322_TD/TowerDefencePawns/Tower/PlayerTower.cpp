@@ -67,6 +67,7 @@ void APlayerTower::BeginPlay()
     Super::BeginPlay();
     RadiusMaterial = RadiusDisplay->CreateDynamicMaterialInstance();
     SetPawnActive(true);
+    ResetHealth();
     HitFlashComponent->BindMaterials();
     UpdateCrystalMaterial();
     OutlineComponent->BindMaterials();
@@ -207,5 +208,5 @@ void APlayerTower::StartScreenFlash()
 float APlayerTower::GetHealth01() const
 {
     return static_cast<float>(HealthComponent->GetCurrentHealth()) /
-           static_cast<float>(HealthComponent->GetMaxHealth());
+           static_cast<float>(HealthComponent->GetBaseMaxHealth());
 }
