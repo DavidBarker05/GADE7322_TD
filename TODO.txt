@@ -1,23 +1,25 @@
 Improve UI (if have time)
 
-Add play guide
-Add controls guide
+Add play guide - important because this is one of my showcase games
+Add controls guide - important because this is one of my showcase games
 
 Add UI for upgrading
 
-Add main menu
+Add main menu (with credits) - important because this is one of my showcase games
 
 Upgrades:
 - Warrior
     - Give upgrades values
-    - Maybe replace ronin with male and female in armour (match original style better)
+    - Maybe replace ronin with male and female in armour if have time (match original style better)
 - Ballista
     - Give upgrades values
 - Healer
     - Give upgrades values
 
+Make upgrades affect difficulty if have time
+
 Custom Procedural Feature:
 - Custom Enemy:
     - Rock golem
-    - Three body types, three arm types, three leg types. All have weak, average and strong type
-    - All make 27 combinations for enemy to spawn
+    - Actual visuals (plan to reuse rocks used for terrain)
+    - Give values to each type
