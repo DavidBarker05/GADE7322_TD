@@ -29,7 +29,7 @@ enum class EAITeam : uint8
     PlayerTower = 3 UMETA(DisplayName = "Player Tower"),
     // Ballista upgrades
     GroundAirDefender = 4 UMETA(DisplayName = "Ground Air Defender"),
-    // Skeleton
+    // Skeleton and Golem
     MeleeAttacker = 5 UMETA(DisplayName = "Melee Attacker"),
     // Floating eye
     FlyingAttacker = 6 UMETA(DisplayName = "Flying Attacker"),
