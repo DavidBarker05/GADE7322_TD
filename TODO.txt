@@ -19,7 +19,5 @@ Upgrades:
 Custom Procedural Feature:
 - Custom Enemy:
     - Rock golem
-    - Two body types: 1 gives more health other is normal
-    - Two arm types: 1 gives more damage other is normal
-    - Two leg types: 1 makes move faster other is normal
-    - All make 8 combinations for enemy to spawn
+    - Three body types, three arm types, three leg types. All have weak, average and strong type
+    - All make 27 combinations for enemy to spawn
