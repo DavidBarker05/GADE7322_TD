@@ -10,7 +10,7 @@ class UButton;
 class UDataTable;
 class URichTextBlock;
 
-DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnBackClicked);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnControlsBackClicked);
 
 UCLASS(Abstract)
 class GADE7322_TD_API UControlsWidget : public UUserWidget
@@ -21,7 +21,7 @@ public:
     virtual bool Initialize() override;
 
     UPROPERTY(BlueprintAssignable)
-    FOnBackClicked OnBackClicked;
+    FOnControlsBackClicked OnBackClicked;
 
 protected:
     UFUNCTION()

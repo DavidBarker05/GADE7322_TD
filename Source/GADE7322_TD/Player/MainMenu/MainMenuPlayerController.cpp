@@ -1,0 +1,16 @@
+#include "Player/MainMenu/MainMenuPlayerController.h"
+
+#include "Engine/LocalPlayer.h"
+#include "EnhancedInputSubsystems.h"
+#include "InputMappingContext.h"
+
+void AMainMenuPlayerController::SetupInputComponent()
+{
+    Super::SetupInputComponent();
+    if (UEnhancedInputLocalPlayerSubsystem* Subsystem =
+            ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(GetLocalPlayer()))
+    {
+        for (const UInputMappingContext* CurrentContext : DefaultMappingContexts)
+            Subsystem->AddMappingContext(CurrentContext, 0);
+    }
+}

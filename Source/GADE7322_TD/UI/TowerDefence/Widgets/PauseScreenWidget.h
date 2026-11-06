@@ -9,6 +9,7 @@
 class UButton;
 class UCheckBox;
 class UControlsWidget;
+class UGuideWidget;
 
 UCLASS(Abstract)
 class GADE7322_TD_API UPauseScreenWidget : public UUserWidget
@@ -16,10 +17,10 @@ class GADE7322_TD_API UPauseScreenWidget : public UUserWidget
     GENERATED_BODY()
 
 public:
+    virtual bool Initialize() override;
+
     UFUNCTION()
     void ShowMainPanel() const;
-
-    virtual bool Initialize() override;
 
 protected:
     UFUNCTION()
@@ -29,7 +30,13 @@ protected:
     virtual void RestartGame() const;
 
     UFUNCTION()
+    virtual void OpenGuide() const;
+
+    UFUNCTION()
     virtual void OpenControls() const;
+
+    UFUNCTION()
+    virtual void LoadMenu() const;
 
     UFUNCTION()
     virtual void QuitGame() const;
@@ -47,11 +54,23 @@ protected:
     UButton* RestartButton;
 
     UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
+    UButton* GuideButton;
+
+    UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
+    UGuideWidget* GuideWidget;
+
+    UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
     UButton* ControlsButton;
 
     UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
     UControlsWidget* ControlsWidget;
 
     UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
+    UButton* MenuButton;
+
+    UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
     UButton* QuitButton;
+
+    UPROPERTY(EditDefaultsOnly)
+    TSoftObjectPtr<UWorld> MainMenu;
 };

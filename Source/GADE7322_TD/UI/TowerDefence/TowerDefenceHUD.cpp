@@ -17,6 +17,7 @@ void ATowerDefenceHUD::BeginPlay()
     PlayerHUDWidgetInstance = CreateWidget<UPlayerHUDWidget>(PC, PlayerHUDWidgetClass);
     PauseScreenWidgetInstance = CreateWidget<UPauseScreenWidget>(PC, PauseScreenWidgetClass);
     LoseScreenWidgetInstance = CreateWidget<ULoseScreenWidget>(PC, LoseScreenWidgetClass);
+    LoadingScreenWidgetInstance = CreateWidget<UUserWidget>(PC, LoadingScreenWidgetClass);
     ShowPlayerHUD();
 }
 
@@ -48,4 +49,10 @@ void ATowerDefenceHUD::ShowLoseScreen() const
 {
     if (!LoseScreenWidgetInstance) return;
     if (!LoseScreenWidgetInstance->IsInViewport()) LoseScreenWidgetInstance->AddToViewport();
+}
+
+void ATowerDefenceHUD::ShowLoadingScreen() const
+{
+    if (!LoadingScreenWidgetInstance) return;
+    if (!LoadingScreenWidgetInstance->IsInViewport()) LoadingScreenWidgetInstance->AddToViewport();
 }

@@ -36,6 +36,7 @@ public class GADE7322_TD : ModuleRules
 			"GADE7322_TD/Any",
 			"GADE7322_TD/Events",
 			"GADE7322_TD/Player",
+			"GADE7322_TD/Player/MainMenu",
 			"GADE7322_TD/Player/TowerDefence",
 			"GADE7322_TD/Player/TowerDefence/Components",
 			"GADE7322_TD/ProceduralGen",
@@ -68,6 +69,8 @@ public class GADE7322_TD : ModuleRules
 			"GADE7322_TD/TowerDefencePawns/Defenders/Warrior/AI",
 			"GADE7322_TD/TowerDefencePawns/Tower",
 			"GADE7322_TD/UI",
+			"GADE7322_TD/UI/MainMenu",
+			"GADE7322_TD/UI/MainMenu/Widgets",
 			"GADE7322_TD/UI/TowerDefence",
 			"GADE7322_TD/UI/TowerDefence/Widgets",
 			"GADE7322_TD/UI/Widgets"

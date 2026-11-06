@@ -34,6 +34,9 @@ public:
     UFUNCTION(BlueprintCallable, Category = "UI")
     void ShowLoseScreen() const;
 
+    UFUNCTION(BlueprintCallable, Category = "UI")
+    void ShowLoadingScreen() const;
+
 private:
     UPROPERTY(EditDefaultsOnly, Category = "UI", meta = (AllowPrivateAccess = true))
     TSubclassOf<UPauseScreenWidget> PauseScreenWidgetClass;
@@ -52,4 +55,10 @@ private:
 
     UPROPERTY(BlueprintReadOnly, Category = "UI", meta = (AllowPrivateAccess = true))
     ULoseScreenWidget* LoseScreenWidgetInstance;
+
+    UPROPERTY(EditDefaultsOnly, Category = "UI", meta = (AllowPrivateAccess = true))
+    TSubclassOf<UUserWidget> LoadingScreenWidgetClass;
+
+    UPROPERTY(BlueprintReadOnly, Category = "UI", meta = (AllowPrivateAccess = true))
+    UUserWidget* LoadingScreenWidgetInstance;
 };
