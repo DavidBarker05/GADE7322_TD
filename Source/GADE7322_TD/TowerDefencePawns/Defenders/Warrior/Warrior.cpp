@@ -6,6 +6,8 @@
 #include "Components/ChildActorComponent.h"
 #include "Components/DecalComponent.h"
 #include "Perception/AIPerceptionComponent.h"
+#include "TowerDefencePawns/Components/DamageComponent.h"
+#include "TowerDefencePawns/Components/HealthComponent.h"
 #include "TowerDefencePawns/Components/HitFlashComponent.h"
 #include "TowerDefencePawns/Components/OutlineComponent.h"
 #include "TowerDefencePawns/Defenders/Components/DefenderUpgradeComponent.h"
@@ -58,6 +60,19 @@ void AWarrior::StartAttack()
     FOnMontageEnded EndDelegate;
     EndDelegate.BindUObject(this, &AWarrior::OnAttackMontageEnded);
     AnimInstance->Montage_SetEndDelegate(EndDelegate, AttackMontage);
+}
+
+void AWarrior::Attack(ATowerDefencePawn* Other)
+{
+    if (!IsPawnActiveAndAlive(Other)) return;
+    if (GetUpgradeComponent()->GetCurrentLevel() < 2 ||
+        FMath::RandRange(0.0f, 100.0f) > WarriorSecondUpgradeCriticalStrikeChance)
+    {
+        Super::Attack(Other);
+        return;
+    }
+    Other->GetHealthComponent()->TakeDamage(FMath::RoundToInt32(
+        DamageComponent->GetDamage() * (1.0f + WarriorSecondUpgradeCriticalStrikeAdditionalDamage / 100.0f)));
 }
 
 void AWarrior::EndAttack()

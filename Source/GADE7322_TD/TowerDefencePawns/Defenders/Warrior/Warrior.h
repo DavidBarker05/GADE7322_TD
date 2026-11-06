@@ -96,6 +96,8 @@ public:
 
     virtual void StartAttack() override;
 
+    virtual void Attack(ATowerDefencePawn* Other) override;
+
     virtual void EndAttack() override;
 
     virtual void OnDeath(TFunction<void()>&& Func) override;
@@ -173,6 +175,16 @@ private:
 
     UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Warrior|Upgrades", meta = (AllowPrivateAccess = true))
     FWarriorLevel WarriorSecondUpgrade;
+
+    UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Warrior|Upgrades|SecondOnly",
+              meta = (AllowPrivateAccess = true, ClampMin = 0.0, UIMin = 0.0, ClampMax = 100.0, UIMax = 100.0,
+                      Units = "%"))
+    float WarriorSecondUpgradeCriticalStrikeChance = 10.0f;
+
+    UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Warrior|Upgrades|SecondOnly",
+              meta = (AllowPrivateAccess = true, ClampMin = 0.0, UIMin = 0.0, ClampMax = 100.0, UIMax = 100.0,
+                      Units = "%"))
+    float WarriorSecondUpgradeCriticalStrikeAdditionalDamage = 50.0f;
 
     UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Warrior|AI",
               meta = (AllowPrivateAccess = true, Units = "Centimeters"))
