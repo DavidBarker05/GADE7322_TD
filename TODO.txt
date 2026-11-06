@@ -9,15 +9,6 @@ Add main menu (with credits) - important because this is one of my showcase game
 
 Upgrades:
 - Warrior
-    - Give upgrades values
     - Maybe replace ronin with male and female in armour if have time (match original style better)
-- Ballista
-    - Give upgrades values
-- Healer
-    - Give upgrades values
 
 Make upgrades affect difficulty if have time
-
-Custom Procedural Feature:
-- Custom Enemy:
-    - Give values to each type

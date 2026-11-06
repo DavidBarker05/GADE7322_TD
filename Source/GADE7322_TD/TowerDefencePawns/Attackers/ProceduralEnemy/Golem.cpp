@@ -513,9 +513,31 @@ void AGolem::DoOnSetActive(bool bActive)
     };
     if (bActive)
     {
+        int32 StrengthScore = 0;
+        auto CalcStrengthScore = [&StrengthScore](const EGolemPartStrength PartStrength) -> void
+        {
+            switch (PartStrength)
+            {
+                case EGolemPartStrength::Weak:
+                    StrengthScore += 1;
+                    break;
+                case EGolemPartStrength::Average:
+                    StrengthScore += 2;
+                    break;
+                case EGolemPartStrength::Strong:
+                    StrengthScore += 3;
+                    break;
+                default:
+                    break;
+            }
+        };
         const EGolemPartStrength ArmStrength = GetRandomPartStrength();
+        CalcStrengthScore(ArmStrength);
         const EGolemPartStrength BodyStrength = GetRandomPartStrength();
+        CalcStrengthScore(BodyStrength);
         const EGolemPartStrength LegStrength = GetRandomPartStrength();
+        CalcStrengthScore(LegStrength);
+        CurrencyOnDeath = CurrencyEarnedPerPartStrength * StrengthScore;
         AGolemArm *RightArm = GetRightArm(ArmStrength), *LeftArm = GetLeftArm(ArmStrength);
         AGolemBody* Body = GetBody(BodyStrength);
         AGolemLeg *RightLeg = GetRightLeg(LegStrength), *LeftLeg = GetLeftLeg(LegStrength);

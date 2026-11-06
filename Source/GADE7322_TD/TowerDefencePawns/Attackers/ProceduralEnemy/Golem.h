@@ -303,4 +303,8 @@ private:
 
     UPROPERTY(VisibleAnywhere, Category = "Components|Golem|Part|Leg|Left", meta = (AllowPrivateAccess = true))
     UChildActorComponent* StrongLeftLegComponent;
+
+    UPROPERTY(EditDefaultsOnly, Category = "Golem|Currency",
+              meta = (AllowPrivateAccess = true, ClampMin = 0, UIMin = 0))
+    int32 CurrencyEarnedPerPartStrength;
 };
