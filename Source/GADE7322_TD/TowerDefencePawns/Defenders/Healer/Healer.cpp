@@ -2,6 +2,7 @@
 
 #include "Components/ChildActorComponent.h"
 #include "Components/DecalComponent.h"
+#include "Components/WidgetComponent.h"
 #include "NiagaraComponent.h"
 #include "Perception/AIPerceptionComponent.h"
 #include "Perception/AIPerceptionSystem.h"
@@ -32,6 +33,17 @@ AHealer::AHealer()
     SpellBookComponent->SetupAttachment(RootComponent);
     PrimaryRadiusColour = FLinearColor(0.0f, 1.0f, 0.0f, 1.0f);
     SecondaryRadiusColour = FLinearColor(1.0f, 0.0f, 0.0f, 1.0f);
+}
+
+void AHealer::BeginPlay()
+{
+    Super::BeginPlay();
+    if (ASpellBook* SpellBook = GetSpellBook(); IsValid(SpellBook))
+    {
+        SpellBook->GetHitFlashComponent()->BindMaterials();
+        SpellBook->GetOutlineComponent()->BindMaterials();
+        SpellBook->GetOutlineComponent()->DisableOutline();
+    }
 }
 
 void AHealer::Tick(float DeltaTime)
@@ -84,7 +96,7 @@ void AHealer::StartAttack()
 
 void AHealer::Heal(ATowerDefencePawn* Other)
 {
-    if (!IsPawnActiveAndAlive(Other)) return;
+    if (!IsPawnActiveAndAlive(Other) || Other == this) return;
     Other->GetHealthComponent()->ReceiveHealth(HealAmount);
     if (ADefender* Defender = Cast<ADefender>(Other)) Defender->GetHealEffect()->Activate(true);
 }
@@ -99,7 +111,7 @@ void AHealer::Attack(ATowerDefencePawn* Other)
             TArray<TEnumAsByte<EObjectTypeQuery>> ObjectTypes = {UEngineTypes::ConvertToObjectType(ECC_Pawn)};
             TArray<AActor*> OutActors;
             if (UKismetSystemLibrary::SphereOverlapActors(this, GetActorLocation(), HealRadius, ObjectTypes,
-                                                          ADefender::StaticClass(), {}, OutActors))
+                                                          ADefender::StaticClass(), {this}, OutActors))
             {
                 for (const auto Actor : OutActors) Heal(Cast<ATowerDefencePawn>(Actor));
             }
@@ -251,6 +263,10 @@ void AHealer::DoOnLevelChanged(int32 Level)
     NewBoxExtent.Z = CurrentSkeletalMesh.GetHalfHeight();
     GetBoxCollider()->SetBoxExtent(NewBoxExtent);
     GetDefenderRadiusDisplay()->SetRelativeLocation(NewMeshLoc);
+    GetHealEffect()->SetRelativeLocation(NewMeshLoc);
+    const FVector HealthBarRelLoc {
+        0.0f, 0.0f, CurrentSkeletalMesh.GetHalfHeight() + CurrentSkeletalMesh.GetHealthBarHeightAboveCollider()};
+    HealthBar->SetRelativeLocation(HealthBarRelLoc);
     SpellSpawnLocation->AttachToComponent(GetMesh(), FAttachmentTransformRules::SnapToTargetNotIncludingScale,
                                           TEXT("spell"));
     HealSpellBall->AttachToComponent(SpellSpawnLocation, FAttachmentTransformRules::SnapToTargetNotIncludingScale);

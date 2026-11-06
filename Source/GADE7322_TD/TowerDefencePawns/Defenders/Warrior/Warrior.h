@@ -22,6 +22,7 @@ struct FWarriorSkeletalMesh
     USkeletalMesh* GetSkeletalMesh() { return SkeletalMesh; }
 
     float GetHalfHeight() const { return HalfHeight; }
+    float GetHealthBarHeightAboveCollider() const { return HealthBarHeightAboveCollider; }
 
     TSubclassOf<UAnimInstance> GetAnimationBlueprint() const { return AnimationBlueprint; }
 
@@ -38,6 +39,10 @@ private:
     UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Warrior|Mesh",
               meta = (AllowPrivateAccess = true, ClampMin = 0.0, UIMin = 0.0, Units = "Centimeters"))
     float HalfHeight = 0.0f;
+
+    UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Warrior|Mesh",
+              meta = (AllowPrivateAccess = true, ClampMin = 0.0, UIMin = 0.0, Units = "Centimeters"))
+    float HealthBarHeightAboveCollider = 0.0f;
 
     UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Warrior|Animation", meta = (AllowPrivateAccess = true))
     TSubclassOf<UAnimInstance> AnimationBlueprint;

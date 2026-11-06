@@ -71,7 +71,7 @@ void ABallista::BeginPlay()
         Deco->GetHitFlashComponent()->BindMaterials();
         Deco->GetOutlineComponent()->BindMaterials();
         Deco->GetOutlineComponent()->DisableOutline();
-        Deco->GetMesh()->SetCollisionResponseToChannel(MouseClickTraceChannel, ECR_Ignore);
+        Deco->SetVisible(false);
     }
 }
 
@@ -192,10 +192,7 @@ void ABallista::DoOnSetActive(bool bActive)
             if (!IsValid(Comp)) continue;
             ABallistaDecoration* Deco = Cast<ABallistaDecoration>(Comp->GetChildActor());
             if (!IsValid(Deco)) continue;
-            Deco->GetMesh()->SetVisibility(false);
-            Deco->GetMesh()->SetComponentTickEnabled(false);
-            Deco->GetMesh()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-            Deco->GetMesh()->SetCollisionResponseToAllChannels(ECR_Ignore);
+            Deco->SetVisible(false);
             Deco->GetHitFlashComponent()->ForceStopFlash();
         }
         HitFlashComponent->ForceStopFlash();
@@ -252,10 +249,7 @@ void ABallista::DoOnLevelChanged(int32 Level)
         if (!IsValid(Comp)) continue;
         ABallistaDecoration* Deco = Cast<ABallistaDecoration>(Comp->GetChildActor());
         if (!IsValid(Deco)) continue;
-        Deco->GetMesh()->SetVisibility(false);
-        Deco->GetMesh()->SetComponentTickEnabled(false);
-        Deco->GetMesh()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-        Deco->GetMesh()->SetCollisionResponseToAllChannels(ECR_Ignore);
+        Deco->SetVisible(false);
         Deco->GetHitFlashComponent()->ForceStopFlash();
         Deco->GetOutlineComponent()->DisableOutline();
     }
@@ -265,7 +259,7 @@ void ABallista::DoOnLevelChanged(int32 Level)
     AttackCooldown = CurrentBallistaLevel.GetAttackCooldown();
     if (bMustResumeFlash) HitFlashComponent->ResumeFlash();
     if (bShowingRadius) ShowRadiusDisplay(); // Update radius display to match any new values
-    if (ABallistaBarrel* Barrel = GetBallistaBarrel(); IsValid(Barrel))
+    if (ABallistaBarrel* Barrel = GetBarrel(); IsValid(Barrel))
     {
         Barrel->GetMesh()->SetVisibility(true);
         Barrel->GetMesh()->SetComponentTickEnabled(true);
@@ -288,13 +282,7 @@ void ABallista::DoOnLevelChanged(int32 Level)
         if (!IsValid(Comp)) continue;
         ABallistaDecoration* Deco = Cast<ABallistaDecoration>(Comp->GetChildActor());
         if (!IsValid(Deco)) continue;
-        Deco->GetMesh()->SetVisibility(true);
-        Deco->GetMesh()->SetComponentTickEnabled(true);
-        Deco->GetMesh()->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
-        Deco->GetMesh()->SetCollisionResponseToAllChannels(ECR_Block);
-        Deco->GetMesh()->SetCollisionResponseToChannel(MouseClickTraceChannel, ECR_Ignore);
-        Deco->GetMesh()->SetCollisionResponseToChannel(ECC_WorldStatic, ECR_Ignore);
-        Deco->GetMesh()->SetCollisionResponseToChannel(ECC_Pawn, ECR_Overlap);
+        Deco->SetVisible(true);
         if (bMustResumeFlash)
         {
             Deco->GetHitFlashComponent()->SetRemainingFlashDuration(RemainingFlashDuration);

@@ -17,8 +17,7 @@ class ABallistaDecoration : public AActor
 public:
     ABallistaDecoration();
 
-    const UStaticMeshComponent* GetMesh() const { return Mesh; }
-    UStaticMeshComponent* GetMesh() { return Mesh; }
+    void SetVisible(bool bVisible);
 
     const UHitFlashComponent* GetHitFlashComponent() const { return HitFlashComponent; }
     UHitFlashComponent* GetHitFlashComponent() { return HitFlashComponent; }
@@ -27,12 +26,14 @@ public:
     UOutlineComponent* GetOutlineComponent() { return OutlineComponent; }
 
 private:
-    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components", meta = (AllowPrivateAccess = true))
-    UStaticMeshComponent* Mesh;
+    void PopulateMeshes();
 
     UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components", meta = (AllowPrivateAccess = true))
     UHitFlashComponent* HitFlashComponent;
 
     UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components", meta = (AllowPrivateAccess = true))
     UOutlineComponent* OutlineComponent;
+
+    UPROPERTY()
+    TArray<UStaticMeshComponent*> MeshComponents;
 };

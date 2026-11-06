@@ -5,6 +5,8 @@
 #include "Components/CapsuleComponent.h"
 #include "Components/ChildActorComponent.h"
 #include "Components/DecalComponent.h"
+#include "Components/WidgetComponent.h"
+#include "NiagaraComponent.h"
 #include "Perception/AIPerceptionComponent.h"
 #include "TowerDefencePawns/Components/DamageComponent.h"
 #include "TowerDefencePawns/Components/HealthComponent.h"
@@ -234,6 +236,10 @@ void AWarrior::DoOnLevelChanged(int32 Level)
     NewBoxExtent.Z = CurrentWarrior.GetHalfHeight();
     GetBoxCollider()->SetBoxExtent(NewBoxExtent);
     GetDefenderRadiusDisplay()->SetRelativeLocation(NewMeshLoc);
+    GetHealEffect()->SetRelativeLocation(NewMeshLoc);
+    const FVector HealthBarRelLoc {0.0f, 0.0f,
+                                   CurrentWarrior.GetHalfHeight() + CurrentWarrior.GetHealthBarHeightAboveCollider()};
+    HealthBar->SetRelativeLocation(HealthBarRelLoc);
     HitFlashComponent->BindMaterials();
     if (bMustResumeFlash)
     {
