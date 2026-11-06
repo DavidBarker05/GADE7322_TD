@@ -2,9 +2,11 @@
 
 #include "Components/CapsuleComponent.h"
 #include "Components/ChildActorComponent.h"
+#include "Components/WidgetComponent.h"
 #include "DamageComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "HealthComponent.h"
+#include "NiagaraComponent.h"
 #include "TowerDefencePawns/Attackers/ProceduralEnemy/Animation/GolemAnimator.h"
 #include "TowerDefencePawns/Attackers/ProceduralEnemy/ProceduralParts/GolemArm.h"
 #include "TowerDefencePawns/Attackers/ProceduralEnemy/ProceduralParts/GolemBody.h"
@@ -857,6 +859,8 @@ void AGolem::RecalculateBounds()
         GetClass()->GetDefaultObject<AGolem>()->GetCapsuleComponent()->GetScaledCapsuleHalfHeight();
     Capsule->SetCapsuleSize(Radius, FMath::Max(Extent.Z, Radius));
     AddActorWorldOffset(FVector(0.0f, 0.0f, Capsule->GetScaledCapsuleHalfHeight() - PlacedHalfHeight));
+    HealthBar->SetRelativeLocation(FVector(0.0f, 0.0f, Extent.Z + HealthBarHeightAboveCollider));
+    GetBoostEffect()->SetRelativeLocation(FVector(0.0f, 0.0f, -Extent.Z));
     OccupiedRadius = Radius;
     const TArray<UChildActorComponent*> PartComponents = {
         WeakRightArmComponent,   AverageRightArmComponent, StrongRightArmComponent,  WeakLeftArmComponent,

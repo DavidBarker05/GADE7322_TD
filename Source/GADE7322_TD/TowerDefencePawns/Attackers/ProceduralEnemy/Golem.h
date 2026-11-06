@@ -307,4 +307,8 @@ private:
     UPROPERTY(EditDefaultsOnly, Category = "Golem|Currency",
               meta = (AllowPrivateAccess = true, ClampMin = 0, UIMin = 0))
     int32 CurrencyEarnedPerPartStrength;
+
+    UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Golem|Mesh",
+              meta = (AllowPrivateAccess = true, ClampMin = 0.0, UIMin = 0.0, Units = "Centimeters"))
+    float HealthBarHeightAboveCollider = 50.0f;
 };
