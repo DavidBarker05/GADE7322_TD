@@ -13,15 +13,19 @@ Due to at least one of the assets requiring attribution (I can't remember which)
 
 ---
 
-Adobe, \[s.a.\]. <i>Mixamo</i>. \[online animation library\] Available at: \<[https://www.mixamo.com/](https://www.mixamo.com/)\> \[Accessed 1 October 2026\].
+Adobe, \[s.a.\]. <i>Mixamo</i>. \[online animation library\] Available at: \<[https://www.mixamo.com/](https://www.mixamo.com/)\> \[Accessed 2 November 2026\].
 
 Barker, D., 2025. Sword 3D model. \[Personal asset\] Johannesburg: Unpublished.
+
+DBlob_UA, 2024. <i>Low poly Character"Char_Ronin_01"</i>. \[online asset pack\] Available at: \<[https://dblob-ua.itch.io/low-poly-characterchar-ronin-01](https://dblob-ua.itch.io/low-poly-characterchar-ronin-01)\> \[Accessed 23 October 2026\].
 
 dm-mayu, 2026. <i>Mayu's Orb VFX Collection</i>. \[online asset pack\] Available at: \<[https://www.fab.com/listings/d13b3d78-9768-4952-b8e5-4cb476fa5b9f](https://www.fab.com/listings/d13b3d78-9768-4952-b8e5-4cb476fa5b9f)\> \[Accessed 29 September 2026\].
 
 Dr.Game, 2019. <i>Creature Theme - EyeBat</i>. \[online asset pack\] Available at: \<[https://assetstore.unity.com/packages/3d/characters/animals/birds/creature-theme-eyebat-138622](https://assetstore.unity.com/packages/3d/characters/animals/birds/creature-theme-eyebat-138622)\> \[Accessed 27 September 2026\].
 
-ivaxia, 2023. <i>LowPoly Tower Defence Weapons Hand Painting Textures Low-poly 3D model</i>. \[online asset pack\] Available at: \<[https://ivaxia.itch.io/lowpoly-tower-defence-weapons-hand-painting-textures-low-poly-3d-model](https://ivaxia.itch.io/lowpoly-tower-defence-weapons-hand-painting-textures-low-poly-3d-model)\> \[Accessed 27 September 2026\].
+GreyratsLab, 2026. <i>Stylized magic books</i>. \[online asset pack\] Available at: \<[https://assetstore.unity.com/packages/3d/props/stylized-magic-books-346902](https://assetstore.unity.com/packages/3d/props/stylized-magic-books-346902)\> \[Accessed 2 November 2026\].
+
+ivaxia, 2023. <i>LowPoly Tower Defence Weapons Hand Painting Textures Low-poly 3D model</i>. \[online asset pack\] Available at: \<[https://ivaxia.itch.io/lowpoly-tower-defence-weapons-hand-painting-textures-low-poly-3d-model](https://ivaxia.itch.io/lowpoly-tower-defence-weapons-hand-painting-textures-low-poly-3d-model)\> \[Accessed 4 November 2026\].
 
 Matt Art, 2016. <i>Awesome Stylized Mage Tower</i>. \[online asset pack\]. Available at: \<[https://assetstore.unity.com/packages/3d/environments/fantasy/awesome-stylized-mage-tower-53793](https://assetstore.unity.com/packages/3d/environments/fantasy/awesome-stylized-mage-tower-53793)\> \[Accessed 4 September 2026\].
 
@@ -39,8 +43,14 @@ Silver Cats, 2025. <i>Hand Painted Nature Kit LITE</i>. \[online asset pack\] Av
 
 Small Hearth Studios, 2026. <i>Low Poly Monster Character Pack</i>. \[online asset pack\] Available at: \<[https://assetstore.unity.com/packages/3d/characters/low-poly-monster-character-pack-400614](https://assetstore.unity.com/packages/3d/characters/low-poly-monster-character-pack-400614)\> \[Accessed 1 October 2026\].
 
-Standout 7, 2026. <i>LOWPO: Low Poly Wizard Characters Pack - Stylized Fantasy 3D Models</i>. \[online asset pack\] Available at: \<[https://standout7.itch.io/lowpo-wizard](https://standout7.itch.io/lowpo-wizard)\> \[Accessed 28 September 2026\].
+Standout 7, 2026. <i>LOWPO: Low Poly Wizard Characters Pack - Stylized Fantasy 3D Models</i>. \[online asset pack\] Available at: \<[https://standout7.itch.io/lowpo-wizard](https://standout7.itch.io/lowpo-wizard)\> \[Accessed 2 November 2026\].
 
 TaprootSolutions, 2026. <i>Free VFX Sampler Vol. 1 - 9 3D Mesh Effects</i>. \[online asset pack\] Available at: \<[https://www.fab.com/listings/89600b02-d959-4a78-8c98-d78a38ddfc87](https://www.fab.com/listings/89600b02-d959-4a78-8c98-d78a38ddfc87)\> \[Accessed 29 September 2026\].
 
 TaprootSolutions, 2026. <i>Free VFX Sampler Vol. 2 - 9 3D Mesh Effects</i>. \[online asset pack\] Available at: \<[https://www.fab.com/listings/1a214259-caee-4644-8668-20312cf41c23](https://www.fab.com/listings/1a214259-caee-4644-8668-20312cf41c23)\> \[Accessed 29 September 2026\].
+
+TridentGame, 2022. <i>3D Low-Poly Shields</i>. \[online asset pack\] Available at: \<[https://assetstore.unity.com/packages/3d/props/weapons/3d-low-poly-shields-239460](https://assetstore.unity.com/packages/3d/props/weapons/3d-low-poly-shields-239460)\> \[Accessed 26 October 2026\].
+
+TridentGame, 2023. <i>Wooden Barrel Pack</i>. \[online asset pack\] Available at: \<[https://assetstore.unity.com/packages/3d/props/wooden-barrel-pack-256618](https://assetstore.unity.com/packages/3d/props/wooden-barrel-pack-256618)\> \[Accessed 4 November 2026\].
+
+Zen, 2025. <i>Katana</i>. \[online asset pack\] Available at: \<[https://zenteaseeker.itch.io/katana-v2](https://zenteaseeker.itch.io/katana-v2)\> \[Accessed 23 October 2026\].
