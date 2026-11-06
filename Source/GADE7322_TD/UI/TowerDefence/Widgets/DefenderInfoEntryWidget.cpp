@@ -25,10 +25,10 @@ void UDefenderInfoEntryWidget::Setup(TSubclassOf<ADefender> InDefenderClass) con
             SecondUpgradeDefenderInfo = SecondUpgradeDefenderInfoOpt.GetValue();
     // clang-format off
     DefenderInfoText->SetText(FText::FromString(
-        BaseDefenderName.ToString() + TEXT(":\n") +
-        TEXT("Base (\"") + BaseDefenderName.ToString() + TEXT("\"): ") + BaseDefenderInfo + TEXT("\n\n") +
-        TEXT("First Upgrade (\"") + FirstUpgradeDefenderName.ToString() + TEXT("\"): ") + FirstUpgradeDefenderInfo + TEXT("\n\n") +
-        TEXT("Second Upgrade (\"") + SecondUpgradeDefenderName.ToString() + TEXT("\"): ") + SecondUpgradeDefenderInfo +
+        TEXT("<LargeText>") + BaseDefenderName.ToString() + TEXT(":</>\n") +
+        TEXT("<b>Base (\"") + BaseDefenderName.ToString() + TEXT("\"):</> ") + BaseDefenderInfo + TEXT("\n\n") +
+        TEXT("<b>First Upgrade (\"") + FirstUpgradeDefenderName.ToString() + TEXT("\"):</> ") + FirstUpgradeDefenderInfo + TEXT("\n\n") +
+        TEXT("<b>Second Upgrade (\"") + SecondUpgradeDefenderName.ToString() + TEXT("\"):</> ") + SecondUpgradeDefenderInfo +
         TEXT("\n\n\n\n")
     ));
     // clang-format on
