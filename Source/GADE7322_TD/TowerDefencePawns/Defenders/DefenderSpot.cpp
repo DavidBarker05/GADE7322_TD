@@ -75,6 +75,17 @@ void ADefenderSpot::PurchaseDefender(const TSubclassOf<ADefender>& DefenderBluep
     }
 }
 
+bool ADefenderSpot::UpgradeDefender()
+{
+    if (!ATowerDefencePawn::IsPawnActiveAndAlive(CurrentDefender)) return false;
+    UDefenderUpgradeComponent* Upgrades = CurrentDefender->GetUpgradeComponent();
+    const TOptional<int32> Cost = ADefender::GetDefenderCost(CurrentDefender->GetClass(), Upgrades->GetCurrentLevel() + 1);
+    if (!Cost) return false; // Already at the max level
+    BROADCAST_EVENT(TEXT("PurchaseEvent"), Cost.GetValue());
+    Upgrades->Upgrade();
+    return true;
+}
+
 void ADefenderSpot::SellDefender()
 {
     if (!ATowerDefencePawn::IsPawnActiveAndAlive(CurrentDefender)) return;

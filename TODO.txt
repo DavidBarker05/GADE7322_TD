@@ -3,8 +3,6 @@ Improve UI (if have time)
 Add play guide - important because this is one of my showcase games
 Add controls guide - important because this is one of my showcase games
 
-Add UI for upgrading
-
 Add main menu (with credits) - important because this is one of my showcase games
 
 Upgrades:

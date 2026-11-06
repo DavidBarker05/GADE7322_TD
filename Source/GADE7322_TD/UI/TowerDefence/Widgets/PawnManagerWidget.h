@@ -10,6 +10,7 @@ class ADefender;
 class ADefenderSpot;
 class APlayerTower;
 class UButton;
+class UDefenderInfoEntryWidget;
 class UDefenderShopEntryWidget;
 class UScrollBox;
 class UTextBlock;
@@ -44,9 +45,27 @@ protected:
 
     void ShowShop(ADefenderSpot* Spot);
 
+    // Covers the shop/info panel until the close button is pressed, then RefreshDisplay() brings back whichever of
+    // them the current target needs
+    void ShowAllDefendersInfo();
+
     void PopulateShop();
 
+    void PopulateInfo();
+
     void RefreshShopAffordability();
+
+    // Updates the next upgrade text and the upgrade button for the defender being displayed
+    void RefreshUpgradeDisplay(const ADefender* Defender);
+
+    UFUNCTION()
+    void HandleUpgradeDefender() const;
+
+    UFUNCTION()
+    void HandleShowAllDefendersInfo();
+
+    UFUNCTION()
+    void HandleCloseAllDefendersInfo();
 
     UFUNCTION()
     void HandleSellDefender() const;
@@ -61,15 +80,21 @@ protected:
     void HandleBuyDefender(TSubclassOf<ADefender> DefenderClass) const;
 
     // Defenders that can be purchased from an unoccupied DefenderSpot
-    UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Shop", meta = (AllowPrivateAccess = true))
+    UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Defenders", meta = (AllowPrivateAccess = true))
     TArray<TSubclassOf<ADefender>> AvailableDefenders;
 
-    UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Shop", meta = (AllowPrivateAccess = true))
+    UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Defenders|Shop", meta = (AllowPrivateAccess = true))
     TSubclassOf<UDefenderShopEntryWidget> DefenderShopEntryWidgetClass;
+
+    UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Defenders|Info", meta = (AllowPrivateAccess = true))
+    TSubclassOf<UDefenderInfoEntryWidget> DefenderInfoEntryWidgetClass;
 
     // Shown when the selected DefenderSpot has a Defender, or a Defender is selected directly
     UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
     UWidget* DefenderInfoPanel;
+
+    UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
+    UButton* InfoPanelAllDefendersInfoButton;
 
     UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
     UTextBlock* DefenderNameText;
@@ -79,6 +104,16 @@ protected:
 
     UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
     UTextBlock* DefenderDamageText;
+
+    // Name of the next upgrade, or "Max level"
+    UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
+    UTextBlock* NextUpgradeText;
+
+    UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
+    UButton* UpgradeButton;
+
+    UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
+    UTextBlock* UpgradeButtonText;
 
     UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
     UButton* SellButton;
@@ -92,6 +127,9 @@ protected:
     // Shown when an unoccupied DefenderSpot is selected
     UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
     UWidget* ShopPanel;
+
+    UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
+    UButton* ShopPanelAllDefendersInfoButton;
 
     // Just the scrollable outer frame
     UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
@@ -119,6 +157,20 @@ protected:
     UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
     UTextBlock* HealButtonText;
 
+    // Display info about all defenders
+    UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
+    UWidget* AllDefendersInfoPanel;
+
+    // Just the scrollable outer frame
+    UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
+    UScrollBox* AllDefendersInfoScrollBox;
+
+    UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
+    UVerticalBox* DefenderInfoEntriesBox;
+
+    UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
+    UButton* DefenderInfoCloseButton;
+
 private:
     TWeakObjectPtr<AActor> CurrentTarget;
 
@@ -134,5 +186,10 @@ private:
     UPROPERTY()
     TArray<UDefenderShopEntryWidget*> ShopEntries;
 
+    UPROPERTY()
+    TArray<UDefenderInfoEntryWidget*> InfoEntries;
+
     int32 CachedGold = 0;
+
+    bool bShowingAllDefendersInfo = false;
 };

@@ -40,6 +40,9 @@ public:
     // Returns the name of the defender for the specified level if the defender class and level are valid
     static TOptional<FName> GetDefenderName(TSubclassOf<ADefender> DefenderClass, int32 Level);
 
+    // Returns the info of the defender for the specified level if the defender class and level are valid
+    static TOptional<FString> GetDefenderInfo(TSubclassOf<ADefender> DefenderClass, int32 Level);
+
     // Returns the cost of the defender for the specified level if the defender class and level are valid
     static TOptional<int32> GetDefenderCost(TSubclassOf<ADefender> DefenderClass, int32 Level);
 

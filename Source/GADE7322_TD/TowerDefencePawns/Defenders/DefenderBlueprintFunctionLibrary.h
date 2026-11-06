@@ -24,6 +24,13 @@ public:
     UFUNCTION(
         BlueprintCallable, Category = "TowerDefencePawn|Defender",
         meta = (ToolTip =
+                    "Gets the info of the Defender for the specified level if the defender class and level are valid",
+                ExpandEnumAsExecs = "OutputPins"))
+    static FString GetDefenderInfo(TSubclassOf<ADefender> DefenderClass, int32 Level, EIsValidOutputPins& OutputPins);
+
+    UFUNCTION(
+        BlueprintCallable, Category = "TowerDefencePawn|Defender",
+        meta = (ToolTip =
                     "Gets the cost of the Defender for the specified level if the defender class and level are valid",
                 ExpandEnumAsExecs = "OutputPins"))
     static int32 GetDefenderCost(TSubclassOf<ADefender> DefenderClass, int32 Level, EIsValidOutputPins& OutputPins);

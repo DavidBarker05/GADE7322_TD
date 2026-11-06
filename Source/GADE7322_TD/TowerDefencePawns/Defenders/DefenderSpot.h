@@ -40,6 +40,10 @@ public:
     UFUNCTION(BlueprintCallable, Category = "Defender")
     void PurchaseDefender(const TSubclassOf<ADefender>& DefenderBlueprint);
 
+    // Takes the cost of the next level and upgrades the current defender. Returns false if there is nothing to upgrade
+    UFUNCTION(BlueprintCallable, Category = "Defender")
+    bool UpgradeDefender();
+
     UFUNCTION(BlueprintCallable, Category = "Defender")
     void SellDefender();
 

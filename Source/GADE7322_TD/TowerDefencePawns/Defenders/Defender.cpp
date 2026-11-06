@@ -103,6 +103,16 @@ TOptional<FName> ADefender::GetDefenderName(TSubclassOf<ADefender> DefenderClass
     return DefaultDefender->GetUpgradeComponent()->GetSecondUpgrade().GetName();
 }
 
+TOptional<FString> ADefender::GetDefenderInfo(TSubclassOf<ADefender> DefenderClass, int32 Level)
+{
+    if (Level < 0 || Level > 2 || !DefenderClass) return {};
+    const ADefender* DefaultDefender = DefenderClass->GetDefaultObject<ADefender>();
+    if (!DefaultDefender) return {};
+    if (Level == 0) return DefaultDefender->GetUpgradeComponent()->GetBaseLevel().GetInfo();
+    if (Level == 1) return DefaultDefender->GetUpgradeComponent()->GetFirstUpgrade().GetInfo();
+    return DefaultDefender->GetUpgradeComponent()->GetSecondUpgrade().GetInfo();
+}
+
 TOptional<int32> ADefender::GetDefenderCost(TSubclassOf<ADefender> DefenderClass, int32 Level)
 {
     if (Level < 0 || Level > 2 || !DefenderClass) return {};

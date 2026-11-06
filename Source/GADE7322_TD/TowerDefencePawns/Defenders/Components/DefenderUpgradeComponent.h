@@ -18,6 +18,7 @@ struct FDefenderLevel
     int32 GetSellPrice() const { return SellPrice; }
     int32 GetHealth() const { return Health; }
     int32 GetDamage() const { return Damage; }
+    FString GetInfo() const { return UpgradeInformation; }
 
 private:
     UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Upgrades|Tower Defence Pawn",
@@ -39,6 +40,9 @@ private:
     UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Upgrades|Damage",
               meta = (AllowPrivateAccess = true, ClampMin = 0, UIMin = 0))
     int32 Damage = 0;
+
+    UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Upgrades|Info", meta = (AllowPrivateAccess = true))
+    FString UpgradeInformation;
 };
 
 UCLASS(ClassGroup = (Defender), meta = (BlueprintSpawnableComponent))

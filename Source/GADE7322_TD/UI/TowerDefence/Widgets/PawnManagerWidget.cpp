@@ -9,21 +9,31 @@
 #include "Player/TowerDefence/TowerDefencePlayer.h"
 #include "TowerDefencePawns/Components/DamageComponent.h"
 #include "TowerDefencePawns/Components/HealthComponent.h"
+#include "TowerDefencePawns/Defenders/Components/DefenderUpgradeComponent.h"
 #include "TowerDefencePawns/Defenders/Defender.h"
 #include "TowerDefencePawns/Defenders/DefenderSpot.h"
 #include "TowerDefencePawns/Tower/PlayerTower.h"
+#include "UI/TowerDefence/Widgets/DefenderInfoEntryWidget.h"
 #include "UI/TowerDefence/Widgets/DefenderShopEntryWidget.h"
 
 bool UPawnManagerWidget::Initialize()
 {
     if (!Super::Initialize()) return false;
-    if (!(DefenderInfoPanel && DefenderNameText && DefenderHealthText && DefenderDamageText && SellButton &&
-          SellAmountText && SwitchButton && ShopPanel && DefenderShopScrollBox && DefenderShopEntriesBox &&
-          TowerPanel && TowerNameText && TowerHealthText && TowerDamageText && HealButton && HealButtonText))
+    if (!(DefenderInfoPanel && InfoPanelAllDefendersInfoButton && DefenderNameText && DefenderHealthText &&
+          DefenderDamageText && NextUpgradeText && UpgradeButton && UpgradeButtonText && SellButton && SellAmountText &&
+          SwitchButton && ShopPanel && ShopPanelAllDefendersInfoButton && DefenderShopScrollBox &&
+          DefenderShopEntriesBox && TowerPanel && TowerNameText && TowerHealthText && TowerDamageText && HealButton &&
+          HealButtonText && AllDefendersInfoPanel && AllDefendersInfoScrollBox && DefenderInfoEntriesBox &&
+          DefenderInfoCloseButton))
         return false;
     SellButton->OnClicked.AddDynamic(this, &UPawnManagerWidget::HandleSellDefender);
     SwitchButton->OnClicked.AddDynamic(this, &UPawnManagerWidget::HandleSwitchTarget);
     HealButton->OnClicked.AddDynamic(this, &UPawnManagerWidget::HandleHealTower);
+    UpgradeButton->OnClicked.AddDynamic(this, &UPawnManagerWidget::HandleUpgradeDefender);
+    InfoPanelAllDefendersInfoButton->OnClicked.AddDynamic(this, &UPawnManagerWidget::HandleShowAllDefendersInfo);
+    ShopPanelAllDefendersInfoButton->OnClicked.AddDynamic(this, &UPawnManagerWidget::HandleShowAllDefendersInfo);
+    DefenderInfoCloseButton->OnClicked.AddDynamic(this, &UPawnManagerWidget::HandleCloseAllDefendersInfo);
+    AllDefendersInfoPanel->SetVisibility(ESlateVisibility::Collapsed);
     ClearTarget();
     return true;
 }
@@ -41,12 +51,14 @@ void UPawnManagerWidget::SetTarget(AActor* NewTarget)
         ClearTarget();
         return;
     }
+    if (CurrentTarget.Get() != NewTarget) bShowingAllDefendersInfo = false;
     CurrentTarget = NewTarget;
     RefreshDisplay();
 }
 
 void UPawnManagerWidget::ClearTarget()
 {
+    bShowingAllDefendersInfo = false;
     CurrentTarget = nullptr;
     CurrentDisplayedDefender = nullptr;
     CurrentDisplayedTower = nullptr;
@@ -60,6 +72,7 @@ void UPawnManagerWidget::UpdateGold(int32 NewGold)
     RefreshShopAffordability();
     if (IsValid(CurrentDisplayedTower))
         HealButton->SetIsEnabled(CachedGold >= CurrentDisplayedTower->GetHealCostPerPurchase());
+    if (IsValid(CurrentDisplayedDefender)) RefreshUpgradeDisplay(CurrentDisplayedDefender);
 }
 
 void UPawnManagerWidget::RefreshDisplay()
@@ -70,6 +83,12 @@ void UPawnManagerWidget::RefreshDisplay()
         ClearTarget();
         return;
     }
+    if (bShowingAllDefendersInfo)
+    {
+        ShowAllDefendersInfo();
+        return;
+    }
+    AllDefendersInfoPanel->SetVisibility(ESlateVisibility::Collapsed);
     if (ADefenderSpot* Spot = Cast<ADefenderSpot>(Target))
     {
         if (Spot->IsOccupied()) ShowDefenderInfo(Spot->GetCurrentDefender());
@@ -114,6 +133,7 @@ void UPawnManagerWidget::ShowDefenderInfo(ADefender* Defender)
     DefenderDamageText->SetText(
         FText::FromString(FString::Printf(TEXT("Damage: %d"), Defender->GetDamageComponent()->GetDamage())));
     SellAmountText->SetText(FText::FromString(FString::Printf(TEXT("Sell for: %d Gold"), Defender->GetSellPrice())));
+    RefreshUpgradeDisplay(Defender);
 }
 
 void UPawnManagerWidget::ShowTowerInfo(APlayerTower* Tower)
@@ -160,6 +180,31 @@ void UPawnManagerWidget::ShowShop(ADefenderSpot* Spot)
     else RefreshShopAffordability();
 }
 
+void UPawnManagerWidget::ShowAllDefendersInfo()
+{
+    DefenderInfoPanel->SetVisibility(ESlateVisibility::Collapsed);
+    ShopPanel->SetVisibility(ESlateVisibility::Collapsed);
+    TowerPanel->SetVisibility(ESlateVisibility::Collapsed);
+    AllDefendersInfoPanel->SetVisibility(ESlateVisibility::Visible);
+}
+
+void UPawnManagerWidget::PopulateInfo()
+{
+    if (!DefenderInfoEntriesBox || !DefenderInfoEntryWidgetClass) return;
+    DefenderInfoEntriesBox->ClearChildren();
+    InfoEntries.Reset();
+    for (const TSubclassOf<ADefender>& DefenderClass : AvailableDefenders)
+    {
+        if (!DefenderClass) continue;
+        UDefenderInfoEntryWidget* Entry = CreateWidget<UDefenderInfoEntryWidget>(this, DefenderInfoEntryWidgetClass);
+        if (!Entry) continue;
+        Entry->Setup(DefenderClass);
+        DefenderInfoEntriesBox->AddChildToVerticalBox(Entry);
+        InfoEntries.Add(Entry);
+    }
+    if (AllDefendersInfoScrollBox) AllDefendersInfoScrollBox->ScrollToStart();
+}
+
 void UPawnManagerWidget::PopulateShop()
 {
     if (!DefenderShopEntriesBox || !DefenderShopEntryWidgetClass) return;
@@ -182,6 +227,50 @@ void UPawnManagerWidget::RefreshShopAffordability()
 {
     for (UDefenderShopEntryWidget* Entry : ShopEntries)
         if (IsValid(Entry)) Entry->RefreshAffordability(CachedGold);
+}
+
+void UPawnManagerWidget::RefreshUpgradeDisplay(const ADefender* Defender)
+{
+    if (!IsValid(Defender)) return;
+    const int32 NextLevel = Defender->GetUpgradeComponent()->GetCurrentLevel() + 1;
+    const TOptional<FName> NextName = ADefender::GetDefenderName(Defender->GetClass(), NextLevel);
+    const TOptional<int32> NextCost = ADefender::GetDefenderCost(Defender->GetClass(), NextLevel);
+    if (!NextName || !NextCost)
+    {
+        NextUpgradeText->SetText(FText::FromString(TEXT("Max level")));
+        UpgradeButtonText->SetText(FText::FromString(TEXT("Max level")));
+        UpgradeButton->SetIsEnabled(false);
+        return;
+    }
+    NextUpgradeText->SetText(
+        FText::FromString(FString::Printf(TEXT("Next upgrade: %s"), *NextName.GetValue().ToString())));
+    UpgradeButtonText->SetText(FText::FromString(FString::Printf(TEXT("Upgrade\n%d Gold"), NextCost.GetValue())));
+    UpgradeButton->SetIsEnabled(CachedGold >= NextCost.GetValue());
+}
+
+void UPawnManagerWidget::HandleUpgradeDefender() const
+{
+    if (!IsValid(CurrentDisplayedDefender)) return;
+    if (ADefenderSpot* Spot = CurrentDisplayedDefender->GetSpawnPoint(); IsValid(Spot))
+    {
+        const int32 NextLevel = CurrentDisplayedDefender->GetUpgradeComponent()->GetCurrentLevel() + 1;
+        const TOptional<int32> Cost = ADefender::GetDefenderCost(CurrentDisplayedDefender->GetClass(), NextLevel);
+        if (Cost && CachedGold >= Cost.GetValue()) Spot->UpgradeDefender();
+    }
+}
+
+void UPawnManagerWidget::HandleShowAllDefendersInfo()
+{
+    if (InfoEntries.IsEmpty()) PopulateInfo();
+    else if (AllDefendersInfoScrollBox) AllDefendersInfoScrollBox->ScrollToStart();
+    bShowingAllDefendersInfo = true;
+    RefreshDisplay();
+}
+
+void UPawnManagerWidget::HandleCloseAllDefendersInfo()
+{
+    bShowingAllDefendersInfo = false;
+    RefreshDisplay();
 }
 
 void UPawnManagerWidget::HandleSellDefender() const
