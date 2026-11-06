@@ -20,6 +20,4 @@ Make upgrades affect difficulty if have time
 
 Custom Procedural Feature:
 - Custom Enemy:
-    - Rock golem
-    - Actual visuals (plan to reuse rocks used for terrain)
     - Give values to each type

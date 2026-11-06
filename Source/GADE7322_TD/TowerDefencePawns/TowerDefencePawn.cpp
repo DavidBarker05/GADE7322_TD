@@ -137,10 +137,22 @@ void ATowerDefencePawn::SetPawnActive(bool bActive)
         StimuliSourceComponent->UnregisterFromSense(UAISense_Proximity::StaticClass());
         HideHealthBar();
     }
-    if (bUseAIController)
-        if (ATowerDefencePawnAIController* AIController = Cast<ATowerDefencePawnAIController>(GetController()))
-            AIController->SetControllerActive(bActive);
-    DoOnSetActive(bActive);
+    auto SetControllerActive = [this, bActive]() -> void
+    {
+        if (bUseAIController)
+            if (ATowerDefencePawnAIController* AIController = Cast<ATowerDefencePawnAIController>(GetController()))
+                AIController->SetControllerActive(bActive);
+    };
+    if (bActive)
+    {
+        DoOnSetActive(true);
+        SetControllerActive();
+    }
+    else
+    {
+        SetControllerActive();
+        DoOnSetActive(false);
+    }
 }
 
 void ATowerDefencePawn::ResetHealth()

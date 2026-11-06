@@ -572,6 +572,7 @@ void AGolem::DoOnSetActive(bool bActive)
                                    FAttachmentTransformRules::SnapToTargetIncludingScale);
         LeftLeg->EnableMesh();
         CurrentLeftLeg = LeftLeg;
+        RecalculateBounds();
         HealthComponent->SetBaseMaxHealth(CurrentBody->GetHealth());
         DamageComponent->SetDamage(CurrentRightArm->GetDamage());
         GetCharacterMovement()->MaxWalkSpeed = CurrentRightLeg->GetSpeed();
@@ -805,4 +806,40 @@ AGolemLeg* AGolem::GetStrongLeftLeg()
 AGolemLeg* AGolem::GetStrongLeftLeg_Blueprint() const
 {
     return Cast<AGolemLeg>(StrongLeftLegComponent ? StrongLeftLegComponent->GetChildActor() : nullptr);
+}
+
+void AGolem::RecalculateBounds()
+{
+    if (!IsValid(CurrentBody)) return;
+    const FTransform ActorTransform = GetActorTransform();
+    FBox LocalBounds(ForceInit);
+    auto IncludeBounds = [&LocalBounds, &ActorTransform](const UStaticMeshComponent* Rock) -> void
+    {
+        if (!Rock || !Rock->GetStaticMesh()) return;
+        const FTransform RockToActor = Rock->GetComponentTransform().GetRelativeTransform(ActorTransform);
+        LocalBounds += Rock->CalcBounds(RockToActor).GetBox();
+    };
+    TArray<const AGolemPart*> Parts = {CurrentBody, CurrentRightArm, CurrentLeftArm, CurrentRightLeg, CurrentLeftLeg};
+    for (const AGolemPart* Part : Parts)
+    {
+        if (!IsValid(Part)) continue;
+        for (const UStaticMeshComponent* Rock : Part->GetRocks()) IncludeBounds(Rock);
+    }
+    IncludeBounds(Head);
+    if (!LocalBounds.IsValid) return;
+    FVector Center, Extent;
+    LocalBounds.GetCenterAndExtents(Center, Extent);
+    const float Radius = (Extent.X + Extent.Y) / 2.0f;
+    UCapsuleComponent* Capsule = GetCapsuleComponent();
+    const float PlacedHalfHeight =
+        GetClass()->GetDefaultObject<AGolem>()->GetCapsuleComponent()->GetScaledCapsuleHalfHeight();
+    Capsule->SetCapsuleSize(Radius, FMath::Max(Extent.Z, Radius));
+    AddActorWorldOffset(FVector(0.0f, 0.0f, Capsule->GetScaledCapsuleHalfHeight() - PlacedHalfHeight));
+    OccupiedRadius = Radius;
+    const TArray<UChildActorComponent*> PartComponents = {
+        WeakRightArmComponent,   AverageRightArmComponent, StrongRightArmComponent,  WeakLeftArmComponent,
+        AverageLeftArmComponent, StrongLeftArmComponent,   WeakBodyComponent,        AverageBodyComponent,
+        StrongBodyComponent,     WeakRightLegComponent,    AverageRightLegComponent, StrongRightLegComponent,
+        WeakLeftLegComponent,    AverageLeftLegComponent,  StrongLeftLegComponent};
+    for (UChildActorComponent* PartComponent : PartComponents) PartComponent->AddRelativeLocation(-Center);
 }

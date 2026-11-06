@@ -28,6 +28,9 @@ public:
     const UHitFlashComponent* GetHitFlashComponent() const { return HitFlashComponent; }
     UHitFlashComponent* GetHitFlashComponent() { return HitFlashComponent; }
 
+    const TArray<UStaticMeshComponent*>& GetRocks() const { return Rocks; }
+    TArray<UStaticMeshComponent*>& GetRocks() { return Rocks; }
+
     void StartCollapse(float LinearImpulse, float SpinDegrees);
 
     void StopCollapse();
@@ -39,7 +42,7 @@ private:
               meta = (AllowPrivateAccess = true))
     UHitFlashComponent* HitFlashComponent;
 
-    UPROPERTY()
+    UPROPERTY(BlueprintReadOnly, Category = "Golem|Part|Components", meta = (AllowPrivateAccess = true))
     TArray<UStaticMeshComponent*> Rocks;
 
     FGolemCollapse Collapse;

@@ -39,10 +39,11 @@ void FGolemCollapse::Restore(const FSavedAttachment& Saved)
 {
     UStaticMeshComponent* Rock = Saved.Rock.Get();
     USceneComponent* Parent = Saved.Parent.Get();
-    if (!Rock || !Parent) return;
+    if (!Rock) return;
     Rock->SetSimulatePhysics(false);
     Rock->SetEnableGravity(false);
     ResetCollision(Rock, Saved.CollisionChannel);
+    if (!Parent) return;
     Rock->AttachToComponent(Parent, FAttachmentTransformRules::KeepRelativeTransform, Saved.Socket);
     Rock->SetRelativeTransform(Saved.Relative);
 }

@@ -223,6 +223,8 @@ FGolemAnimationPose UGolemAnimator::EvaluateWalk() const
     FGolemAnimationPose Pose;
     Pose.RightLegPitch = Parameters.RightStrideAngle * Swing;
     Pose.LeftLegPitch = -Parameters.LeftStrideAngle * Swing;
+    Pose.RightArmPitch = -ArmSwingAngle * Swing;
+    Pose.LeftArmPitch = ArmSwingAngle * Swing;
     const float Alpha = 0.5f + 0.5f * FMath::Cos(2.0f * WalkPhase);
     const float RightBody = FMath::Lerp(Parameters.RightBodyLowest, Parameters.RightBodyHighest, Alpha);
     const float LeftBody = FMath::Lerp(Parameters.LeftBodyLowest, Parameters.LeftBodyHighest, Alpha);

@@ -125,6 +125,10 @@ private:
     UPROPERTY(EditAnywhere, Category = "Golem|Animation|Walk", meta = (ClampMin = 0.0, UIMin = 0.0, Units = "Hertz"))
     float WalkCyclesPerSecond = 1.5f;
 
+    UPROPERTY(EditAnywhere, Category = "Golem|Animation|Walk",
+              meta = (ClampMin = 0.0, ClampMax = 90.0, UIMin = 0.0, UIMax = 90.0, Units = "Degrees"))
+    float ArmSwingAngle = 20.0f;
+
     UPROPERTY(EditAnywhere, Category = "Golem|Animation|Idle", meta = (ClampMin = 0.0, UIMin = 0.0, Units = "Hertz"))
     float IdleCyclesPerSecond = 0.4f;
 

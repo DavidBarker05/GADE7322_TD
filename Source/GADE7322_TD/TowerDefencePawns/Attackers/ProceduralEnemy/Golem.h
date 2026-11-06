@@ -215,6 +215,8 @@ protected:
     AGolemLeg* CurrentLeftLeg = nullptr;
 
 private:
+    void RecalculateBounds();
+
     UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "AI", meta = (AllowPrivateAccess = true))
     ATowerDefencePawn* CurrentAttackTarget;
 

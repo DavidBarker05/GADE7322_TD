@@ -38,5 +38,10 @@ void AGolemPart::SetRocksActive(bool bActive)
     {
         Rock->SetVisibility(bActive);
         Rock->SetComponentTickEnabled(bActive);
+        if (!Collapse.IsActive())
+        {
+            Rock->SetSimulatePhysics(false);
+            Rock->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+        }
     }
 }
